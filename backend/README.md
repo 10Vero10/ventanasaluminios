@@ -6,14 +6,19 @@ API REST de Ventanas y Aluminios SAS. Java 21, Spring Boot 3.5, Spring Data JPA,
 
 ```
 com.ventanasyaluminios
-  ├─ settings/  catalog/  quote/  auth/
-  │    ├─ controller/   REST, solo DTOs, @Valid
-  │    ├─ service/      reglas de negocio y transacciones
-  │    ├─ repository/   interfaces Spring Data JPA
-  │    ├─ entity/       @Entity JPA
-  │    ├─ dto/          records (request/response)
-  │    └─ mapper/       conversión entidad ↔ DTO, a mano
-  └─ common/            errores, configuración, seguridad, límite por IP
+  ├─ config/          @ConfigurationProperties, CORS, beans compartidos
+  ├─ controller/      REST bajo /api/v1, solo DTOs, @Valid
+  ├─ dto/
+  │    ├─ request/    records de entrada
+  │    └─ response/   records de salida
+  ├─ entity/          @Entity JPA (sin Lombok)
+  │    └─ enums/      enumeraciones guardadas como texto
+  ├─ exception/       excepciones de negocio y @RestControllerAdvice
+  ├─ mapper/          entidad ↔ DTO, a mano
+  ├─ repository/      interfaces Spring Data JPA
+  ├─ security/        Spring Security, JWT en cookie, límite por IP
+  └─ service/         interfaces de los servicios
+       └─ impl/       implementaciones
 ```
 
 Las migraciones están en `src/main/resources/db/migration/` (`V1__descripcion.sql`, `V2__…`). Una migración ya ejecutada nunca se edita. Hibernate corre con `ddl-auto=validate`.
@@ -42,4 +47,4 @@ Todos bajo `/api/v1`. Los errores responden `{ "error": "mensaje en español", "
 |---|---|---|---|
 | `GET` | `/api/v1/health` | Público | Estado de la API: `{ "status": "ok" }` |
 
-El resto de endpoints se documenta aquí a medida que se implementa cada módulo. La lista completa planeada está en [docs/decisiones.md](../docs/decisiones.md).
+El resto de endpoints se documenta aquí a medida que se implementa cada módulo. El contrato completo está en [docs/03-contrato-api.md](../docs/03-contrato-api.md).

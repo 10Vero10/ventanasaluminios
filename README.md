@@ -7,7 +7,7 @@ Sitio web y panel de administración de Ventanas y Aluminios SAS: catálogo de p
 | `backend/` | API REST en Java 21 + Spring Boot 3.5, organizada por capas (controller, service, repository, entity, dto, mapper…), PostgreSQL y Flyway. Ver [backend/README.md](backend/README.md). |
 | `frontend/` | React + Vite + TypeScript, Tailwind CSS, React Router y shadcn/ui. Se sirve con nginx. Ver [frontend/README.md](frontend/README.md). |
 | `.github/` | CI en GitHub Actions: pruebas del backend, lint y build del frontend, y construcción de las imágenes Docker. |
-| `docs/` | [Briefing](docs/briefing.md) original y [decisiones](docs/decisiones.md) tomadas durante la reconstrucción. |
+| `docs/` | [01 Briefing](docs/01-briefing.md), [02 Modelo de datos](docs/02-modelo-datos.md), [03 Contrato de la API](docs/03-contrato-api.md), [04 Decisiones (ADR)](docs/04-decisiones-tecnicas.md), [05 Plan de trabajo y ramas](docs/05-plan-de-trabajo.md) y `diagramas/`. |
 | `docker-compose.yml` | PostgreSQL 16, backend, nginx y pgAdmin (opcional). |
 
 ## Levantar todo con Docker
@@ -97,6 +97,10 @@ Frontend:
 ```bash
 npm run build && npm run lint
 ```
+
+## Ramas
+
+`main` guarda lo entregado y estable; `develop` es la rama de integración. Cada paso se trabaja en una rama `feature/*` que sale de `develop` y vuelve por Pull Request con el CI en verde. Commits con [Conventional Commits](https://www.conventionalcommits.org/es/). Detalle en [docs/05-plan-de-trabajo.md](docs/05-plan-de-trabajo.md).
 
 ## Estado
 
