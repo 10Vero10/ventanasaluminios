@@ -7,6 +7,8 @@ import { useLoad } from '@/lib/useLoad'
 
 import { SiteContext } from './siteContext'
 
+const DEFAULT_FAVICON = '/favicon.svg'
+
 /**
  * Carga la configuración pública una vez y mantiene el título, la meta descripción y el favicon de la página
  * (briefing §3.12). Sin configuración no hay sitio que mostrar: muestra carga o error con reintento.
@@ -19,12 +21,10 @@ export function SiteProvider({ children }: { children: ReactNode }) {
     const { heroTitle, heroSubtitle, faviconUrl } = site.data
     document.title = `${heroTitle} | Fabricación e Instalación a Medida`
     document.querySelector('meta[name="description"]')?.setAttribute('content', heroSubtitle)
+    // Sin favicon propio se usa el logo de 4 paneles del sitio (briefing §5.7.7).
     const icon = document.querySelector<HTMLLinkElement>('link[rel="icon"]')
-    if (faviconUrl) {
-      icon?.setAttribute('href', faviconUrl)
-    } else {
-      icon?.remove()
-    }
+    icon?.setAttribute('href', faviconUrl ?? DEFAULT_FAVICON)
+    if (faviconUrl) icon?.removeAttribute('type')
   }, [site])
 
   if (site.status === 'loading') {
