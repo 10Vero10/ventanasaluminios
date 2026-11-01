@@ -1,6 +1,6 @@
 package com.ventanasyaluminios.controller;
 
-import com.ventanasyaluminios.dto.HealthResponse;
+import com.ventanasyaluminios.dto.response.HealthResponse;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
