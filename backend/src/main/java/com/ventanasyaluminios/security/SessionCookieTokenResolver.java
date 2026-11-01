@@ -3,15 +3,14 @@ package com.ventanasyaluminios.security;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import java.util.Arrays;
-import org.springframework.security.oauth2.server.resource.web.BearerTokenResolver;
 
 /**
  * Toma el JWT solo de la cookie de sesión (nunca del encabezado Authorization) y solo en las rutas que exigen
  * sesión. Así una cookie vencida no convierte en 401 las páginas públicas.
  */
-public class SessionCookieTokenResolver implements BearerTokenResolver {
+public class SessionCookieTokenResolver {
 
-    @Override
+    /** El JWT de la cookie de sesión, o {@code null} si la ruta no exige sesión o no hay cookie. */
     public String resolve(HttpServletRequest request) {
         if (!requiresSession(request.getRequestURI())) {
             return null;

@@ -6,6 +6,7 @@ import com.ventanasyaluminios.repository.AdminUserRepository;
 import com.ventanasyaluminios.security.AdminAuthenticationConverter;
 import com.ventanasyaluminios.security.CsrfCookieFilter;
 import com.ventanasyaluminios.security.SecurityErrorResponses;
+import com.ventanasyaluminios.security.SessionCookieAuthenticationFilter;
 import com.ventanasyaluminios.security.SessionCookieTokenResolver;
 import com.ventanasyaluminios.security.SessionTokens;
 import java.nio.charset.StandardCharsets;
@@ -26,14 +27,15 @@ import org.springframework.security.oauth2.jwt.JwtEncoder;
 import org.springframework.security.oauth2.jwt.JwtValidators;
 import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
 import org.springframework.security.oauth2.jwt.NimbusJwtEncoder;
-import org.springframework.security.oauth2.server.resource.web.authentication.BearerTokenAuthenticationFilter;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
+import org.springframework.security.web.csrf.CsrfFilter;
 import org.springframework.security.web.csrf.CsrfTokenRequestAttributeHandler;
 
 /**
  * Seguridad del API (ADR-015): sesión sin estado con JWT HS256 en cookie httpOnly, rol ADMIN para el panel, CSRF con
- * cookie XSRF-TOKEN para todo cambio autenticado y respuestas 401/403 en el formato de error de la API.
+ * cookie XSRF-TOKEN para todo cambio autenticado y respuestas 401/403 en el formato de error de la API. La cookie la
+ * autentica {@link SessionCookieAuthenticationFilter}, no oauth2-resource-server, para no perder la protección CSRF.
  */
 @Configuration
 public class SecurityConfig {
@@ -59,19 +61,14 @@ public class SecurityConfig {
                         .csrfTokenRequestHandler(csrfHandler)
                         // Sin sesión previa que proteger: formulario público y login.
                         .ignoringRequestMatchers("/api/v1/quotes", "/api/v1/auth/login"))
-                .addFilterAfter(new CsrfCookieFilter(), BearerTokenAuthenticationFilter.class)
+                .addFilterAfter(new SessionCookieAuthenticationFilter(new SessionCookieTokenResolver(), jwtDecoder,
+                        new AdminAuthenticationConverter(adminUserRepository)), CsrfFilter.class)
+                .addFilterAfter(new CsrfCookieFilter(), SessionCookieAuthenticationFilter.class)
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/v1/admin/**").hasAuthority(AdminAuthenticationConverter.ROLE_ADMIN)
                         .requestMatchers(HttpMethod.POST, "/api/v1/auth/login").permitAll()
                         .requestMatchers("/api/v1/auth/**").authenticated()
                         .anyRequest().permitAll())
-                .oauth2ResourceServer(resourceServer -> resourceServer
-                        .bearerTokenResolver(new SessionCookieTokenResolver())
-                        .authenticationEntryPoint(entryPoint)
-                        .accessDeniedHandler(accessDenied)
-                        .jwt(jwt -> jwt
-                                .decoder(jwtDecoder)
-                                .jwtAuthenticationConverter(new AdminAuthenticationConverter(adminUserRepository))))
                 .exceptionHandling(exceptions -> exceptions
                         .authenticationEntryPoint(entryPoint)
                         .accessDeniedHandler(accessDenied));

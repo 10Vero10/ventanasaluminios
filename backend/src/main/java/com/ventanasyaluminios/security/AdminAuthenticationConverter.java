@@ -6,10 +6,11 @@ import java.util.List;
 import java.util.Optional;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.security.authentication.AbstractAuthenticationToken;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.oauth2.jwt.Jwt;
-import org.springframework.security.oauth2.server.resource.InvalidBearerTokenException;
+
 
 /**
  * Convierte un JWT ya verificado (firma, emisor y vencimiento) en el administrador de la solicitud. Consulta la base
@@ -36,7 +37,7 @@ public class AdminAuthenticationConverter implements Converter<Jwt, AbstractAuth
                 .flatMap(repository::findById)
                 .filter(AdminUser::isActive)
                 .filter(user -> versionOf(jwt) == user.getTokenVersion())
-                .orElseThrow(() -> new InvalidBearerTokenException("Sesión revocada o inexistente"));
+                .orElseThrow(() -> new BadCredentialsException("Sesión revocada o inexistente"));
         String role = admin.isMustChangePassword() ? ROLE_PASSWORD_CHANGE_REQUIRED : ROLE_ADMIN;
         AuthenticatedAdmin principal = new AuthenticatedAdmin(admin.getId(), admin.getEmail(),
                 admin.isMustChangePassword());

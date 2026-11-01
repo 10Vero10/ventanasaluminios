@@ -12,7 +12,7 @@ import java.util.Optional;
 import org.junit.jupiter.api.Test;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.oauth2.jwt.Jwt;
-import org.springframework.security.oauth2.server.resource.InvalidBearerTokenException;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.test.util.ReflectionTestUtils;
 
 class AdminAuthenticationConverterTest {
@@ -48,9 +48,9 @@ class AdminAuthenticationConverterTest {
         when(repository.findById(1L)).thenReturn(Optional.of(admin));
         when(repository.findById(2L)).thenReturn(Optional.empty());
 
-        assertThatThrownBy(() -> converter.convert(jwt("1", 0))).isInstanceOf(InvalidBearerTokenException.class);
-        assertThatThrownBy(() -> converter.convert(jwt("2", 0))).isInstanceOf(InvalidBearerTokenException.class);
-        assertThatThrownBy(() -> converter.convert(jwt("no-es-un-id", 0))).isInstanceOf(InvalidBearerTokenException.class);
+        assertThatThrownBy(() -> converter.convert(jwt("1", 0))).isInstanceOf(BadCredentialsException.class);
+        assertThatThrownBy(() -> converter.convert(jwt("2", 0))).isInstanceOf(BadCredentialsException.class);
+        assertThatThrownBy(() -> converter.convert(jwt("no-es-un-id", 0))).isInstanceOf(BadCredentialsException.class);
     }
 
     @Test
