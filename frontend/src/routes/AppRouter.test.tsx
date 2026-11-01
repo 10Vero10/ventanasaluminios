@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react'
+import { render, screen, waitFor } from '@testing-library/react'
 import { MemoryRouter } from 'react-router'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
@@ -29,7 +29,8 @@ describe('AppRouter', () => {
   it('muestra en la portada el título editable del sitio y lo pone en la pestaña', async () => {
     renderAt('/')
     expect(await screen.findByRole('heading', { level: 1, name: 'Ventanas y Aluminios' })).toBeInTheDocument()
-    expect(document.title).toBe('Ventanas y Aluminios | Fabricación e Instalación a Medida')
+    // El título de la pestaña se pone en un efecto, después de pintar la portada.
+    await waitFor(() => expect(document.title).toBe('Ventanas y Aluminios | Fabricación e Instalación a Medida'))
   })
 
   it('usa los años de experiencia de la configuración', async () => {
