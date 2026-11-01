@@ -18,6 +18,12 @@ Registro de lo acordado durante la reconstrucción. Complementa `briefing.md`; c
 | Afirmaciones de §6.3 | Confirmadas como reales: "Norma NSR", "Respuesta técnica en menos de 24 horas", "Instaladores certificados", "Lunes a Viernes 7:30 AM – 6:00 PM", "± 1.0 mm". |
 | Imágenes iniciales | Las del sitio viejo eran de prueba. Se usan como provisionales y se reemplazan desde el panel. |
 
+## Estructura del código
+
+- Backend organizado **por capas** (no por módulo como proponía el briefing §2.4): `com.ventanasyaluminios.config`, `controller`, `dto`, `entity`, `exception`, `mapper`, `repository`, `security`, `service`. Sigue la estructura de referencia que dio la usuaria.
+- Raíz del repo con `.github/` (CI), `.gitattributes`, `CLAUDE.md`, `docker-compose.yml`, `.env.example` y `package.json` con atajos al frontend.
+- Frontend con shadcn/ui (base Radix) y ESLint. TypeScript fijado en 6.0 hasta que typescript-eslint soporte la 7.
+
 ## Frontend
 
 - Estilo visual completamente nuevo basado en las skills `apple-style-reference` (paleta, tipografía, radios, superficies) y `apple-design` (animación fluida, botones, gestos). No se conserva nada del diseño anterior.
