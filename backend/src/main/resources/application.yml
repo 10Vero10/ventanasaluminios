@@ -39,3 +39,7 @@ app:
   media:
     upload-dir: ${MEDIA_UPLOAD_DIR:uploads}
     max-file-size: 5MB
+  rate-limit:
+    quotes:
+      max-requests: 10
+      window: 1h

@@ -177,7 +177,13 @@ public class QuoteServiceImpl implements QuoteService {
         return new ApiException(ErrorCode.VALIDATION_ERROR, message + " Actualiza la página y elige otra opción.");
     }
 
+    /**
+     * Las eliminadas ya quedan fuera de las consultas por {@code @SQLRestriction}; el filtro cubre una cotización
+     * borrada en la misma transacción, que JPA devolvería desde memoria.
+     */
     private Quote find(UUID id) {
-        return quoteRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("La cotización no existe."));
+        return quoteRepository.findById(id)
+                .filter(quote -> quote.getDeletedAt() == null)
+                .orElseThrow(() -> new ResourceNotFoundException("La cotización no existe."));
     }
 }
