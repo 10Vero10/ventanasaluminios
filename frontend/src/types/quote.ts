@@ -8,6 +8,10 @@ export const QUOTE_STATUSES: { value: QuoteStatus; label: string }[] = [
   { value: 'DESCARTADA', label: 'Descartada' },
 ]
 
+export function quoteStatusLabel(status: QuoteStatus): string {
+  return QUOTE_STATUSES.find((s) => s.value === status)?.label ?? status
+}
+
 export interface QuoteCreateRequest {
   name: string
   phone: string

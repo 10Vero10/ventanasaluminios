@@ -67,7 +67,7 @@ export default function SettingsTab() {
                     height={40}
                     className="size-10 rounded-[8px] bg-secondary object-contain"
                   />
-                  {draft.faviconUrl && (
+                  {draft.faviconUrl && draft.faviconUrl !== DEFAULT_FAVICON && (
                     <Button size="sm" variant="secondary" onClick={() => settings.set('faviconUrl', null)}>
                       Usar el logo de 4 paneles
                     </Button>
@@ -79,6 +79,7 @@ export default function SettingsTab() {
                 value={draft.faviconUrl}
                 onChange={(url) => settings.set('faviconUrl', url)}
                 aspect="1/1"
+                previewClassName="w-32"
                 allowClear={false}
               />
             </div>

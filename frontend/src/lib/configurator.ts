@@ -38,10 +38,15 @@ export function describeGlass(typeName: string, colorName: string, thicknessMm: 
   return `Vidrio ${typeName.toLocaleLowerCase(SPANISH)} ${colorName.toLocaleLowerCase(SPANISH)} ${thicknessMm} mm`
 }
 
+/** " · 3 hojas" cuando hay más de una; vacío con una sola. */
+export function panesSuffix(panes: number): string {
+  return panes > 1 ? ` · ${panes} hojas` : ''
+}
+
 /** "120 cm alto x 150 cm ancho (1.80 m²) · Vidrio crudo transparente 6 mm", más " · 3 hojas" si hay más de una. */
 export function describeDimensions(widthCm: number, heightCm: number, panes: number, glass: string): string {
   const text = `${heightCm} cm alto x ${widthCm} cm ancho (${formatArea(widthCm, heightCm)} m²) · ${glass}`
-  return panes > 1 ? `${text} · ${panes} hojas` : text
+  return text + panesSuffix(panes)
 }
 
 /** Mensaje sugerido para el formulario. */

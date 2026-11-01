@@ -12,6 +12,10 @@ const MARGIN_BOTTOM = 44
 const MARGIN_TOP = 12
 const MARGIN_RIGHT = 12
 const SPRING = { type: 'spring', bounce: 0, duration: 0.4 } as const
+/** Medidas aproximadas de la etiqueta interna (11 px, mayúsculas) para ocultarla si no cabe en la ventana dibujada. */
+const LABEL_CHAR_WIDTH_PX = 7
+const LABEL_PADDING_PX = 16
+const LABEL_MIN_HEIGHT_PX = 28
 
 /**
  * Plano a escala real (briefing §3.5.2): la misma escala en ancho y alto, calculada para que 600 × 260 cm quepa en el
@@ -41,7 +45,7 @@ export function BlueprintDrawing({ config }: { config: ResolvedConfiguration }) 
   const left = MARGIN_LEFT
   const transition = reduceMotion ? { duration: 0 } : SPRING
   const label = `${config.type.name.toLocaleUpperCase('es-CO')} · ${config.thickness.mm} MM`
-  const labelFits = width > label.length * 7 + 16 && height > 28
+  const labelFits = width > label.length * LABEL_CHAR_WIDTH_PX + LABEL_PADDING_PX && height > LABEL_MIN_HEIGHT_PX
   const scale = drawingScale(ppc)
   const paneWidth = width / config.panes
 

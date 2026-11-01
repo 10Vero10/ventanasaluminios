@@ -4,6 +4,7 @@ import { Link, NavLink, Outlet, useLocation } from 'react-router'
 import { useAuth } from '@/auth/authContext'
 import { BrandMark } from '@/components/layout/BrandMark'
 import { Button } from '@/components/ui/button'
+import { isTrue, routerStateValue } from '@/lib/routerState'
 import { useLoad } from '@/lib/useLoad'
 import { cn } from '@/lib/utils'
 import { getDashboard } from '@/services/api/adminSiteService'
@@ -18,7 +19,7 @@ export function AdminLayout() {
   const [signOutError, setSignOutError] = useState<string | null>(null)
   const dashboard = useLoad(getDashboard, [])
   const counts = dashboard.status === 'ready' ? dashboard.data : null
-  const passwordChanged = (location.state as { passwordChanged?: boolean } | null)?.passwordChanged
+  const passwordChanged = routerStateValue(location.state, 'passwordChanged', isTrue)
 
   const tabs = [
     { to: '/admin/cotizaciones', label: counts ? `Cotizaciones (${counts.newQuotes})` : 'Cotizaciones' },

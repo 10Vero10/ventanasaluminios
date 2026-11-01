@@ -1,7 +1,7 @@
 import { Button } from '@/components/ui/button'
 import { LoadingState, MessageState } from '@/components/ui/states'
 import { formatArea, MAX_HEIGHT_CM, MAX_PANES, MAX_WIDTH_CM, suggestedPanes } from '@/lib/configurator'
-import type { LoadState } from '@/lib/useLoad'
+import type { Loaded } from '@/lib/useLoad'
 import type { GlassOptions } from '@/types/catalog'
 
 import { BlueprintDrawing } from './BlueprintDrawing'
@@ -19,7 +19,7 @@ export function GlassConfigurator({
   onApply,
   feedback,
 }: {
-  options: LoadState<GlassOptions> & { reload: () => void }
+  options: Loaded<GlassOptions>
   config: Configuration
   onChange: (patch: Partial<Configuration>) => void
   onApply: () => void

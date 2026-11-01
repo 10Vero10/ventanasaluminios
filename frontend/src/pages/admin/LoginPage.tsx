@@ -5,6 +5,7 @@ import { useAuth } from '@/auth/authContext'
 import { AuthCard } from '@/components/admin/AuthCard'
 import { Button } from '@/components/ui/button'
 import { Field, Input } from '@/components/ui/field'
+import { isString, routerStateValue } from '@/lib/routerState'
 import { getErrorMessage } from '@/services/api/httpClient'
 
 /** Ingreso al panel con correo y contraseña (briefing §5.7.1). */
@@ -12,7 +13,8 @@ export default function LoginPage() {
   const { user, expired, signIn } = useAuth()
   const navigate = useNavigate()
   const location = useLocation()
-  const from = (location.state as { from?: string } | null)?.from ?? '/admin'
+  // Solo rutas internas del panel: el estado lo pone RequireAdmin, pero no se confía en su forma.
+  const from = routerStateValue(location.state, 'from', isString) ?? '/admin'
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState<string | null>(null)

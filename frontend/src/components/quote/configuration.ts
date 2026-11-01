@@ -1,4 +1,4 @@
-import { describeDimensions, describeGlass, suggestedPanes } from '@/lib/configurator'
+import { describeDimensions, describeGlass, panesSuffix, suggestedPanes } from '@/lib/configurator'
 import type { GlassColor, GlassOptions, GlassThickness, GlassType } from '@/types/catalog'
 
 /** Lo que el visitante eligió en el configurador. Un código en null significa "la opción por defecto". */
@@ -66,5 +66,5 @@ export function dimensionsText(resolved: ResolvedConfiguration): string {
 /** "Vidrio crudo · Transparente · 6 mm", más " · 3 hojas" si hay más de una (briefing §5.6.3). */
 export function glassSummary(resolved: ResolvedConfiguration): string {
   const text = `Vidrio ${resolved.type.name.toLocaleLowerCase('es-CO')} · ${resolved.color.name} · ${resolved.thickness.mm} mm`
-  return resolved.panes > 1 ? `${text} · ${resolved.panes} hojas` : text
+  return text + panesSuffix(resolved.panes)
 }
