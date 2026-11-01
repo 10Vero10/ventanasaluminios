@@ -58,3 +58,15 @@ Formato: contexto → decisión → consecuencias.
 ## ADR-011 — Revisión de seguridad y calidad
 
 - **Decisión:** `security-audit` al cerrar los pasos 3 y 4 y antes del despliegue; `thermos` (lo invoca la usuaria) al cerrar cada paso.
+
+## ADR-012 — Detalles del módulo settings
+
+- **Imágenes de la galería sin línea:** `gallery_image.category` es opcional. "Taller de Carpintería y Ensamble" no pertenece a ninguna línea y solo aparece en el filtro "Todos".
+- **Validación de imágenes subidas:** por la firma de bytes del archivo (JPG, PNG, WebP), no por la extensión ni el `Content-Type`. Nombre aleatorio (UUID). Máximo 5 MB. SVG no se acepta porque puede ejecutar código.
+- **Favicon por defecto:** el logo de 4 paneles de la empresa, servido como `/favicon.svg` desde el frontend.
+- **Reordenar:** se envía la lista completa de ids; si no coincide con los existentes, se rechaza (`REORDER_MISMATCH`) para no perder elementos agregados en otra pestaña. Toda entidad ordenable implementa `Positioned` y usa `Reordering.apply` (también las del catálogo).
+- **WhatsApp:** se guarda solo con dígitos; si viene vacío se toma del teléfono. El resultado debe tener entre 7 y 20 dígitos y se valida antes de modificar la configuración.
+- **Creaciones simultáneas:** dos líneas o imágenes creadas a la vez pueden pedir la misma posición. La restricción única lo detecta al confirmar y el manejador responde 409 (`CONFLICT`) pidiendo intentar de nuevo. Con un solo administrador no se justifica bloquear la tabla.
+- **Archivos de imágenes borradas:** eliminar una imagen de la galería no borra el archivo de `/media`, porque puede seguir en uso como portada o en una línea destacada.
+- **Errores:** `GlobalExceptionHandler` hereda de `ResponseEntityExceptionHandler` para que los errores de Spring MVC conserven su estado HTTP; solo los 5xx se registran como ERROR.
+- **Panel abierto hasta el paso 4:** las rutas `/api/v1/admin/**` existen desde el paso 1 pero se protegen en el paso 4. No se despliega antes.
