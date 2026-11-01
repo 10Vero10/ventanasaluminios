@@ -1,12 +1,16 @@
 package com.ventanasyaluminios.config;
 
+import com.ventanasyaluminios.service.impl.MediaStorageServiceImpl;
+import java.nio.file.Path;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
+import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 /**
- * Configuración web: registra {@link AppProperties} y define CORS. Vive en un WebMvcConfigurer para
+ * Configuración web: registra {@link AppProperties}, define CORS y sirve las imágenes subidas en
+ * {@code /media/**}. Vive en un WebMvcConfigurer para
  * que también la carguen las pruebas de controllers ({@code @WebMvcTest}).
  */
 @Configuration
@@ -30,5 +34,17 @@ public class WebConfig implements WebMvcConfigurer {
                 .allowedOrigins(origins.toArray(String[]::new))
                 .allowedMethods("GET", "POST", "PUT", "PATCH", "DELETE")
                 .allowCredentials(true);
+    }
+
+    /** Sirve solo los archivos de la carpeta de imágenes; los nombres son UUID generados por el servidor. */
+    @Override
+    public void addResourceHandlers(ResourceHandlerRegistry registry) {
+        String location = Path.of(properties.media().uploadDir()).toAbsolutePath().normalize().toUri().toString();
+        // toUri() solo agrega la barra final si la carpeta ya existe; sin ella Spring no resuelve los archivos.
+        if (!location.endsWith("/")) {
+            location += "/";
+        }
+        registry.addResourceHandler(MediaStorageServiceImpl.PUBLIC_PREFIX + "**")
+                .addResourceLocations(location);
     }
 }
