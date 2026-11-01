@@ -127,3 +127,13 @@ Formato: contexto → decisión → consecuencias.
 - **Reordenar (`useReorder`):** el cambio se ve al instante y se guarda el orden completo; si falla, vuelve el orden anterior solo si no llegaron datos nuevos mientras tanto. Mientras la lista se recarga, subir y bajar quedan deshabilitados.
 - **Cotizar:** el armado de la solicitud y la sincronización con el configurador son funciones puras (`quoteDraft.ts`) y la página las aplica con actualizaciones funcionales, para que el fin de un envío no pise lo escrito mientras tanto.
 - **Respaldo:** las conversiones respuesta → solicitud viven en los mappers. Un respaldo que no trae un campo agregado después (como `aboutImageUrl`) conserva el valor actual en vez de borrarlo; una prueba verifica que la exportación incluya todos los campos de la configuración.
+
+## ADR-019 — Publicación en Render y Vercel
+
+- **Reparto:** backend (Docker) y PostgreSQL en Render con `render.yaml`; frontend estático en Vercel con `frontend/vercel.json`. Vercel reescribe `/api/*` y `/media/*` hacia el backend y todo lo demás a `index.html`, así el navegador ve un solo dominio: la cookie de sesión (`SameSite=Lax`, `Path=/api`) y el CSRF funcionan sin CORS.
+- **Base de datos:** Render entrega host, puerto, base, usuario y clave por separado; `application.yml` arma la URL JDBC con `DB_HOST` cuando no hay `DB_URL`. `JWT_SECRET` lo genera Render; el administrador inicial se pide al crear el Blueprint.
+- **Límites conocidos:**
+  - Plan free de Render: el servicio se duerme tras 15 minutos sin tráfico y despertar tarda cerca de un minuto (Java + migraciones). La base free vence según las condiciones vigentes de Render; para producción, plan starter y base de pago.
+  - Imágenes subidas: el disco del contenedor se borra en cada despliegue. Para conservarlas hace falta un disco persistente de Render (de pago) montado en `/app/uploads`, o usar URLs de imágenes alojadas.
+  - Vercel limita el cuerpo de las solicitudes reenviadas (unos 4,5 MB): una imagen cercana a 5 MB puede fallar al subirse por esta vía.
+  - Límite por IP: detrás de Vercel y del proxy de Render, Tomcat solo confía en proxies internos, así que la IP que ve es la del borde de Vercel y varios visitantes pueden compartir un mismo contador. Es lo seguro (no se puede falsear la IP llamando directo a Render), a cambio de un límite más grueso.
