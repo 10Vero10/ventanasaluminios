@@ -1,4 +1,5 @@
-import { Select } from '@/components/ui/field'
+import type { FieldControlProps } from '@/components/ui/field'
+import { OptionSelect } from '@/components/ui/OptionSelect'
 import { CATEGORIES, type ProductCategory } from '@/types/catalog'
 
 /** Lista de líneas; con {@code allowNone} agrega "Sin línea". */
@@ -7,22 +8,10 @@ export function CategorySelect({
   onChange,
   allowNone = false,
   ...props
-}: {
+}: Partial<FieldControlProps> & {
   value: ProductCategory | null
   onChange: (value: ProductCategory | null) => void
   allowNone?: boolean
-  id?: string
-  'aria-describedby'?: string
-  'aria-invalid'?: boolean
 }) {
-  return (
-    <Select {...props} value={value ?? ''} onChange={(e) => onChange((e.target.value || null) as ProductCategory | null)}>
-      {allowNone && <option value="">Sin línea</option>}
-      {CATEGORIES.map((c) => (
-        <option key={c.value} value={c.value}>
-          {c.label}
-        </option>
-      ))}
-    </Select>
-  )
+  return <OptionSelect {...props} options={CATEGORIES} value={value} onChange={onChange} noneLabel={allowNone ? 'Sin línea' : undefined} />
 }

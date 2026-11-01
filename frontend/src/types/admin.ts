@@ -1,17 +1,9 @@
-import type { GlassColor, GlassThickness, GlassType, ProductCategory } from './catalog'
-import type { SiteContent } from './site'
+import type { GlassColor, GlassThickness, GlassType, Product, ProductCategory, ProductRequest } from './catalog'
+import type { FeaturedLine, SiteContent, SiteSettings } from './site'
 
 export type SiteSettingsRequest = SiteContent
 
-export interface FeaturedLineRequest {
-  number: string
-  title: string
-  categoryTag: string
-  description: string
-  imageUrl: string | null
-  linkText: string
-  targetCategory: ProductCategory
-}
+export type FeaturedLineRequest = Omit<FeaturedLine, 'id' | 'position'>
 
 export interface GalleryImageRequest {
   title: string
@@ -30,4 +22,17 @@ export interface BackupImportResult {
   glassTypes: number
   glassColors: number
   glassThicknesses: number
+}
+
+/** Lo editable de cada respuesta, listo para enviarlo de vuelta. */
+export function toSettingsRequest({ updatedAt, ...request }: SiteSettings): SiteSettingsRequest {
+  return request
+}
+
+export function toFeaturedLineRequest({ id, position, ...request }: FeaturedLine): FeaturedLineRequest {
+  return request
+}
+
+export function toProductRequest({ id, position, ...request }: Product): ProductRequest {
+  return request
 }

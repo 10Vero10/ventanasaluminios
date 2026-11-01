@@ -2,6 +2,7 @@ import { useId, useRef, useState } from 'react'
 
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/field'
+import { cn } from '@/lib/utils'
 import { useLoad } from '@/lib/useLoad'
 import { getAdminGallery, uploadImage } from '@/services/api/adminSiteService'
 import { getErrorMessage } from '@/services/api/httpClient'
@@ -19,12 +20,15 @@ export function ImagePicker({
   onChange,
   aspect = '16/9',
   allowClear = true,
+  previewClassName,
 }: {
   label: string
   value: string | null
   onChange: (url: string | null) => void
   aspect?: string
   allowClear?: boolean
+  /** Para limitar el tamaño de la vista previa (por ejemplo, la de un icono). */
+  previewClassName?: string
 }) {
   const id = useId()
   const fileInput = useRef<HTMLInputElement>(null)
@@ -61,7 +65,7 @@ export function ImagePicker({
       <label htmlFor={id} className="text-sm font-semibold">
         {label}
       </label>
-      <div className="overflow-hidden rounded-[16px] bg-secondary" style={{ aspectRatio: aspect }}>
+      <div className={cn('overflow-hidden rounded-[16px] bg-secondary', previewClassName)} style={{ aspectRatio: aspect }}>
         {value ? (
           <img src={value} alt="Vista previa" className="h-full w-full object-cover" />
         ) : (

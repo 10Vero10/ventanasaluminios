@@ -40,3 +40,13 @@ export function MessageState({
     </div>
   )
 }
+
+/** Error en línea bajo un formulario o una acción; no pinta nada si no hay mensaje. */
+export function InlineError({ message, className }: { message: string | null | undefined; className?: string }) {
+  if (!message) return null
+  return (
+    <p role="alert" className={cn('text-sm text-destructive', className)}>
+      {message}
+    </p>
+  )
+}

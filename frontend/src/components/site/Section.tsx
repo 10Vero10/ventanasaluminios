@@ -41,3 +41,16 @@ export function SectionTitle({ id, children, className }: { id?: string; childre
     </h2>
   )
 }
+
+/** Encabezado de una página del sitio: antetítulo, título principal y bajada. */
+export function PageHeader({ kicker, title, lead }: { kicker: string; title: string; lead: ReactNode }) {
+  return (
+    <>
+      <Kicker>{kicker}</Kicker>
+      <h1 className="mt-2 max-w-3xl font-display text-[40px] leading-[1.05] font-semibold tracking-[-0.02em] text-balance md:text-[64px]">
+        {title}
+      </h1>
+      <p className="mt-5 max-w-2xl text-[19px] text-muted-foreground">{lead}</p>
+    </>
+  )
+}

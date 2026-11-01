@@ -2,7 +2,7 @@ import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
-import { getAdminGlassOptions, saveGlassType } from '@/services/api/adminCatalogService'
+import { getAdminGlassOptions, saveGlassOption } from '@/services/api/adminCatalogService'
 import { GLASS_OPTIONS } from '@/test/fixtures'
 
 import GlassTab from './GlassTab'
@@ -10,9 +10,7 @@ import GlassTab from './GlassTab'
 vi.mock('@/services/api/adminCatalogService', () => ({
   getAdminGlassOptions: vi.fn(),
   reorderGlass: vi.fn(),
-  saveGlassType: vi.fn(),
-  saveGlassColor: vi.fn(),
-  saveGlassThickness: vi.fn(),
+  saveGlassOption: vi.fn(),
 }))
 
 describe('GlassTab', () => {
@@ -22,7 +20,7 @@ describe('GlassTab', () => {
 
   it('al guardar una fila muestra la confirmación y no borra lo escrito en las demás', async () => {
     const user = userEvent.setup()
-    vi.mocked(saveGlassType).mockImplementation(async (_id, request) => ({ ...GLASS_OPTIONS.types[0], ...request }))
+    vi.mocked(saveGlassOption).mockImplementation(async (_kind, _id, request) => ({ ...GLASS_OPTIONS.types[0], ...request }))
     render(<GlassTab />)
 
     const crudo = await screen.findByLabelText('Nombre (CRUDO)')
@@ -36,7 +34,7 @@ describe('GlassTab', () => {
     await user.click(screen.getAllByRole('button', { name: 'Guardar' })[0])
 
     expect(await screen.findByText('¡Guardado con éxito!')).toBeInTheDocument()
-    expect(saveGlassType).toHaveBeenCalledWith(1, { code: 'CRUDO', name: 'Crudo claro', active: true, defaultOption: true })
+    expect(saveGlassOption).toHaveBeenCalledWith('types', 1, { code: 'CRUDO', name: 'Crudo claro', active: true, defaultOption: true })
     expect(screen.getByLabelText('Nombre (LAMINADO_TEMPLADO)')).toHaveValue('Laminado templado 2')
   })
 })

@@ -24,18 +24,9 @@ export async function getFeaturedLines(): Promise<FeaturedLine[]> {
   return data
 }
 
-export async function createFeaturedLine(request: FeaturedLineRequest): Promise<FeaturedLine> {
-  const { data } = await httpClient.post<FeaturedLine>('/admin/featured-lines', request)
-  return data
-}
-
 export async function updateFeaturedLine(id: number, request: FeaturedLineRequest): Promise<FeaturedLine> {
   const { data } = await httpClient.put<FeaturedLine>(`/admin/featured-lines/${id}`, request)
   return data
-}
-
-export async function deleteFeaturedLine(id: number): Promise<void> {
-  await httpClient.delete(`/admin/featured-lines/${id}`)
 }
 
 export async function reorderFeaturedLines(ids: number[]): Promise<FeaturedLine[]> {

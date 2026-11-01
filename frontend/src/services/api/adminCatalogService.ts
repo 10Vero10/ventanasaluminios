@@ -37,7 +37,14 @@ export async function getAdminGlassOptions(): Promise<GlassOptions> {
   return data
 }
 
-export type GlassKind = 'types' | 'colors' | 'thicknesses'
+/** Cada lista de opciones de vidrio con su forma de respuesta y de solicitud. */
+export interface GlassKinds {
+  types: { item: GlassType; request: GlassTypeRequest }
+  colors: { item: GlassColor; request: GlassColorRequest }
+  thicknesses: { item: GlassThickness; request: GlassThicknessRequest }
+}
+
+export type GlassKind = keyof GlassKinds
 
 const GLASS_PATH: Record<GlassKind, string> = {
   types: '/admin/glass-types',
@@ -45,23 +52,16 @@ const GLASS_PATH: Record<GlassKind, string> = {
   thicknesses: '/admin/glass-thicknesses',
 }
 
-export async function saveGlassType(id: number | null, request: GlassTypeRequest): Promise<GlassType> {
-  return saveGlass('types', id, request)
-}
-
-export async function saveGlassColor(id: number | null, request: GlassColorRequest): Promise<GlassColor> {
-  return saveGlass('colors', id, request)
-}
-
-export async function saveGlassThickness(id: number | null, request: GlassThicknessRequest): Promise<GlassThickness> {
-  return saveGlass('thicknesses', id, request)
-}
-
-async function saveGlass<T>(kind: GlassKind, id: number | null, request: unknown): Promise<T> {
+/** Crea ({@code id} null) o edita una opción de vidrio. */
+export async function saveGlassOption<K extends GlassKind>(
+  kind: K,
+  id: number | null,
+  request: GlassKinds[K]['request'],
+): Promise<GlassKinds[K]['item']> {
   const { data } =
     id === null
-      ? await httpClient.post<T>(GLASS_PATH[kind], request)
-      : await httpClient.put<T>(`${GLASS_PATH[kind]}/${id}`, request)
+      ? await httpClient.post<GlassKinds[K]['item']>(GLASS_PATH[kind], request)
+      : await httpClient.put<GlassKinds[K]['item']>(`${GLASS_PATH[kind]}/${id}`, request)
   return data
 }
 

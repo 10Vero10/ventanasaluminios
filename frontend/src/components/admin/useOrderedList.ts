@@ -14,24 +14,20 @@ export function useOrderedList<T extends { id: number }>(
   saveOrder: (ids: number[]) => Promise<unknown>,
 ) {
   const loaded = useLoad(loader, [])
-  const [local, setLocal] = useState<{ source: T[]; items: T[] } | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [busy, setBusy] = useState(false)
-
-  const source = loaded.status === 'ready' ? loaded.data : null
-  const items = local && local.source === source ? local.items : source
+  const items = loaded.status === 'ready' ? loaded.data : null
 
   async function move(from: number, to: number) {
-    if (!items || !source) return
-    const previous = items
+    if (!items) return
     const next = moveItem(items, from, to)
-    setLocal({ source, items: next })
+    loaded.setData(() => next)
     setError(null)
     setBusy(true)
     try {
       await saveOrder(next.map((item) => item.id))
     } catch (err) {
-      setLocal({ source, items: previous })
+      loaded.setData(() => items)
       setError(getErrorMessage(err))
     } finally {
       setBusy(false)
@@ -40,8 +36,7 @@ export function useOrderedList<T extends { id: number }>(
 
   /** Reemplaza un elemento en pantalla después de guardarlo. */
   function replace(item: T) {
-    if (!items || !source) return
-    setLocal({ source, items: items.map((current) => (current.id === item.id ? item : current)) })
+    loaded.setData((current) => current.map((existing) => (existing.id === item.id ? item : existing)))
   }
 
   return { loaded, items, move, replace, reload: loaded.reload, error, busy }
