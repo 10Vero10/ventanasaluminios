@@ -1,18 +1,23 @@
 # Frontend
 
-Sitio público y panel de administración de Ventanas y Aluminios SAS. React 19 + Vite + TypeScript (`strict`), Tailwind CSS v4, React Router y componentes shadcn/ui (base Radix).
+Sitio público y panel de administración de Ventanas y Aluminios SAS. React 19 + Vite + TypeScript (`strict`), Tailwind CSS v4, React Router, axios y componentes shadcn/ui (base Radix). Pruebas con Vitest.
 
 ## Estructura
 
 ```
 src/
+  auth/            sesión del administrador (paso 4)
   components/
-    ui/          componentes de shadcn/ui (se agregan con `npx shadcn add <nombre>`)
-  lib/
-    utils.ts     cn(): combina clases de Tailwind sin conflictos
-  index.css      Tailwind y tokens de diseño (apple-style-reference)
-  App.tsx        rutas
-  main.tsx       punto de entrada
+    layout/        cabecera, menú, pie de página y layout del panel
+    ui/            componentes de shadcn/ui (se agregan con `npx shadcn add <nombre>`)
+  lib/             utilidades (cn() combina clases de Tailwind sin conflictos)
+  pages/           una página por ruta
+  routes/          AppRouter y protección de rutas
+  services/api/    cliente HTTP (httpClient) y un servicio por módulo; las páginas nunca llaman a axios directo
+  test/            configuración de Vitest
+  types/           tipos que reflejan los DTO del backend
+  index.css        Tailwind y tokens de diseño (apple-style-reference)
+  main.tsx         punto de entrada
 ```
 
 Los imports usan el alias `@/` para `src/` (por ejemplo `import { cn } from '@/lib/utils'`).
@@ -27,6 +32,7 @@ Se pueden correr aquí o desde la raíz del repo (los scripts de la raíz delega
 | `npm run dev` | Servidor de desarrollo en http://localhost:5173 |
 | `npm run build` | Revisa los tipos y compila a `dist/` |
 | `npm run lint` | ESLint |
+| `npm test` | Pruebas con Vitest y Testing Library |
 | `npm run preview` | Sirve el `dist/` compilado |
 
 ## Variables de entorno

@@ -1,12 +1,13 @@
 {
   "name": "ventanasyaluminios",
   "private": true,
-  "description": "Atajos para trabajar el frontend desde la raíz del repositorio.",
+  "description": "Atajos para trabajar el frontend desde la ra\u00edz del repositorio.",
   "scripts": {
     "postinstall": "npm --prefix frontend install",
     "dev": "npm --prefix frontend run dev",
     "build": "npm --prefix frontend run build",
     "lint": "npm --prefix frontend run lint",
-    "preview": "npm --prefix frontend run preview"
+    "preview": "npm --prefix frontend run preview",
+    "test": "npm --prefix frontend run test"
   }
 }
