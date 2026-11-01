@@ -108,8 +108,8 @@ npm run build && npm run lint
 |---|---|---|
 | 0 | Estructura, Docker Compose, proyectos inicializados | Hecho (verificado con `docker compose up`) |
 | 1 | Base del backend y módulo `settings` | Hecho |
-| 2 | Módulo `catalog` | En revisión (`feature/catalog`) |
-| 3 | Módulo `quote` | Pendiente |
+| 2 | Módulo `catalog` | Hecho |
+| 3 | Módulo `quote` | En revisión (`feature/quotes`) |
 | 4 | Módulo `auth` | Pendiente |
 | 5 | Frontend conectado a la API | Pendiente |
 | 6 | Migración desde Redis y despliegue | Pendiente |

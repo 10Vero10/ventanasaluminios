@@ -72,6 +72,12 @@ Todos bajo `/api/v1`. Los errores responden `{ "error": "mensaje en español", "
 | `POST` · `PUT` | `/api/v1/admin/glass-colors[/{id}]` | Panel | Crear y editar colores (`GlassColorRequest`) |
 | `POST` · `PUT` | `/api/v1/admin/glass-thicknesses[/{id}]` | Panel | Crear y editar espesores (`GlassThicknessRequest`) |
 | `PUT` | `/api/v1/admin/glass-{types,colors,thicknesses}/order` | Panel | Reordenar cada lista |
+| `POST` | `/api/v1/quotes` | Público | Solicitud de cotización (`QuoteCreateRequest`). Responde `201 { "id" }`. Máximo 10 por hora por IP (429 `RATE_LIMITED`); 403 `QUOTING_DISABLED` si la cotización está apagada |
+| `GET` | `/api/v1/admin/quotes?status=&page=&size=&sort=` | Panel | Bandeja paginada (`size` 1 a 100, por defecto 20; `sort` `createdAt,asc` por defecto o `createdAt,desc`) |
+| `GET` | `/api/v1/admin/quotes/{id}` | Panel | Detalle con historial de estados (`QuoteDetailResponse`) |
+| `PATCH` | `/api/v1/admin/quotes/{id}/status` | Panel | Cambiar estado libremente (`{ "status": "CONTACTADA" }`); queda en el historial |
+| `DELETE` | `/api/v1/admin/quotes/{id}` | Panel | Borrado lógico |
+| `GET` | `/api/v1/admin/dashboard` | Panel | `{ products, galleryImages, newQuotes }` |
 | `POST` | `/api/v1/admin/media` | Panel | Subir imagen (`multipart/form-data`, campo `file`): JPG, PNG o WebP de máximo 5 MB. Responde `201 { "url": "/media/…" }` |
 
 > Las rutas del panel (`/api/v1/admin/**`) quedan abiertas hasta el paso 4, cuando se protegen con login y rol `ADMIN`. No desplegar antes de eso.

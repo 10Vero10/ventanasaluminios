@@ -20,7 +20,7 @@ Los códigos están en `ErrorCode` (backend), que es la fuente de verdad de esta
 | 400 | `EMPTY_FILE`, `INVALID_FILE_TYPE` | Imagen vacía, o que no es JPG, PNG ni WebP |
 | 400 | `BAD_REQUEST` | Otra solicitud inválida |
 | 401 | — | No autenticado o sesión vencida (paso 4) |
-| 403 | — | Sin permiso, o cotización con el interruptor apagado (pasos 3 y 4) |
+| 403 | `QUOTING_DISABLED` | La cotización está apagada (`quotingEnabled = false`). Sin permiso: paso 4 |
 | 404 | `NOT_FOUND` | Recurso inexistente |
 | 405 | `METHOD_NOT_ALLOWED` | Método no permitido en la ruta |
 | 406 | — | El cliente no acepta JSON (respuesta sin cuerpo) |
@@ -28,7 +28,7 @@ Los códigos están en `ErrorCode` (backend), que es la fuente de verdad de esta
 | 409 | `CONFLICT` | Dos cambios simultáneos chocaron (la misma posición, dos ediciones cruzadas del mismo producto o un registro borrado mientras se editaba); se pide actualizar e intentar de nuevo |
 | 413 | `FILE_TOO_LARGE` | Imagen más grande que el límite configurado (5 MB) |
 | 415 | `UNSUPPORTED_MEDIA_TYPE` | Tipo de contenido no soportado |
-| 429 | — | Límite de solicitudes por IP (pasos 3 y 4) |
+| 429 | `RATE_LIMITED` | Límite de solicitudes por IP; incluye `Retry-After` en segundos |
 | 500 | `INTERNAL_ERROR` | Error inesperado; mensaje genérico, sin detalles técnicos |
 
 ## Públicos
@@ -115,3 +115,24 @@ Las URLs de imagen aceptan `http(s)://…` o rutas del mismo sitio (`/media/…`
 | `GlassOptionsResponse` | `types[]`, `colors[]`, `thicknesses[]`, cada lista en orden |
 
 La opción por defecto (`defaultOption`) es la que el configurador muestra seleccionada al abrir. Como máximo una por lista, y debe estar activa; si ninguna lo está, el configurador usa la primera activa.
+
+### Paso 3, quote
+
+| DTO | Campos |
+|---|---|
+| `QuoteCreateRequest` | `name` (obligatorio, máx. 100), `phone` (obligatorio, máx. 40), `productType` (máx. 120), `dimensionsText` (máx. 200), `message` (máx. 2000), `widthCm` (1–600), `heightCm` (1–260), `panes` (1–4, opcional), `glassTypeCode`, `glassColorCode`, `thicknessMm`, `website` (campo trampa) |
+| `QuoteCreatedResponse` | `id` |
+| `QuoteStatusRequest` | `status` |
+| `QuoteResponse` | `id`, `createdAt`, `updatedAt`, `status`, `name`, `phone`, `productType`, `dimensionsText`, `message`, `widthCm`, `heightCm`, `panes`, `areaM2`, `glassTypeCode`, `glassColorCode`, `thicknessMm` |
+| `QuoteDetailResponse` | `quote` (`QuoteResponse`), `history[]` (`fromStatus`, `toStatus`, `changedAt`) |
+| `PageResponse<T>` | `content[]`, `page`, `size`, `totalElements`, `totalPages` |
+| `DashboardResponse` | `products`, `galleryImages`, `newQuotes` |
+
+Reglas de `POST /quotes`, en orden (briefing §3.6):
+
+1. Límite por IP: más de 10 envíos por hora → 429.
+2. Campo trampa `website` con contenido → 201 con un id, sin guardar nada.
+3. Validación (espacios recortados): nombre o teléfono vacíos → 400 "Nombre y teléfono son obligatorios."; largos máximos → 400.
+4. `quotingEnabled = false` → 403.
+5. Datos del configurador: si llega alguno deben llegar ancho, alto, tipo, color y espesor (las hojas son opcionales; por defecto `max(1, ceil(ancho / 150))`). El tipo, color y espesor deben existir y estar activos. El servidor calcula `areaM2` y reemplaza `dimensionsText` con el texto de medidas (ADR-007).
+6. Se guarda con estado `NUEVA`, fecha UTC e IP de origen → 201 `{ id }`.

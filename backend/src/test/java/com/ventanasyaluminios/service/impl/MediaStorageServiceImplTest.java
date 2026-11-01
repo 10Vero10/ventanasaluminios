@@ -10,6 +10,7 @@ import com.ventanasyaluminios.exception.ErrorCode;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.time.Duration;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -18,6 +19,9 @@ import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.util.unit.DataSize;
 
 class MediaStorageServiceImplTest {
+
+    private static final AppProperties.RateLimit RATE_LIMIT =
+            new AppProperties.RateLimit(new AppProperties.Rule(10, Duration.ofHours(1)));
 
     @TempDir
     Path tempDir;
@@ -29,7 +33,7 @@ class MediaStorageServiceImplTest {
     void setUp() {
         uploadDir = tempDir.resolve("uploads");
         var properties = new AppProperties(new AppProperties.Cors(List.of()),
-                new AppProperties.Media(uploadDir.toString(), DataSize.ofKilobytes(1)));
+                new AppProperties.Media(uploadDir.toString(), DataSize.ofKilobytes(1)), RATE_LIMIT);
         service = new MediaStorageServiceImpl(properties);
     }
 
