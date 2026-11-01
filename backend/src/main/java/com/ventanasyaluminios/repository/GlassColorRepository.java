@@ -12,6 +12,8 @@ public interface GlassColorRepository extends JpaRepository<GlassColor, Long> {
 
     List<GlassColor> findByActiveTrueOrderByPositionAsc();
 
+    boolean existsByCode(String code);
+
     @Query("select coalesce(max(g.position), 0) from GlassColor g")
     int findMaxPosition();
 }

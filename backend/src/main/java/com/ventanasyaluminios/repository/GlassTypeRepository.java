@@ -12,6 +12,8 @@ public interface GlassTypeRepository extends JpaRepository<GlassType, Long> {
 
     List<GlassType> findByActiveTrueOrderByPositionAsc();
 
+    boolean existsByCode(String code);
+
     @Query("select coalesce(max(g.position), 0) from GlassType g")
     int findMaxPosition();
 }

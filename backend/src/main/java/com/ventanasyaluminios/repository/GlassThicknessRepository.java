@@ -12,6 +12,8 @@ public interface GlassThicknessRepository extends JpaRepository<GlassThickness, 
 
     List<GlassThickness> findByActiveTrueOrderByPositionAsc();
 
+    boolean existsByMm(int mm);
+
     @Query("select coalesce(max(g.position), 0) from GlassThickness g")
     int findMaxPosition();
 }
