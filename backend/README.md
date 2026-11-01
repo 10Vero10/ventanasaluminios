@@ -32,7 +32,7 @@ Las migraciones están en `src/main/resources/db/migration/` (`V1__descripcion.s
 | `DB_PASSWORD` | `ventanas` | Clave de la base |
 | `SERVER_PORT` | `8080` | Puerto HTTP |
 | `MEDIA_UPLOAD_DIR` | `uploads` | Carpeta de imágenes subidas (en Docker, `/app/uploads` en el volumen `uploads`) |
-| `CORS_ALLOWED_ORIGINS` | vacío | Orígenes CORS separados por coma. Vacío detrás de nginx, porque todo está en un solo dominio |
+| `CORS_ALLOWED_ORIGINS` | vacío | Orígenes CORS exactos separados por coma (no admite `*`). Vacío detrás de nginx, porque todo está en un solo dominio |
 
 Si no se definen, `DB_URL`, `DB_USER` y `DB_PASSWORD` se arman con `POSTGRES_PORT`, `POSTGRES_DB`, `POSTGRES_USER` y `POSTGRES_PASSWORD` del `.env` de la raíz.
 
@@ -64,6 +64,6 @@ Todos bajo `/api/v1`. Los errores responden `{ "error": "mensaje en español", "
 
 > Las rutas del panel (`/api/v1/admin/**`) quedan abiertas hasta el paso 4, cuando se protegen con login y rol `ADMIN`. No desplegar antes de eso.
 
-Códigos de error propios de este módulo: `VALIDATION_ERROR`, `NOT_FOUND`, `REORDER_MISMATCH`, `EMPTY_FILE`, `FILE_TOO_LARGE`, `INVALID_FILE_TYPE`, `INVALID_PARAMETER`, `MALFORMED_REQUEST`, `INTERNAL_ERROR`.
+Los códigos de error y su estado HTTP están en `exception/ErrorCode.java`; la tabla completa está en [docs/03-contrato-api.md](../docs/03-contrato-api.md).
 
 El resto de endpoints se documenta aquí a medida que se implementa cada módulo. El contrato completo está en [docs/03-contrato-api.md](../docs/03-contrato-api.md).
