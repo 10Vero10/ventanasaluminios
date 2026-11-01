@@ -1,7 +1,7 @@
 import { AxiosError, AxiosHeaders } from 'axios'
 import { describe, expect, it } from 'vitest'
 
-import { getErrorMessage } from './httpClient'
+import { API_UNAVAILABLE_MESSAGE, ApiUnavailableError, getErrorMessage, isApiResponse } from './httpClient'
 
 function apiError(status: number, data: unknown): AxiosError {
   const config = { headers: new AxiosHeaders() }
@@ -29,5 +29,17 @@ describe('getErrorMessage', () => {
     expect(getErrorMessage(new TypeError("Cannot read properties of null (reading 'quotes')"))).toBe(
       'Ocurrió un error inesperado. Intenta de nuevo.',
     )
+  })
+})
+
+describe('respuestas que no son de la API', () => {
+  it('acepta JSON y respuestas vacías', () => {
+    expect(isApiResponse('application/json', { ok: true })).toBe(true)
+    expect(isApiResponse(undefined, '')).toBe(true)
+  })
+
+  it('rechaza una página HTML en lugar de la API, con un mensaje claro', () => {
+    expect(isApiResponse('text/html; charset=utf-8', '<!doctype html>')).toBe(false)
+    expect(getErrorMessage(new ApiUnavailableError())).toBe(API_UNAVAILABLE_MESSAGE)
   })
 })
