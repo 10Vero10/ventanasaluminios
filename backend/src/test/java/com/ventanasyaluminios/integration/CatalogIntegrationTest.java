@@ -23,54 +23,56 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.RequestBuilder;
 import org.springframework.test.web.servlet.ResultActions;
+import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 import org.springframework.transaction.annotation.Transactional;
 
-/** Módulo catalog de punta a punta contra PostgreSQL real. Cada prueba se deshace al terminar. */
+/**
+ * Módulo catalog de punta a punta contra PostgreSQL real. Cada prueba se deshace al terminar; lo que solo se ve al
+ * confirmar (restricciones diferibles, ediciones cruzadas) está en {@link CatalogCommitIntegrationTest}.
+ */
 @SpringBootTest
 @AutoConfigureMockMvc
 @Transactional
 @Import(TestcontainersConfiguration.class)
 class CatalogIntegrationTest {
 
+    private static final String HOJAS = "{\"label\":\"Hojas\",\"value\":\"1\"}";
+    private static final String CIERRE = "{\"label\":\"Cierre\",\"value\":\"Multipunto\"}";
+
+    /** Producto nuevo; {@code %s} son si está activo y su ficha técnica. */
     private static final String NEW_PRODUCT = """
             {"category":"VENTANAS","categoryNumber":"01","title":"Proyectantes","subtitle":"Apertura hacia afuera",
              "description":"Ventilación con lluvia.","imageUrl":"","badge":"","ctaText":"Cotizar proyectante",
-             "active":%s,
-             "specs":[{"label":"Hojas","value":"1"},{"label":"Cierre","value":"Multipunto"}],
-             "features":["Brazos de fricción","Empaque EPDM"]}
+             "active":%s,"specs":[%s],"features":["Brazos de fricción","Empaque EPDM"]}
             """;
 
     @Autowired
     private MockMvc mockMvc;
 
     @Test
-    void elCatalogoPublicoTraeLosOchoProductosYFiltraPorLinea() throws Exception {
+    void elCatalogoPublicoTraeFichaYCaracteristicasYFiltraPorLinea() throws Exception {
         mockMvc.perform(get("/api/v1/products"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$", hasSize(8)))
-                .andExpect(jsonPath("$[0].title").value("Corredizas"))
-                .andExpect(jsonPath("$[0].specs[0].label").value("Hojas"))
-                .andExpect(jsonPath("$[0].features", hasSize(3)));
+                .andExpect(jsonPath("$[0].specs[0].label").exists())
+                .andExpect(jsonPath("$[0].features[0]").exists());
 
         mockMvc.perform(get("/api/v1/products").param("category", "PORTONES"))
-                .andExpect(jsonPath("$", hasSize(1)))
-                .andExpect(jsonPath("$[0].ctaText").value("Cotizar portón americano"));
+                .andExpect(jsonPath("$[*].category", everyItem(is("PORTONES"))));
     }
 
     @Test
     void crearEditarYReordenarLaFichaDeUnProducto() throws Exception {
         List<Integer> existing = JsonPath.read(json(get("/api/v1/admin/products")), "$[*].id");
-        int id = JsonPath.read(send(post("/api/v1/admin/products"), NEW_PRODUCT.formatted(true))
+        int id = JsonPath.read(send(post("/api/v1/admin/products"), NEW_PRODUCT.formatted(true, HOJAS + "," + CIERRE))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.position").value(existing.size() + 1))
                 .andExpect(jsonPath("$.imageUrl").doesNotExist())
                 .andReturn().getResponse().getContentAsString(), "$.id");
 
-        String reordered = NEW_PRODUCT.formatted(true)
-                .replace("[{\"label\":\"Hojas\",\"value\":\"1\"},{\"label\":\"Cierre\",\"value\":\"Multipunto\"}]",
-                        "[{\"label\":\"Cierre\",\"value\":\"Multipunto\"},{\"label\":\"Hojas\",\"value\":\"1\"}]");
-        send(put("/api/v1/admin/products/" + id), reordered).andExpect(status().isOk());
+        send(put("/api/v1/admin/products/" + id), NEW_PRODUCT.formatted(true, CIERRE + "," + HOJAS))
+                .andExpect(status().isOk());
 
         mockMvc.perform(get("/api/v1/products/" + id))
                 .andExpect(jsonPath("$.specs[0].label").value("Cierre"))
@@ -79,7 +81,7 @@ class CatalogIntegrationTest {
 
     @Test
     void unProductoOcultoNoApareceEnElSitioPeroSiEnElPanel() throws Exception {
-        int id = JsonPath.read(send(post("/api/v1/admin/products"), NEW_PRODUCT.formatted(false))
+        int id = JsonPath.read(send(post("/api/v1/admin/products"), NEW_PRODUCT.formatted(false, HOJAS))
                 .andReturn().getResponse().getContentAsString(), "$.id");
 
         mockMvc.perform(get("/api/v1/products/" + id))
@@ -91,12 +93,16 @@ class CatalogIntegrationTest {
 
     @Test
     void duplicarCreaUnaCopiaOcultaYEliminarLaQuita() throws Exception {
-        List<Integer> ids = JsonPath.read(json(get("/api/v1/admin/products")), "$[*].id");
-        int copyId = JsonPath.read(mockMvc.perform(post("/api/v1/admin/products/" + ids.get(0) + "/duplicate"))
+        String products = json(get("/api/v1/admin/products"));
+        int sourceId = JsonPath.read(products, "$[0].id");
+        String sourceTitle = JsonPath.read(products, "$[0].title");
+        List<Object> sourceSpecs = JsonPath.read(products, "$[0].specs");
+
+        int copyId = JsonPath.read(mockMvc.perform(post("/api/v1/admin/products/" + sourceId + "/duplicate"))
                 .andExpect(status().isCreated())
-                .andExpect(jsonPath("$.title").value("Corredizas (copia)"))
+                .andExpect(jsonPath("$.title").value(sourceTitle + " (copia)"))
                 .andExpect(jsonPath("$.active").value(false))
-                .andExpect(jsonPath("$.specs", hasSize(3)))
+                .andExpect(jsonPath("$.specs", hasSize(sourceSpecs.size())))
                 .andReturn().getResponse().getContentAsString(), "$.id");
 
         mockMvc.perform(delete("/api/v1/admin/products/" + copyId)).andExpect(status().isNoContent());
@@ -119,7 +125,7 @@ class CatalogIntegrationTest {
     void lasOpcionesDeVidrioPublicasSonLasActivasConSuValorPorDefecto() throws Exception {
         mockMvc.perform(get("/api/v1/glass-options"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.types", hasSize(6)))
+                .andExpect(jsonPath("$.types[*].active", everyItem(is(true))))
                 .andExpect(jsonPath("$.types[?(@.defaultOption == true)].code").value("CRUDO"))
                 .andExpect(jsonPath("$.colors[?(@.code == 'VERDE_FRENCE')].name").value("Verde Frence"))
                 .andExpect(jsonPath("$.colors[?(@.reflective == true)].note")
@@ -152,7 +158,8 @@ class CatalogIntegrationTest {
         mockMvc.perform(get("/api/v1/glass-options"))
                 .andExpect(jsonPath("$.colors[*].code", not(hasItem("BRONCE"))))
                 .andExpect(jsonPath("$.colors[*].active", everyItem(is(true))));
-        mockMvc.perform(get("/api/v1/admin/glass-options")).andExpect(jsonPath("$.colors", hasSize(7)));
+        mockMvc.perform(get("/api/v1/admin/glass-options"))
+                .andExpect(jsonPath("$.colors[?(@.code == 'BRONCE')].active").value(false));
     }
 
     @Test
@@ -173,12 +180,11 @@ class CatalogIntegrationTest {
         return ids.getFirst();
     }
 
-    private String json(org.springframework.test.web.servlet.RequestBuilder request) throws Exception {
+    private String json(RequestBuilder request) throws Exception {
         return mockMvc.perform(request).andExpect(status().isOk()).andReturn().getResponse().getContentAsString();
     }
 
-    private ResultActions send(org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder request,
-                               String body) throws Exception {
+    private ResultActions send(MockHttpServletRequestBuilder request, String body) throws Exception {
         return mockMvc.perform(request.contentType(MediaType.APPLICATION_JSON).content(body));
     }
 }

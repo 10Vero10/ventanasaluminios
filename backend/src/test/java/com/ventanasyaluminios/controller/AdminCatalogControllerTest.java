@@ -13,6 +13,7 @@ import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.ResultActions;
 
 /** Validaciones de entrada del catálogo en el panel: lo inválido nunca llega al service. */
 @WebMvcTest({AdminProductController.class, AdminGlassOptionController.class})
@@ -34,24 +35,24 @@ class AdminCatalogControllerTest {
 
     @Test
     void filaDeFichaTecnicaSinEtiquetaSeRechaza() throws Exception {
-        postJson("/api/v1/admin/products", PRODUCT.formatted("[{\"label\":\"\",\"value\":\"2\"}]", "[]"))
+        postInvalid("/api/v1/admin/products", PRODUCT.formatted("[{\"label\":\"\",\"value\":\"2\"}]", "[]"))
                 .andExpect(jsonPath("$.error").value("Cada fila de la ficha técnica necesita una etiqueta."));
         verifyNoInteractions(productService);
     }
 
     @Test
     void caracteristicaVaciaSeRechaza() throws Exception {
-        postJson("/api/v1/admin/products", PRODUCT.formatted("[]", "[\" \"]"))
+        postInvalid("/api/v1/admin/products", PRODUCT.formatted("[]", "[\" \"]"))
                 .andExpect(jsonPath("$.error").value("Hay una característica vacía."));
         verifyNoInteractions(productService);
     }
 
     @Test
     void colorConHexInvalidoOCodigoEnMinusculasSeRechaza() throws Exception {
-        postJson("/api/v1/admin/glass-colors", """
+        postInvalid("/api/v1/admin/glass-colors", """
                 {"code":"AZUL","name":"Azul","hex":"azul","reflective":false,"active":true,"defaultOption":false}
                 """).andExpect(jsonPath("$.error").value("El color debe estar en formato #RRGGBB (ej. #396DC6)."));
-        postJson("/api/v1/admin/glass-colors", """
+        postInvalid("/api/v1/admin/glass-colors", """
                 {"code":"azul","name":"Azul","hex":"#0000FF","reflective":false,"active":true,"defaultOption":false}
                 """).andExpect(jsonPath("$.error")
                 .value("El código solo puede tener mayúsculas, números y guion bajo (ej. AZUL_LAGO)."));
@@ -60,12 +61,12 @@ class AdminCatalogControllerTest {
 
     @Test
     void espesorFueraDeRangoSeRechaza() throws Exception {
-        postJson("/api/v1/admin/glass-thicknesses", "{\"mm\":0,\"active\":true,\"defaultOption\":false}")
+        postInvalid("/api/v1/admin/glass-thicknesses", "{\"mm\":0,\"active\":true,\"defaultOption\":false}")
                 .andExpect(jsonPath("$.error").value("El espesor debe estar entre 1 y 50 mm."));
         verifyNoInteractions(glassOptionService);
     }
 
-    private org.springframework.test.web.servlet.ResultActions postJson(String url, String body) throws Exception {
+    private ResultActions postInvalid(String url, String body) throws Exception {
         return mockMvc.perform(post(url).contentType(MediaType.APPLICATION_JSON).content(body))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.code").value("VALIDATION_ERROR"));

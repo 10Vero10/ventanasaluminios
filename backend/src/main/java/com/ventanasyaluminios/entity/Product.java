@@ -13,14 +13,17 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.OrderColumn;
 import jakarta.persistence.Table;
+import jakarta.persistence.Version;
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import org.hibernate.annotations.ListIndexBase;
 
 /**
  * Producto del catálogo. La ficha técnica y las características son listas ordenadas que se guardan en sus
- * propias tablas; el orden de la lista es el orden en pantalla.
+ * propias tablas; el orden de la lista es el orden en pantalla. Solo cambian con {@code replaceSpecs} y
+ * {@code replaceFeatures}, y {@code version} impide que dos ediciones cruzadas mezclen sus listas.
  */
 @Entity
 @Table(name = "product")
@@ -59,6 +62,9 @@ public class Product implements Positioned {
 
     @Column(nullable = false)
     private boolean active;
+
+    @Version
+    private long version;
 
     @Column(name = "created_at", nullable = false, updatable = false)
     private Instant createdAt;
@@ -182,22 +188,24 @@ public class Product implements Positioned {
     }
 
     public List<ProductSpec> getSpecs() {
-        return specs;
+        return Collections.unmodifiableList(specs);
     }
 
     /** Reemplaza la ficha técnica conservando la colección que Hibernate ya administra. */
     public void replaceSpecs(List<ProductSpec> newSpecs) {
+        List<ProductSpec> copy = List.copyOf(newSpecs);
         specs.clear();
-        specs.addAll(newSpecs);
+        specs.addAll(copy);
     }
 
     public List<String> getFeatures() {
-        return features;
+        return Collections.unmodifiableList(features);
     }
 
     /** Reemplaza las características conservando la colección que Hibernate ya administra. */
     public void replaceFeatures(List<String> newFeatures) {
+        List<String> copy = List.copyOf(newFeatures);
         features.clear();
-        features.addAll(newFeatures);
+        features.addAll(copy);
     }
 }

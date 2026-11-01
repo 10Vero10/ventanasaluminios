@@ -20,9 +20,6 @@ public class ProductServiceImpl implements ProductService {
 
     static final String COPY_SUFFIX = " (copia)";
 
-    /** Largo máximo de product.title (V3). */
-    static final int MAX_TITLE_LENGTH = 80;
-
     private final ProductRepository repository;
     private final CatalogMapper mapper;
     private final Clock clock;
@@ -101,11 +98,17 @@ public class ProductServiceImpl implements ProductService {
         return toResponses(Reordering.apply(repository.findAll(), ids));
     }
 
-    /** "Corredizas" pasa a "Corredizas (copia)", recortando el título si no cabe en 80 caracteres. */
+    /**
+     * "Corredizas" pasa a "Corredizas (copia)", recortando el título si no cabe en el máximo. El corte nunca parte
+     * un carácter compuesto (por ejemplo un emoji) en dos.
+     */
     static String copyTitle(String title) {
-        int room = MAX_TITLE_LENGTH - COPY_SUFFIX.length();
-        String base = title.length() > room ? title.substring(0, room).stripTrailing() : title;
-        return base + COPY_SUFFIX;
+        int room = ProductRequest.MAX_TITLE_LENGTH - COPY_SUFFIX.length();
+        if (title.length() <= room) {
+            return title + COPY_SUFFIX;
+        }
+        int cut = Character.isLowSurrogate(title.charAt(room)) ? room - 1 : room;
+        return title.substring(0, cut).stripTrailing() + COPY_SUFFIX;
     }
 
     private Product saveAtEnd(Product product) {

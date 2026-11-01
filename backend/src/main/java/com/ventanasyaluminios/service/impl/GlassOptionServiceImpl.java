@@ -16,12 +16,12 @@ import com.ventanasyaluminios.exception.ErrorCode;
 import com.ventanasyaluminios.exception.ResourceNotFoundException;
 import com.ventanasyaluminios.mapper.CatalogMapper;
 import com.ventanasyaluminios.repository.GlassColorRepository;
+import com.ventanasyaluminios.repository.GlassOptionRepository;
 import com.ventanasyaluminios.repository.GlassThicknessRepository;
 import com.ventanasyaluminios.repository.GlassTypeRepository;
 import com.ventanasyaluminios.service.GlassOptionService;
 import java.util.List;
 import java.util.Objects;
-import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -71,12 +71,9 @@ public class GlassOptionServiceImpl implements GlassOptionService {
         if (typeRepository.existsByCode(request.code())) {
             throw duplicate("Ya existe un tipo de vidrio con el código " + request.code() + ".");
         }
-        GlassType type = new GlassType();
-        type.setCode(request.code());
+        GlassType type = new GlassType(request.code());
         mapper.apply(request, type);
-        type.setPosition(typeRepository.findMaxPosition() + 1);
-        applyDefault(type, request.defaultOption(), typeRepository);
-        return mapper.toResponse(typeRepository.save(type));
+        return mapper.toResponse(saveAtEnd(type, request.defaultOption(), typeRepository));
     }
 
     @Override
@@ -101,12 +98,9 @@ public class GlassOptionServiceImpl implements GlassOptionService {
         if (colorRepository.existsByCode(request.code())) {
             throw duplicate("Ya existe un color de vidrio con el código " + request.code() + ".");
         }
-        GlassColor color = new GlassColor();
-        color.setCode(request.code());
+        GlassColor color = new GlassColor(request.code());
         mapper.apply(request, color);
-        color.setPosition(colorRepository.findMaxPosition() + 1);
-        applyDefault(color, request.defaultOption(), colorRepository);
-        return mapper.toResponse(colorRepository.save(color));
+        return mapper.toResponse(saveAtEnd(color, request.defaultOption(), colorRepository));
     }
 
     @Override
@@ -131,12 +125,9 @@ public class GlassOptionServiceImpl implements GlassOptionService {
         if (thicknessRepository.existsByMm(request.mm())) {
             throw duplicate("Ya existe el espesor de " + request.mm() + " mm.");
         }
-        GlassThickness thickness = new GlassThickness();
-        thickness.setMm(request.mm());
+        GlassThickness thickness = new GlassThickness(request.mm());
         mapper.apply(request, thickness);
-        thickness.setPosition(thicknessRepository.findMaxPosition() + 1);
-        applyDefault(thickness, request.defaultOption(), thicknessRepository);
-        return mapper.toResponse(thicknessRepository.save(thickness));
+        return mapper.toResponse(saveAtEnd(thickness, request.defaultOption(), thicknessRepository));
     }
 
     @Override
@@ -155,26 +146,27 @@ public class GlassOptionServiceImpl implements GlassOptionService {
         return Reordering.apply(thicknessRepository.findAll(), ids).stream().map(mapper::toResponse).toList();
     }
 
+    /** Guarda una opción nueva al final de su lista. */
+    private static <T extends GlassOption> T saveAtEnd(T option, boolean isDefault, GlassOptionRepository<T> repository) {
+        option.setPosition(repository.findMaxPosition() + 1);
+        applyDefault(option, isDefault, repository);
+        return repository.save(option);
+    }
+
     /**
-     * Marca o desmarca {@code option} como opción por defecto de su lista. La anterior se desmarca y se escribe
-     * primero, porque el índice único parcial de la base no admite dos marcadas ni por un instante.
+     * Marca o desmarca {@code option} como opción por defecto. Si se marca, la anterior se desmarca; la restricción
+     * "una sola por lista" se verifica al confirmar, así que el orden de escritura no importa.
      */
-    private static <T extends GlassOption> void applyDefault(T option, boolean requested, JpaRepository<T, Long> repository) {
-        if (!requested) {
-            option.setDefaultOption(false);
-            return;
-        }
-        if (!option.isActive()) {
+    private static <T extends GlassOption> void applyDefault(T option, boolean requested, GlassOptionRepository<T> repository) {
+        if (requested && !option.isActive()) {
             throw new ApiException(ErrorCode.VALIDATION_ERROR, "La opción por defecto debe estar activa.");
         }
-        if (option.isDefaultOption()) {
-            return;
+        if (requested) {
+            repository.findByDefaultOptionTrue()
+                    .filter(previous -> previous != option)
+                    .ifPresent(previous -> previous.setDefaultOption(false));
         }
-        repository.findAll().stream()
-                .filter(other -> other != option && other.isDefaultOption())
-                .forEach(other -> other.setDefaultOption(false));
-        repository.flush();
-        option.setDefaultOption(true);
+        option.setDefaultOption(requested);
     }
 
     private static void requireUnchanged(Object current, Object requested, String field) {
@@ -183,7 +175,7 @@ public class GlassOptionServiceImpl implements GlassOptionService {
         }
     }
 
-    private static <T> T find(JpaRepository<T, Long> repository, Long id, String message) {
+    private static <T extends GlassOption> T find(GlassOptionRepository<T> repository, Long id, String message) {
         return repository.findById(id).orElseThrow(() -> new ResourceNotFoundException(message));
     }
 

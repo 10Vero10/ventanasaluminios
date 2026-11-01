@@ -3,7 +3,6 @@ package com.ventanasyaluminios.service.impl;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.when;
 
 import com.ventanasyaluminios.dto.request.GlassColorRequest;
@@ -17,12 +16,10 @@ import com.ventanasyaluminios.mapper.CatalogMapper;
 import com.ventanasyaluminios.repository.GlassColorRepository;
 import com.ventanasyaluminios.repository.GlassThicknessRepository;
 import com.ventanasyaluminios.repository.GlassTypeRepository;
-import java.util.List;
 import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InOrder;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.test.util.ReflectionTestUtils;
@@ -60,7 +57,7 @@ class GlassOptionServiceImplTest {
 
     @Test
     void elCodigoNoSePuedeCambiarAlEditar() {
-        when(typeRepository.findById(1L)).thenReturn(Optional.of(type(1L, "CRUDO", true, true)));
+        when(typeRepository.findById(1L)).thenReturn(Optional.of(type(1L, "CRUDO", true)));
 
         assertThatThrownBy(() -> service.updateType(1L, new GlassTypeRequest("CRUDO_NUEVO", "Crudo", true, true)))
                 .isInstanceOf(ApiException.class)
@@ -78,23 +75,41 @@ class GlassOptionServiceImplTest {
     }
 
     @Test
-    void marcarOtraPorDefectoDesmarcaLaAnteriorYLaEscribeAntes() {
-        GlassType crudo = type(1L, "CRUDO", true, true);
-        GlassType templado = type(3L, "TEMPLADO", true, false);
+    void marcarOtraPorDefectoDesmarcaLaAnterior() {
+        GlassType crudo = type(1L, "CRUDO", true);
+        GlassType templado = type(3L, "TEMPLADO", false);
         when(typeRepository.findById(3L)).thenReturn(Optional.of(templado));
-        when(typeRepository.findAll()).thenReturn(List.of(crudo, templado));
+        when(typeRepository.findByDefaultOptionTrue()).thenReturn(Optional.of(crudo));
 
         var response = service.updateType(3L, new GlassTypeRequest("TEMPLADO", "Templado", true, true));
 
         assertThat(response.defaultOption()).isTrue();
         assertThat(crudo.isDefaultOption()).isFalse();
-        InOrder order = inOrder(typeRepository);
-        order.verify(typeRepository).findAll();
-        order.verify(typeRepository).flush();
     }
 
     @Test
-    void unEspesorNuevoQuedaAlFinal() {
+    void volverAMarcarLaMismaPorDefectoNoLaDesmarca() {
+        GlassType crudo = type(1L, "CRUDO", true);
+        when(typeRepository.findById(1L)).thenReturn(Optional.of(crudo));
+        when(typeRepository.findByDefaultOptionTrue()).thenReturn(Optional.of(crudo));
+
+        service.updateType(1L, new GlassTypeRequest("CRUDO", "Crudo", true, true));
+
+        assertThat(crudo.isDefaultOption()).isTrue();
+    }
+
+    @Test
+    void desmarcarLaOpcionPorDefectoDejaLaListaSinNinguna() {
+        GlassType crudo = type(1L, "CRUDO", true);
+        when(typeRepository.findById(1L)).thenReturn(Optional.of(crudo));
+
+        var response = service.updateType(1L, new GlassTypeRequest("CRUDO", "Crudo", true, false));
+
+        assertThat(response.defaultOption()).isFalse();
+    }
+
+    @Test
+    void unEspesorNuevoQuedaAlFinalConSusMilimetros() {
         when(thicknessRepository.existsByMm(19)).thenReturn(false);
         when(thicknessRepository.findMaxPosition()).thenReturn(7);
         when(thicknessRepository.save(any(GlassThickness.class))).thenAnswer(invocation -> invocation.getArgument(0));
@@ -106,12 +121,11 @@ class GlassOptionServiceImplTest {
         assertThat(response.defaultOption()).isFalse();
     }
 
-    private static GlassType type(Long id, String code, boolean active, boolean defaultOption) {
-        GlassType type = new GlassType();
+    private static GlassType type(Long id, String code, boolean defaultOption) {
+        GlassType type = new GlassType(code);
         ReflectionTestUtils.setField(type, "id", id);
-        type.setCode(code);
         type.setName(code);
-        type.setActive(active);
+        type.setActive(true);
         type.setDefaultOption(defaultOption);
         return type;
     }

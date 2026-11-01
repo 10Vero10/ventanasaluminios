@@ -85,9 +85,12 @@ class CatalogRepositoriesTest {
     }
 
     @Test
-    void soloPuedeHaberUnaOpcionPorDefectoPorTabla() {
+    void soloPuedeHaberUnaOpcionPorDefectoPorTablaAlConfirmar() {
         glassTypeRepository.findAllByOrderByPositionAsc().get(1).setDefaultOption(true);
+        entityManager.flush();
 
-        assertThatThrownBy(() -> entityManager.flush()).hasMessageContaining("uq_glass_type_default");
+        // La restricción es diferible: dentro de la transacción de la prueba se verifica a mano.
+        assertThatThrownBy(() -> entityManager.createNativeQuery("SET CONSTRAINTS ALL IMMEDIATE").executeUpdate())
+                .hasMessageContaining("uq_glass_type_default");
     }
 }

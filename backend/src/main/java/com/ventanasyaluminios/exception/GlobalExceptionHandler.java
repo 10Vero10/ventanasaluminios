@@ -7,6 +7,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.TypeMismatchException;
 import org.springframework.context.MessageSourceResolvable;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
@@ -51,6 +52,13 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     @ExceptionHandler(DataIntegrityViolationException.class)
     public ResponseEntity<ErrorResponse> handleDataIntegrity(DataIntegrityViolationException ex) {
         log.warn("Conflicto de integridad: {}", ex.getMostSpecificCause().getMessage());
+        return build(ErrorCode.CONFLICT, "Otro cambio se guardó al mismo tiempo. Actualiza la página e intenta de nuevo.");
+    }
+
+    /** Dos ediciones cruzadas del mismo registro: la segunda llegó con datos viejos o el registro ya no existe. */
+    @ExceptionHandler(OptimisticLockingFailureException.class)
+    public ResponseEntity<ErrorResponse> handleOptimisticLock(OptimisticLockingFailureException ex) {
+        log.warn("Conflicto de edición: {}", ex.getMessage());
         return build(ErrorCode.CONFLICT, "Otro cambio se guardó al mismo tiempo. Actualiza la página e intenta de nuevo.");
     }
 

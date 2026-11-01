@@ -17,11 +17,12 @@ import com.ventanasyaluminios.entity.GlassType;
 import com.ventanasyaluminios.entity.Product;
 import com.ventanasyaluminios.entity.ProductSpec;
 import java.util.List;
+import java.util.Objects;
 import org.springframework.stereotype.Component;
 
 /**
- * Conversión entre entidades y DTO del módulo catalog (productos y opciones de vidrio). Los campos que
- * identifican una opción de vidrio (código, mm) no se copian aquí: los asigna el service solo al crear.
+ * Conversión entre entidades y DTO del módulo catalog (productos y opciones de vidrio). El código o los mm de
+ * una opción de vidrio no se copian aquí: van en su constructor y no cambian.
  */
 @Component
 public class CatalogMapper {
@@ -39,8 +40,11 @@ public class CatalogMapper {
                 product.getBadge(),
                 product.getCtaText(),
                 product.isActive(),
-                product.getSpecs().stream().map(spec -> new ProductSpecResponse(spec.getLabel(), spec.getValue())).toList(),
-                List.copyOf(product.getFeatures()));
+                product.getSpecs().stream()
+                        .filter(Objects::nonNull)
+                        .map(spec -> new ProductSpecResponse(spec.getLabel(), spec.getValue()))
+                        .toList(),
+                product.getFeatures().stream().filter(Objects::nonNull).toList());
     }
 
     /** Copia los campos editables y reemplaza ficha técnica y características en el orden recibido. */
@@ -60,7 +64,10 @@ public class CatalogMapper {
         product.replaceFeatures(request.features().stream().map(String::trim).toList());
     }
 
-    /** Copia del producto para "Duplicar": mismo contenido, con otro título; posición y estado los decide el service. */
+    /**
+     * Copia del producto para "Duplicar": mismo contenido, con otro título; posición, estado y fechas los decide el
+     * service. Una fila nula (lista con huecos en la base) no se copia.
+     */
     public Product copyOf(Product source, String title) {
         Product copy = new Product();
         copy.setCategory(source.getCategory());
@@ -71,8 +78,8 @@ public class CatalogMapper {
         copy.setImageUrl(source.getImageUrl());
         copy.setBadge(source.getBadge());
         copy.setCtaText(source.getCtaText());
-        copy.replaceSpecs(source.getSpecs().stream().map(spec -> new ProductSpec(spec.getLabel(), spec.getValue())).toList());
-        copy.replaceFeatures(source.getFeatures());
+        copy.replaceSpecs(source.getSpecs().stream().filter(Objects::nonNull).toList());
+        copy.replaceFeatures(source.getFeatures().stream().filter(Objects::nonNull).toList());
         return copy;
     }
 

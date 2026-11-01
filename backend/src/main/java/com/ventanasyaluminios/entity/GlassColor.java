@@ -23,12 +23,17 @@ public class GlassColor extends GlassOption {
 
     private String note;
 
-    public String getCode() {
-        return code;
+    /** Para JPA. */
+    protected GlassColor() {
     }
 
-    public void setCode(String code) {
+    /** El código se fija al crear y no cambia: las cotizaciones lo guardan. */
+    public GlassColor(String code) {
         this.code = code;
+    }
+
+    public String getCode() {
+        return code;
     }
 
     public String getName() {

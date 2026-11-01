@@ -20,7 +20,7 @@ public record ProductRequest(
         String categoryNumber,
 
         @NotBlank(message = "El título es obligatorio.")
-        @Size(max = 80, message = "El título admite máximo 80 caracteres.")
+        @Size(max = ProductRequest.MAX_TITLE_LENGTH, message = "El título admite máximo 80 caracteres.")
         String title,
 
         @NotBlank(message = "El subtítulo es obligatorio.")
@@ -52,4 +52,7 @@ public record ProductRequest(
         @Size(max = 12, message = "Se admiten máximo 12 características.")
         List<@NotBlank(message = "Hay una característica vacía.")
             @Size(max = 150, message = "Cada característica admite máximo 150 caracteres.") String> features) {
+
+    /** Largo máximo del título (columna product.title); también limita el título de una copia. */
+    public static final int MAX_TITLE_LENGTH = 80;
 }

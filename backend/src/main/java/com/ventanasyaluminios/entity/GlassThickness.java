@@ -12,11 +12,16 @@ public class GlassThickness extends GlassOption {
     @Column(nullable = false, updatable = false)
     private int mm;
 
-    public int getMm() {
-        return mm;
+    /** Para JPA. */
+    protected GlassThickness() {
     }
 
-    public void setMm(int mm) {
+    /** Los milímetros se fijan al crear y no cambian: las cotizaciones los guardan. */
+    public GlassThickness(int mm) {
         this.mm = mm;
+    }
+
+    public int getMm() {
+        return mm;
     }
 }

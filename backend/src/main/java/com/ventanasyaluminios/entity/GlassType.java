@@ -15,12 +15,17 @@ public class GlassType extends GlassOption {
     @Column(nullable = false)
     private String name;
 
-    public String getCode() {
-        return code;
+    /** Para JPA. */
+    protected GlassType() {
     }
 
-    public void setCode(String code) {
+    /** El código se fija al crear y no cambia: las cotizaciones lo guardan. */
+    public GlassType(String code) {
         this.code = code;
+    }
+
+    public String getCode() {
+        return code;
     }
 
     public String getName() {

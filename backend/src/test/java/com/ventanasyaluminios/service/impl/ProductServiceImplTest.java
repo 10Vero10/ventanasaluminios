@@ -78,11 +78,30 @@ class ProductServiceImplTest {
     }
 
     @Test
-    void elTituloDeLaCopiaNuncaSuperaElMaximo() {
-        String title = "x".repeat(80);
+    void laCopiaConservaTodosLosCamposSalvoLosQueDecideElService() {
+        Product source = product(3L, "Corredizas", true);
+        source.setCategoryNumber("01");
+        source.setImageUrl("https://ejemplo.com/corrediza.jpg");
+        source.setBadge("4 Obras instaladas");
+        source.setCtaText("Cotizar ventana corrediza");
 
-        assertThat(ProductServiceImpl.copyTitle(title)).hasSize(80).endsWith(" (copia)");
+        Product copy = new CatalogMapper().copyOf(source, "Corredizas (copia)");
+
+        // Si se agrega un campo a Product y copyOf no lo copia, esta comparación falla.
+        assertThat(copy).usingRecursiveComparison()
+                .ignoringFields("id", "position", "title", "active", "version", "createdAt", "updatedAt")
+                .isEqualTo(source);
+    }
+
+    @Test
+    void elTituloDeLaCopiaNuncaSuperaElMaximoNiParteUnEmoji() {
+        assertThat(ProductServiceImpl.copyTitle("x".repeat(80))).hasSize(80).endsWith(" (copia)");
         assertThat(ProductServiceImpl.copyTitle("Batientes")).isEqualTo("Batientes (copia)");
+
+        String withEmoji = "x".repeat(71) + "\uD83E\uDE9F" + "yyyyyyy";
+        String title = ProductServiceImpl.copyTitle(withEmoji);
+        assertThat(title).endsWith(" (copia)").doesNotContain("\uD83E (copia)");
+        assertThat(Character.isHighSurrogate(title.charAt(title.length() - " (copia)".length() - 1))).isFalse();
     }
 
     @Test

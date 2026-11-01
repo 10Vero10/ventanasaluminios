@@ -13,6 +13,8 @@ CREATE TABLE product (
     badge            VARCHAR(60),
     cta_text         VARCHAR(60),
     active           BOOLEAN       NOT NULL,
+    -- Bloqueo optimista: dos ediciones cruzadas del mismo producto no pueden mezclar sus listas.
+    version          BIGINT        NOT NULL DEFAULT 0,
     created_at       TIMESTAMPTZ   NOT NULL DEFAULT now(),
     updated_at       TIMESTAMPTZ   NOT NULL DEFAULT now(),
     CONSTRAINT uq_product_position UNIQUE (position) DEFERRABLE INITIALLY DEFERRED
@@ -37,7 +39,8 @@ CREATE TABLE product_feature (
 );
 
 -- Opciones del configurador. Se desactivan en lugar de borrarse y su código no cambia, porque las cotizaciones
--- guardan el código. is_default marca la opción inicial del configurador (como máximo una por tabla).
+-- guardan el código. is_default marca la opción inicial del configurador: como máximo una por tabla, verificado
+-- al confirmar (diferible) para poder cambiar de opción por defecto dentro de una misma transacción.
 
 CREATE TABLE glass_type (
     id          BIGINT       GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
@@ -46,10 +49,10 @@ CREATE TABLE glass_type (
     name        VARCHAR(60)  NOT NULL,
     active      BOOLEAN      NOT NULL,
     is_default  BOOLEAN      NOT NULL DEFAULT FALSE,
-    CONSTRAINT uq_glass_type_position UNIQUE (position) DEFERRABLE INITIALLY DEFERRED
+    CONSTRAINT uq_glass_type_position UNIQUE (position) DEFERRABLE INITIALLY DEFERRED,
+    CONSTRAINT uq_glass_type_default EXCLUDE USING btree (is_default WITH =) WHERE (is_default)
+        DEFERRABLE INITIALLY DEFERRED
 );
-
-CREATE UNIQUE INDEX uq_glass_type_default ON glass_type (is_default) WHERE is_default;
 
 CREATE TABLE glass_color (
     id          BIGINT       GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
@@ -61,10 +64,10 @@ CREATE TABLE glass_color (
     note        VARCHAR(200),
     active      BOOLEAN      NOT NULL,
     is_default  BOOLEAN      NOT NULL DEFAULT FALSE,
-    CONSTRAINT uq_glass_color_position UNIQUE (position) DEFERRABLE INITIALLY DEFERRED
+    CONSTRAINT uq_glass_color_position UNIQUE (position) DEFERRABLE INITIALLY DEFERRED,
+    CONSTRAINT uq_glass_color_default EXCLUDE USING btree (is_default WITH =) WHERE (is_default)
+        DEFERRABLE INITIALLY DEFERRED
 );
-
-CREATE UNIQUE INDEX uq_glass_color_default ON glass_color (is_default) WHERE is_default;
 
 CREATE TABLE glass_thickness (
     id          BIGINT   GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
@@ -72,7 +75,7 @@ CREATE TABLE glass_thickness (
     mm          INTEGER  NOT NULL UNIQUE CHECK (mm BETWEEN 1 AND 50),
     active      BOOLEAN  NOT NULL,
     is_default  BOOLEAN  NOT NULL DEFAULT FALSE,
-    CONSTRAINT uq_glass_thickness_position UNIQUE (position) DEFERRABLE INITIALLY DEFERRED
+    CONSTRAINT uq_glass_thickness_position UNIQUE (position) DEFERRABLE INITIALLY DEFERRED,
+    CONSTRAINT uq_glass_thickness_default EXCLUDE USING btree (is_default WITH =) WHERE (is_default)
+        DEFERRABLE INITIALLY DEFERRED
 );
-
-CREATE UNIQUE INDEX uq_glass_thickness_default ON glass_thickness (is_default) WHERE is_default;
