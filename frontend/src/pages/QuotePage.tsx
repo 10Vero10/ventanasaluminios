@@ -11,7 +11,7 @@ import {
   resolveConfiguration,
 } from '@/components/quote/configuration'
 import { type ApplyFeedback, GlassConfigurator } from '@/components/quote/GlassConfigurator'
-import { Kicker, Section, SectionTitle } from '@/components/site/Section'
+import { PageHeader, Section, SectionTitle } from '@/components/site/Section'
 import { Button } from '@/components/ui/button'
 import { Field, Input, Select, Textarea } from '@/components/ui/field'
 import { buildAutoMessage, mergeAutoMessage } from '@/lib/configurator'
@@ -157,14 +157,11 @@ function QuoteContent() {
   return (
     <>
       <Section className="pb-8 md:pb-10">
-        <Kicker>Cotizar</Kicker>
-        <h1 className="mt-2 max-w-3xl font-display text-[40px] leading-[1.05] font-semibold tracking-[-0.02em] text-balance md:text-[64px]">
-          Hablemos de tu proyecto
-        </h1>
-        <p className="mt-5 max-w-2xl text-[19px] text-muted-foreground">
-          Escríbenos o llámanos: te asesoramos en materiales, medidas y presupuesto con tolerancias exactas y garantía
-          de fábrica.
-        </p>
+        <PageHeader
+          kicker="Cotizar"
+          title="Hablemos de tu proyecto"
+          lead="Escríbenos o llámanos: te asesoramos en materiales, medidas y presupuesto con tolerancias exactas y garantía de fábrica."
+        />
       </Section>
 
       <section aria-labelledby="contacto" className="mx-auto max-w-[1080px] px-6">

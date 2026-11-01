@@ -3,6 +3,7 @@ import { Link } from 'react-router'
 import { Kicker, Section, SectionTitle } from '@/components/site/Section'
 import { QuoteCallout } from '@/components/site/QuoteCallout'
 import { Button } from '@/components/ui/button'
+import { catalogHref } from '@/lib/categoryParam'
 import { useSite } from '@/site/siteContext'
 
 /** Inicio (briefing §5.3): portada editable, trayectoria, líneas destacadas y llamado a cotizar. */
@@ -102,7 +103,7 @@ export default function HomePage() {
           {site.featuredLines.map((line) => (
             <li key={line.id}>
               <Link
-                to={`/catalogo?linea=${line.targetCategory.toLowerCase()}`}
+                to={catalogHref(line.targetCategory)}
                 className="group block overflow-hidden rounded-[28px] bg-secondary transition-transform duration-100 active:scale-[0.99] motion-reduce:active:scale-100"
               >
                 {line.imageUrl && (

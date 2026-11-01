@@ -5,6 +5,11 @@ export function productTypeFor(product: Pick<Product, 'title' | 'category'>): st
   return `${product.title} (${categoryLabel(product.category)})`
 }
 
+/** Enlace a Cotizar con el producto ya elegido. */
+export function quoteHref(product: Pick<Product, 'title' | 'category'>): string {
+  return `/cotizar?producto=${encodeURIComponent(productTypeFor(product))}`
+}
+
 /** Opciones del formulario de cotización (briefing §5.6.4): texto visible y valor guardado. */
 export const PRODUCT_TYPE_OPTIONS = [
   { label: 'Ventanas arquitectónicas (corredizas o batientes)', value: 'Ventanas arquitectónicas' },

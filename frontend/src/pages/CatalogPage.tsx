@@ -1,43 +1,35 @@
 import { useState } from 'react'
-import { Link, useSearchParams } from 'react-router'
+import { Link } from 'react-router'
 
 import { CategoryFilter } from '@/components/site/CategoryFilter'
 import { QuoteCallout } from '@/components/site/QuoteCallout'
-import { Kicker, Section } from '@/components/site/Section'
+import { PageHeader, Section } from '@/components/site/Section'
 import { Button } from '@/components/ui/button'
 import { Dialog } from '@/components/ui/dialog'
-import { LoadingState, MessageState } from '@/components/ui/states'
-import { categoryFromParam, categoryToParam } from '@/lib/categoryParam'
-import { productTypeFor } from '@/lib/productType'
+import { Loadable } from '@/components/ui/Loadable'
+import { MessageState } from '@/components/ui/states'
+import { galleryHref, useCategoryParam } from '@/lib/categoryParam'
+import { quoteHref } from '@/lib/productType'
 import { useLoad } from '@/lib/useLoad'
 import { getProducts } from '@/services/api/catalogService'
 import { useSite } from '@/site/siteContext'
-import { categoryLabel, type Product, type ProductCategory } from '@/types/catalog'
+import { categoryLabel, type Product } from '@/types/catalog'
 
 /** Catálogo (briefing §5.4): filtro por línea en la URL, tarjetas y detalle en diálogo. */
 export default function CatalogPage() {
   const site = useSite()
-  const [params, setParams] = useSearchParams()
-  const category = categoryFromParam(params.get('linea'))
+  const [category, selectCategory] = useCategoryParam()
   const products = useLoad(() => getProducts(category ?? undefined), [category])
   const [selected, setSelected] = useState<Product | null>(null)
-
-  function selectCategory(next: ProductCategory | null) {
-    const value = categoryToParam(next)
-    setParams(value ? { linea: value } : {}, { replace: true })
-  }
 
   return (
     <>
       <Section className="pb-10 md:pb-12">
-        <Kicker>Catálogo arquitectónico</Kicker>
-        <h1 className="mt-2 max-w-3xl font-display text-[40px] leading-[1.05] font-semibold tracking-[-0.02em] text-balance md:text-[64px]">
-          Cuatro líneas de trabajo con medida exacta
-        </h1>
-        <p className="mt-5 max-w-2xl text-[19px] text-muted-foreground">
-          Cada producto se fabrica para la medida de tu obra. Explora nuestros sistemas, tipos y acabados diseñados para
-          durabilidad estructural y elegancia.
-        </p>
+        <PageHeader
+          kicker="Catálogo arquitectónico"
+          title="Cuatro líneas de trabajo con medida exacta"
+          lead="Cada producto se fabrica para la medida de tu obra. Explora nuestros sistemas, tipos y acabados diseñados para durabilidad estructural y elegancia."
+        />
         <dl className="mt-10 grid max-w-3xl grid-cols-1 gap-6 sm:grid-cols-3">
           <div>
             <dt className="text-sm text-muted-foreground">Precisión</dt>
@@ -61,35 +53,33 @@ export default function CatalogPage() {
       </Section>
 
       <section aria-label="Productos" className="mx-auto max-w-[1080px] px-6 pb-16 md:pb-24">
-        {products.status === 'loading' && <LoadingState label="Cargando productos…" />}
-        {products.status === 'error' && (
-          <MessageState
-            tone="error"
-            title="No pudimos cargar el catálogo"
-            description={products.message}
-            action={<Button onClick={products.reload}>Intentar de nuevo</Button>}
-          />
-        )}
-        {products.status === 'ready' && products.data.length === 0 && (
-          <MessageState
-            title="No hay productos en esta línea"
-            description="Prueba con otra línea o mira todos los sistemas."
-            action={
-              <Button variant="secondary" onClick={() => selectCategory(null)}>
-                Ver todos los sistemas
-              </Button>
-            }
-          />
-        )}
-        {products.status === 'ready' && products.data.length > 0 && (
-          <ul className="grid gap-6 md:grid-cols-2">
-            {products.data.map((product) => (
-              <li key={product.id}>
-                <ProductCard product={product} onDetails={() => setSelected(product)} />
-              </li>
-            ))}
-          </ul>
-        )}
+        <Loadable
+          state={products}
+          loadingLabel="Cargando productos…"
+          errorTitle="No pudimos cargar el catálogo"
+          isEmpty={(data) => data.length === 0}
+          empty={
+            <MessageState
+              title="No hay productos en esta línea"
+              description="Prueba con otra línea o mira todos los sistemas."
+              action={
+                <Button variant="secondary" onClick={() => selectCategory(null)}>
+                  Ver todos los sistemas
+                </Button>
+              }
+            />
+          }
+        >
+          {(data) => (
+            <ul className="grid gap-6 md:grid-cols-2">
+              {data.map((product) => (
+                <li key={product.id}>
+                  <ProductCard product={product} onDetails={() => setSelected(product)} />
+                </li>
+              ))}
+            </ul>
+          )}
+        </Loadable>
       </section>
 
       <QuoteCallout
@@ -148,7 +138,7 @@ function ProductCard({ product, onDetails }: { product: Product; onDetails: () =
         <div className="mt-auto flex flex-wrap items-center gap-3 pt-6">
           {site.quotingEnabled && (
             <Button asChild size="sm">
-              <Link to={`/cotizar?producto=${encodeURIComponent(productTypeFor(product))}`}>
+              <Link to={quoteHref(product)}>
                 {product.ctaText ?? 'Cotizar este sistema'}
               </Link>
             </Button>
@@ -156,7 +146,7 @@ function ProductCard({ product, onDetails }: { product: Product; onDetails: () =
           <Button size="sm" variant="secondary" onClick={onDetails}>
             Detalles
           </Button>
-          <Link to={`/trabajos?linea=${product.category.toLowerCase()}`} className="text-sm text-link hover:underline">
+          <Link to={galleryHref(product.category)} className="text-sm text-link hover:underline">
             Ver trabajos de esta línea
           </Link>
         </div>
@@ -204,7 +194,7 @@ function ProductDetail({ product }: { product: Product }) {
       )}
       {site.quotingEnabled && (
         <Button asChild size="lg" className="self-start">
-          <Link to={`/cotizar?producto=${encodeURIComponent(productTypeFor(product))}`}>
+          <Link to={quoteHref(product)}>
             Solicitar cotización de este sistema
           </Link>
         </Button>
