@@ -112,4 +112,4 @@ npm run lint && npm test && npm run build
 | 3 | Módulo `quote` | Hecho |
 | 4 | Módulo `auth` | Hecho |
 | 5 | Frontend conectado a la API | Hecho |
-| 6 | Migración desde Redis y despliegue | Pendiente |
+| 6 | Despliegue | Hecho: Docker Compose en el equipo de la empresa (sin migración desde Redis: se empezó con datos nuevos) |
