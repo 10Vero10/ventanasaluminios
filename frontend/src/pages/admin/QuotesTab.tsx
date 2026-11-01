@@ -23,13 +23,12 @@ export default function QuotesTab() {
   const [status, setStatus] = useState<QuoteStatus | null>(null)
   const [newestFirst, setNewestFirst] = useState(false)
   const [page, setPage] = useState(0)
-  const [refresh, setRefresh] = useState(0)
-  const quotes = useLoad(() => getQuotes({ status, page, size: PAGE_SIZE, newestFirst }), [status, page, newestFirst, refresh])
+  const quotes = useLoad(() => getQuotes({ status, page, size: PAGE_SIZE, newestFirst }), [status, page, newestFirst])
   const glass = useLoad(getAdminGlassOptions, [])
   const [toDelete, setToDelete] = useState<Quote | null>(null)
 
   function reload() {
-    setRefresh((n) => n + 1)
+    quotes.reload()
     refreshDashboard()
   }
 

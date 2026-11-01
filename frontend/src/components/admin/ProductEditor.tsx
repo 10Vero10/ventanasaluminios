@@ -27,7 +27,7 @@ export function ProductEditor({
 }) {
   const [draft, setDraft] = useState<ProductRequest>(initial)
   const save = useSaveState()
-  const set = <K extends keyof ProductRequest>(key: K, value: ProductRequest[K]) => setDraft({ ...draft, [key]: value })
+  const set = <K extends keyof ProductRequest>(key: K, value: ProductRequest[K]) => setDraft((d) => ({ ...d, [key]: value }))
 
   async function submit(event: FormEvent) {
     event.preventDefault()

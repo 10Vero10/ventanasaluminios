@@ -36,6 +36,7 @@ interface FormValues {
 type SubmitState = { status: 'idle' } | { status: 'sending' } | { status: 'sent' } | { status: 'error'; message: string }
 
 const MAX_PRODUCT_TYPE = 120
+const MAX_MESSAGE = 2000
 
 /** Cotizar (briefing §5.6). Sin cotización activa no existe: vuelve al inicio. */
 export default function QuotePage() {
@@ -56,8 +57,10 @@ function QuoteContent() {
   const glassOptions = useLoad(getGlassOptions, [])
   const [config, setConfig] = useState<Configuration>(INITIAL_CONFIGURATION)
   const [feedback, setFeedback] = useState<ApplyFeedback>('idle')
-  /** Configuración que está en el formulario; null hasta el primer "Aplicar". */
-  const [applied, setApplied] = useState<{ resolved: ResolvedConfiguration; autoMessage: string } | null>(null)
+  /** Configuración que está en el formulario y se envía; null antes del primer "Aplicar" o si se editan las medidas a mano. */
+  const [applied, setApplied] = useState<ResolvedConfiguration | null>(null)
+  /** Último mensaje sugerido puesto en el formulario, para reemplazarlo en vez de repetirlo. */
+  const [lastAutoMessage, setLastAutoMessage] = useState<string | null>(null)
   const [values, setValues] = useState<FormValues>({
     name: '',
     phone: '',
@@ -72,7 +75,7 @@ function QuoteContent() {
   const options: GlassOptions | null = glassOptions.status === 'ready' ? glassOptions.data : null
 
   /** Pasa la configuración al formulario. Con una medida en 0 conserva los últimos valores válidos. */
-  function applyToForm(nextConfig: Configuration, productType: string, current: FormValues, previousAuto: string | null) {
+  function applyToForm(nextConfig: Configuration, productType: string, current: FormValues) {
     const resolved = options ? resolveConfiguration(nextConfig, options) : null
     if (!resolved || !isDrawable(nextConfig)) return null
     const autoMessage = buildAutoMessage(productType, resolved.widthCm, resolved.heightCm, glassDescription(resolved))
@@ -80,28 +83,37 @@ function QuoteContent() {
       ...current,
       productType,
       dimensionsText: dimensionsText(resolved),
-      message: mergeAutoMessage(current.message, previousAuto, autoMessage),
+      // El texto sugerido va al inicio; se recorta para no pasar el máximo que acepta el servidor.
+      message: mergeAutoMessage(current.message, lastAutoMessage, autoMessage).slice(0, MAX_MESSAGE),
     })
-    setApplied({ resolved, autoMessage })
+    setApplied(resolved)
+    setLastAutoMessage(autoMessage)
     return resolved
   }
 
   function changeConfig(patch: Partial<Configuration>) {
     const next = { ...config, ...patch }
     setConfig(next)
-    if (applied) applyToForm(next, values.productType, values, applied.autoMessage)
+    if (applied) applyToForm(next, values.productType, values)
   }
 
   function apply() {
-    const resolved = applyToForm(config, values.productType, values, applied?.autoMessage ?? null)
+    const resolved = applyToForm(config, values.productType, values)
     setFeedback(resolved ? 'applied' : 'invalid')
   }
 
   function changeProductType(productType: string) {
+    // Con una medida en 0 se conservan las últimas medidas válidas, pero el tipo de producto sí cambia.
+    const synced = applied && applyToForm(config, productType, values)
+    if (!synced) setValues({ ...values, productType })
+  }
+
+  /** Escribir las medidas a mano desconecta el configurador: el servidor guardaría su texto en vez del escrito. */
+  function changeDimensionsText(dimensionsText: string) {
+    setValues({ ...values, dimensionsText })
     if (applied) {
-      applyToForm(config, productType, values, applied.autoMessage)
-    } else {
-      setValues({ ...values, productType })
+      setApplied(null)
+      setFeedback('idle')
     }
   }
 
@@ -113,7 +125,7 @@ function QuoteContent() {
     }
     setMissingContact(false)
     setSubmit({ status: 'sending' })
-    const structured = applied?.resolved
+    const structured = applied
     try {
       await createQuote({
         name: values.name.trim(),
@@ -132,7 +144,8 @@ function QuoteContent() {
         }),
       })
       setValues((v) => ({ ...v, name: '', phone: '', message: '' }))
-      setApplied((a) => (a ? { ...a, autoMessage: '' } : a))
+      // El mensaje se vació: no hay sugerencia anterior que reemplazar.
+      setLastAutoMessage(null)
       setSubmit({ status: 'sent' })
     } catch (error) {
       setSubmit({ status: 'error', message: getErrorMessage(error) })
@@ -281,7 +294,7 @@ function QuoteContent() {
                       maxLength={200}
                       placeholder="Ej. 120 alto x 150 ancho"
                       value={values.dimensionsText}
-                      onChange={(e) => setValues({ ...values, dimensionsText: e.target.value })}
+                      onChange={(e) => changeDimensionsText(e.target.value)}
                     />
                   )}
                 </Field>

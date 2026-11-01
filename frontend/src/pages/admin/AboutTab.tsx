@@ -31,10 +31,10 @@ export default function AboutTab() {
                 type="number"
                 inputMode="numeric"
                 min={0}
-                max={200}
+                max={150}
                 className="max-w-40"
                 value={draft.experienceYears}
-                onChange={(e) => set('experienceYears', Math.max(0, Math.round(Number(e.target.value) || 0)))}
+                onChange={(e) => set('experienceYears', Math.min(150, Math.max(0, Math.round(Number(e.target.value) || 0))))}
               />
             )}
           </Field>

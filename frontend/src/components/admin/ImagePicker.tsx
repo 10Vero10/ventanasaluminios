@@ -70,7 +70,9 @@ export function ImagePicker({
       </div>
       <Input
         id={id}
-        type="url"
+        // type="text": "url" haría que el navegador rechace las rutas del sitio (/media/…, /favicon.svg) y bloquee el
+        // envío del formulario. El backend valida el formato.
+        type="text"
         inputMode="url"
         placeholder="Pega la URL de una imagen"
         value={value ?? ''}

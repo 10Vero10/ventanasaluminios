@@ -13,8 +13,7 @@ export function useOrderedList<T extends { id: number }>(
   loader: () => Promise<T[]>,
   saveOrder: (ids: number[]) => Promise<unknown>,
 ) {
-  const [refresh, setRefresh] = useState(0)
-  const loaded = useLoad(loader, [refresh])
+  const loaded = useLoad(loader, [])
   const [local, setLocal] = useState<{ source: T[]; items: T[] } | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [busy, setBusy] = useState(false)
@@ -45,5 +44,5 @@ export function useOrderedList<T extends { id: number }>(
     setLocal({ source, items: items.map((current) => (current.id === item.id ? item : current)) })
   }
 
-  return { loaded, items, move, replace, reload: () => setRefresh((n) => n + 1), error, busy }
+  return { loaded, items, move, replace, reload: loaded.reload, error, busy }
 }

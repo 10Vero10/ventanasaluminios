@@ -28,6 +28,7 @@ export function ConfirmDialog({
     setError(null)
     try {
       await onConfirm()
+      setError(null)
       onOpenChange(false)
     } catch (err) {
       setError(getErrorMessage(err))
@@ -36,15 +37,17 @@ export function ConfirmDialog({
     }
   }
 
+  // Al abrir o cerrar se borra el error del intento anterior (también al cancelar).
+  function changeOpen(next: boolean) {
+    if (busy) return
+    setError(null)
+    onOpenChange(next)
+  }
+
   return (
     <Dialog
       open={open}
-      onOpenChange={(next) => {
-        if (!busy) {
-          setError(null)
-          onOpenChange(next)
-        }
-      }}
+      onOpenChange={changeOpen}
       title={title}
       description={description}
       className="sm:w-[min(480px,calc(100vw-48px))]"
@@ -55,7 +58,7 @@ export function ConfirmDialog({
         </p>
       )}
       <div className="flex flex-wrap justify-end gap-3">
-        <Button variant="secondary" onClick={() => onOpenChange(false)} disabled={busy}>
+        <Button variant="secondary" onClick={() => changeOpen(false)} disabled={busy}>
           Cancelar
         </Button>
         <Button variant="destructive" onClick={confirm} disabled={busy}>

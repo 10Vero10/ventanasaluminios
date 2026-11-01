@@ -16,16 +16,17 @@ const DEFAULT_FAVICON = '/favicon.svg'
 export function SiteProvider({ children }: { children: ReactNode }) {
   const site = useLoad(getSite, [])
 
+  const data = site.status === 'ready' ? site.data : null
   useEffect(() => {
-    if (site.status !== 'ready') return
-    const { heroTitle, heroSubtitle, faviconUrl } = site.data
+    if (!data) return
+    const { heroTitle, heroSubtitle, faviconUrl } = data
     document.title = `${heroTitle} | Fabricación e Instalación a Medida`
     document.querySelector('meta[name="description"]')?.setAttribute('content', heroSubtitle)
     // Sin favicon propio se usa el logo de 4 paneles del sitio (briefing §5.7.7).
     const icon = document.querySelector<HTMLLinkElement>('link[rel="icon"]')
     icon?.setAttribute('href', faviconUrl ?? DEFAULT_FAVICON)
     if (faviconUrl) icon?.removeAttribute('type')
-  }, [site])
+  }, [data])
 
   if (site.status === 'loading') {
     return <LoadingState label="Cargando el sitio…" className="justify-center" />

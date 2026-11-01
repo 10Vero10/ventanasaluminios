@@ -23,8 +23,11 @@ export function useSettingsDraft() {
   const save = useSaveState()
   const current = draft ?? (loaded.status === 'ready' ? toRequest(loaded.data) : null)
 
+  /** Actualiza sobre el borrador más reciente: una subida de imagen que termina tarde no borra lo escrito mientras. */
   function set<K extends keyof SiteSettingsRequest>(key: K, value: SiteSettingsRequest[K]) {
-    if (current) setDraft({ ...current, [key]: value })
+    if (loaded.status !== 'ready') return
+    const base = toRequest(loaded.data)
+    setDraft((previous) => ({ ...(previous ?? base), [key]: value }))
   }
 
   async function submit() {
