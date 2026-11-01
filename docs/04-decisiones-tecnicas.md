@@ -70,3 +70,12 @@ Formato: contexto → decisión → consecuencias.
 - **Archivos de imágenes borradas:** eliminar una imagen de la galería no borra el archivo de `/media`, porque puede seguir en uso como portada o en una línea destacada.
 - **Errores:** `GlobalExceptionHandler` hereda de `ResponseEntityExceptionHandler` para que los errores de Spring MVC conserven su estado HTTP; solo los 5xx se registran como ERROR.
 - **Panel abierto hasta el paso 4:** las rutas `/api/v1/admin/**` existen desde el paso 1 pero se protegen en el paso 4. No se despliega antes.
+
+## ADR-013 — Módulo catalog
+
+- **Ficha técnica y características como listas del producto:** `@ElementCollection` con `@OrderColumn`, sin id propio. El panel envía la lista completa en el orden deseado al guardar; no hacen falta endpoints para agregar, quitar o reordenar filas. Reemplaza `product_spec.id` y `product_feature.id` de la propuesta inicial.
+- **Opciones de vidrio no se borran:** se desactivan (`active: false`), y su código (o los mm) no cambia después de creada (`IMMUTABLE_FIELD`), porque las cotizaciones guardan ese valor. Para corregir un código se crea una opción nueva y se desactiva la anterior.
+- **Opción por defecto en la base:** `is_default` en cada tabla (Crudo, Transparente, 6 mm) con un índice único parcial, para que el configurador no tenga esos valores fijos en el código. Debe estar activa. Al marcar otra, la anterior se desmarca y se escribe primero.
+- **Duplicar:** la copia se llama "… (copia)" (recortada a 80 caracteres), queda al final y **oculta**, para que no aparezca en el sitio antes de editarla.
+- **Productos ocultos:** el sitio público no los lista y su detalle responde 404; el panel los ve todos.
+- **Las tres opciones de vidrio comparten `GlassOption`** (`@MappedSuperclass`: orden, activa, por defecto), y todas las listas ordenables usan `Reordering.apply`.

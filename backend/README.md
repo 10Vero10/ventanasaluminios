@@ -60,6 +60,18 @@ Todos bajo `/api/v1`. Los errores responden `{ "error": "mensaje en español", "
 | `GET` · `POST` | `/api/v1/admin/gallery` | Panel | Listar y agregar imágenes (`GalleryImageRequest`); sin título queda "Imagen" |
 | `PUT` · `DELETE` | `/api/v1/admin/gallery/{id}` | Panel | Editar y eliminar |
 | `PUT` | `/api/v1/admin/gallery/order` | Panel | Reordenar, igual que las líneas |
+| `GET` | `/api/v1/products?category=` | Público | Productos activos en orden, opcionalmente por línea |
+| `GET` | `/api/v1/products/{id}` | Público | Detalle de un producto activo (uno oculto responde 404) |
+| `GET` | `/api/v1/glass-options` | Público | Tipos, colores y espesores activos, cada uno con su opción por defecto |
+| `GET` · `POST` | `/api/v1/admin/products` | Panel | Listar todos (también ocultos) y crear (`ProductRequest`); el nuevo queda al final |
+| `GET` · `PUT` · `DELETE` | `/api/v1/admin/products/{id}` | Panel | Ver, editar (la ficha técnica y las características se reemplazan en el orden enviado) y eliminar |
+| `POST` | `/api/v1/admin/products/{id}/duplicate` | Panel | Copia "… (copia)" al final y oculta |
+| `PUT` | `/api/v1/admin/products/order` | Panel | Reordenar el catálogo con todos los ids |
+| `GET` | `/api/v1/admin/glass-options` | Panel | Todas las opciones de vidrio, también las inactivas |
+| `POST` · `PUT` | `/api/v1/admin/glass-types[/{id}]` | Panel | Crear y editar tipos (`GlassTypeRequest`); sin DELETE, se desactivan |
+| `POST` · `PUT` | `/api/v1/admin/glass-colors[/{id}]` | Panel | Crear y editar colores (`GlassColorRequest`) |
+| `POST` · `PUT` | `/api/v1/admin/glass-thicknesses[/{id}]` | Panel | Crear y editar espesores (`GlassThicknessRequest`) |
+| `PUT` | `/api/v1/admin/glass-{types,colors,thicknesses}/order` | Panel | Reordenar cada lista |
 | `POST` | `/api/v1/admin/media` | Panel | Subir imagen (`multipart/form-data`, campo `file`): JPG, PNG o WebP de máximo 5 MB. Responde `201 { "url": "/media/…" }` |
 
 > Las rutas del panel (`/api/v1/admin/**`) quedan abiertas hasta el paso 4, cuando se protegen con login y rol `ADMIN`. No desplegar antes de eso.

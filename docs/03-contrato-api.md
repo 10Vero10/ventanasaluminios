@@ -16,6 +16,7 @@ Los códigos están en `ErrorCode` (backend), que es la fuente de verdad de esta
 | 400 | `MALFORMED_REQUEST` | El JSON no se puede leer |
 | 400 | `INVALID_PARAMETER` | Falta un parámetro o tiene formato inválido (por ejemplo, una línea inexistente) |
 | 400 | `REORDER_MISMATCH` | El nuevo orden no trae exactamente los ids actuales |
+| 400 | `IMMUTABLE_FIELD` | Se intentó cambiar el código (o los mm) de una opción de vidrio |
 | 400 | `EMPTY_FILE`, `INVALID_FILE_TYPE` | Imagen vacía, o que no es JPG, PNG ni WebP |
 | 400 | `BAD_REQUEST` | Otra solicitud inválida |
 | 401 | — | No autenticado o sesión vencida (paso 4) |
@@ -23,6 +24,7 @@ Los códigos están en `ErrorCode` (backend), que es la fuente de verdad de esta
 | 404 | `NOT_FOUND` | Recurso inexistente |
 | 405 | `METHOD_NOT_ALLOWED` | Método no permitido en la ruta |
 | 406 | — | El cliente no acepta JSON (respuesta sin cuerpo) |
+| 409 | `DUPLICATE_CODE` | Ya existe una opción de vidrio con ese código o espesor |
 | 409 | `CONFLICT` | Dos cambios simultáneos chocaron (por ejemplo, la misma posición); se pide actualizar e intentar de nuevo |
 | 413 | `FILE_TOO_LARGE` | Imagen más grande que el límite configurado (5 MB) |
 | 415 | `UNSUPPORTED_MEDIA_TYPE` | Tipo de contenido no soportado |
@@ -60,10 +62,12 @@ Los códigos están en `ErrorCode` (backend), que es la fuente de verdad de esta
 | `PUT` | `/admin/featured-lines/order` | Reordenar |
 | `GET` · `POST` · `PUT` · `DELETE` | `/admin/gallery[/{id}]` | Galería |
 | `PUT` | `/admin/gallery/order` | Reordenar |
-| CRUD | `/admin/products[/{id}]` | Productos con specs y características |
-| `POST` | `/admin/products/{id}/duplicate` | Duplicar |
+| `GET` · `POST` · `PUT` · `DELETE` | `/admin/products[/{id}]` | Productos con ficha técnica y características (también los ocultos) |
+| `POST` | `/admin/products/{id}/duplicate` | Duplicar: copia "… (copia)" al final y oculta |
 | `PUT` | `/admin/products/order` | Reordenar |
-| CRUD | `/admin/glass-types`, `/admin/glass-colors`, `/admin/glass-thicknesses` | Opciones de vidrio |
+| `GET` | `/admin/glass-options` | Todas las opciones de vidrio, también las inactivas |
+| `POST` · `PUT` | `/admin/glass-types[/{id}]`, `/admin/glass-colors[/{id}]`, `/admin/glass-thicknesses[/{id}]` | Crear y editar opciones de vidrio. Sin DELETE: se desactivan con `active: false` |
+| `PUT` | `/admin/glass-types/order`, `/admin/glass-colors/order`, `/admin/glass-thicknesses/order` | Reordenar cada lista |
 | `GET` | `/admin/quotes?status=&page=&size=&sort=` | Bandeja paginada |
 | `GET` | `/admin/quotes/{id}` | Detalle con historial de estados |
 | `PATCH` | `/admin/quotes/{id}/status` | Cambiar estado |
@@ -96,3 +100,18 @@ Los códigos están en `ErrorCode` (backend), que es la fuente de verdad de esta
 | `ErrorResponse` | `error`, `code` |
 
 Las URLs de imagen aceptan `http(s)://…` o rutas del mismo sitio (`/media/…`, `/favicon.svg`); nunca `data:`, `javascript:` ni rutas que el navegador lea como otro dominio (`//host`, `/\host`).
+
+### Paso 2, catalog
+
+| DTO | Campos |
+|---|---|
+| `ProductRequest` | `category`, `categoryNumber`, `title`, `subtitle`, `description`, `imageUrl`, `badge`, `ctaText`, `active`, `specs[]` (máx. 12), `features[]` (máx. 12). Las listas llegan completas y en orden: reemplazan a las anteriores |
+| `ProductSpecRequest` / `ProductSpecResponse` | `label`, `value` |
+| `ProductResponse` | `id`, `position` + los de la solicitud |
+| `GlassTypeRequest` | `code` (`^[A-Z0-9_]{2,30}$`, no cambia), `name`, `active`, `defaultOption` |
+| `GlassColorRequest` | `code`, `name`, `hex` (`#RRGGBB`), `reflective`, `note`, `active`, `defaultOption` |
+| `GlassThicknessRequest` | `mm` (1 a 50, no cambia), `active`, `defaultOption` |
+| `GlassTypeResponse`, `GlassColorResponse`, `GlassThicknessResponse` | `id`, `position` + los de la solicitud |
+| `GlassOptionsResponse` | `types[]`, `colors[]`, `thicknesses[]`, cada lista en orden |
+
+La opción por defecto (`defaultOption`) es la que el configurador muestra seleccionada al abrir. Como máximo una por lista, y debe estar activa; si ninguna lo está, el configurador usa la primera activa.
