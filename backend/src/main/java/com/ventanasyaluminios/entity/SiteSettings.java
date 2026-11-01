@@ -56,6 +56,9 @@ public class SiteSettings {
     @Column(name = "about_highlight", nullable = false)
     private String aboutHighlight;
 
+    @Column(name = "about_image_url")
+    private String aboutImageUrl;
+
     @Column(name = "updated_at", nullable = false)
     private Instant updatedAt;
 
@@ -165,6 +168,14 @@ public class SiteSettings {
 
     public void setAboutHighlight(String aboutHighlight) {
         this.aboutHighlight = aboutHighlight;
+    }
+
+    public String getAboutImageUrl() {
+        return aboutImageUrl;
+    }
+
+    public void setAboutImageUrl(String aboutImageUrl) {
+        this.aboutImageUrl = aboutImageUrl;
     }
 
     public Instant getUpdatedAt() {

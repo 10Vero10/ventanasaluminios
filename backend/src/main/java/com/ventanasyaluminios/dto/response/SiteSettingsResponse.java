@@ -17,5 +17,6 @@ public record SiteSettingsResponse(
         String aboutParagraph1,
         String aboutParagraph2,
         String aboutHighlight,
+        String aboutImageUrl,
         Instant updatedAt) {
 }

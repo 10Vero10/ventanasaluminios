@@ -17,5 +17,6 @@ public record PublicSiteResponse(
         String aboutParagraph1,
         String aboutParagraph2,
         String aboutHighlight,
+        String aboutImageUrl,
         List<FeaturedLineResponse> featuredLines) {
 }

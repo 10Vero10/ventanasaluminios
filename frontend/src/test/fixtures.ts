@@ -15,6 +15,7 @@ export const SITE: PublicSite = {
   aboutParagraph1: 'Párrafo uno.',
   aboutParagraph2: 'Párrafo dos.',
   aboutHighlight: 'Destacado.',
+  aboutImageUrl: '/media/taller.webp',
   featuredLines: [],
 }
 

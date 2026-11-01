@@ -42,6 +42,7 @@ public class SettingsMapper {
                 settings.getAboutParagraph1(),
                 settings.getAboutParagraph2(),
                 settings.getAboutHighlight(),
+                settings.getAboutImageUrl(),
                 settings.getUpdatedAt());
     }
 
@@ -60,6 +61,7 @@ public class SettingsMapper {
                 settings.getAboutParagraph1(),
                 settings.getAboutParagraph2(),
                 settings.getAboutHighlight(),
+                settings.getAboutImageUrl(),
                 lines.stream().map(this::toResponse).toList());
     }
 
@@ -84,6 +86,7 @@ public class SettingsMapper {
         settings.setAboutParagraph1(request.aboutParagraph1().trim());
         settings.setAboutParagraph2(request.aboutParagraph2().trim());
         settings.setAboutHighlight(request.aboutHighlight().trim());
+        settings.setAboutImageUrl(trimToNull(request.aboutImageUrl()));
     }
 
     public FeaturedLineResponse toResponse(FeaturedLine line) {

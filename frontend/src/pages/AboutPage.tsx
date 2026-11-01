@@ -57,18 +57,34 @@ export default function AboutPage() {
             <p className="font-display text-[56px] leading-none font-semibold tracking-[-0.02em]">{years}+ años</p>
             <p className="mt-3 text-sm font-semibold text-status">Solidez y confianza</p>
             <p className="text-[17px]">Garantía en obra</p>
-            <p className="mt-6 text-sm text-muted-foreground">Taller de carpintería y ensamble a medida</p>
           </div>
         </div>
       </Section>
 
       <Section tone="mist" labelledBy="historia">
-        <Kicker>Nuestra historia</Kicker>
-        <SectionTitle id="historia">¿Quiénes somos?</SectionTitle>
-        <div className="mt-8 grid max-w-3xl gap-5 text-[19px] leading-relaxed">
-          <p>{site.aboutParagraph1}</p>
-          <p>{site.aboutParagraph2}</p>
-          <p className="border-l-2 border-status pl-5 font-semibold">{site.aboutHighlight}</p>
+        <div className={site.aboutImageUrl ? 'grid gap-10 md:grid-cols-2 md:items-center md:gap-14' : undefined}>
+          {site.aboutImageUrl && (
+            <figure>
+              <img
+                src={site.aboutImageUrl}
+                alt="Taller de carpintería y ensamble a medida de Ventanas y Aluminios"
+                width={1200}
+                height={900}
+                loading="lazy"
+                className="aspect-[4/3] w-full rounded-[28px] bg-background object-cover"
+              />
+              <figcaption className="mt-3 text-sm text-muted-foreground">Taller de carpintería y ensamble a medida</figcaption>
+            </figure>
+          )}
+          <div>
+            <Kicker>Nuestra historia</Kicker>
+            <SectionTitle id="historia">¿Quiénes somos?</SectionTitle>
+            <div className="mt-8 grid max-w-3xl gap-5 text-[19px] leading-relaxed">
+              <p>{site.aboutParagraph1}</p>
+              <p>{site.aboutParagraph2}</p>
+              <p className="border-l-2 border-status pl-5 font-semibold">{site.aboutHighlight}</p>
+            </div>
+          </div>
         </div>
       </Section>
 

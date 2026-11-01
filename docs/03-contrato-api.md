@@ -93,7 +93,7 @@ Los códigos están en `ErrorCode` (backend), que es la fuente de verdad de esta
 
 | DTO | Campos |
 |---|---|
-| `PublicSiteResponse` | `heroTitle`, `heroSubtitle`, `heroImageUrl`, `heroBadge`, `phone`, `email`, `whatsappNumber`, `experienceYears`, `quotingEnabled`, `faviconUrl`, `aboutParagraph1`, `aboutParagraph2`, `aboutHighlight`, `featuredLines[]` |
+| `PublicSiteResponse` | `heroTitle`, `heroSubtitle`, `heroImageUrl`, `heroBadge`, `phone`, `email`, `whatsappNumber`, `experienceYears`, `quotingEnabled`, `faviconUrl`, `aboutParagraph1`, `aboutParagraph2`, `aboutHighlight`, `aboutImageUrl` (foto del taller, opcional), `featuredLines[]` |
 | `SiteSettingsRequest` | Los mismos campos sin `featuredLines`. Obligatorios: títulos, teléfono (con al menos un dígito), correo, años, `quotingEnabled` y textos de "Quiénes somos". `whatsappNumber` se guarda solo con dígitos; vacío se deriva del teléfono; el resultado debe tener entre 7 y 20 dígitos |
 | `SiteSettingsResponse` | Los de `SiteSettingsRequest` + `updatedAt` |
 | `FeaturedLineRequest` | `number`, `title`, `categoryTag`, `description`, `imageUrl`, `linkText`, `targetCategory` |

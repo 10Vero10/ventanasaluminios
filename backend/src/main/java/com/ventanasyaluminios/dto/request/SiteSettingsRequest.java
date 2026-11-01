@@ -61,5 +61,9 @@ public record SiteSettingsRequest(
 
         @NotBlank(message = "El texto destacado es obligatorio.")
         @Size(max = 1000, message = "El texto destacado admite máximo 1000 caracteres.")
-        String aboutHighlight) {
+        String aboutHighlight,
+
+        @Size(max = 2048, message = "La URL de la foto del taller es demasiado larga.")
+        @Pattern(regexp = RequestPatterns.IMAGE_URL, message = "La foto del taller debe ser una URL http(s) válida.")
+        String aboutImageUrl) {
 }
