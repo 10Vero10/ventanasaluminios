@@ -2,15 +2,15 @@ package com.ventanasyaluminios.service.impl;
 
 import com.ventanasyaluminios.config.AppProperties;
 import com.ventanasyaluminios.dto.response.MediaUploadResponse;
-import com.ventanasyaluminios.exception.InvalidFileException;
+import com.ventanasyaluminios.exception.ApiException;
+import com.ventanasyaluminios.exception.ErrorCode;
 import com.ventanasyaluminios.service.MediaStorageService;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.UncheckedIOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.StandardCopyOption;
 import java.util.Arrays;
+import java.util.Optional;
 import java.util.UUID;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -22,59 +22,59 @@ import org.springframework.web.multipart.MultipartFile;
 @Service
 public class MediaStorageServiceImpl implements MediaStorageService {
 
-    /** Ruta pública bajo la que {@code WebConfig} sirve la carpeta de imágenes. */
-    public static final String PUBLIC_PREFIX = "/media/";
-
     private static final byte[] JPEG = {(byte) 0xFF, (byte) 0xD8, (byte) 0xFF};
     private static final byte[] PNG = {(byte) 0x89, 'P', 'N', 'G', '\r', '\n', 0x1A, '\n'};
     private static final byte[] RIFF = {'R', 'I', 'F', 'F'};
     private static final byte[] WEBP = {'W', 'E', 'B', 'P'};
 
+    private final AppProperties.Media media;
     private final Path uploadDir;
-    private final long maxBytes;
 
+    /** Crea la carpeta al arrancar: si no se puede escribir, la aplicación no inicia. */
     public MediaStorageServiceImpl(AppProperties properties) {
-        this.uploadDir = Path.of(properties.media().uploadDir()).toAbsolutePath().normalize();
-        this.maxBytes = properties.media().maxFileSize().toBytes();
+        this.media = properties.media();
+        this.uploadDir = media.uploadPath();
+        try {
+            Files.createDirectories(uploadDir);
+        } catch (IOException e) {
+            throw new UncheckedIOException("No se pudo crear la carpeta de imágenes " + uploadDir, e);
+        }
     }
 
     @Override
     public MediaUploadResponse store(MultipartFile file) {
-        if (file == null || file.isEmpty()) {
-            throw new InvalidFileException("EMPTY_FILE", "No se recibió ninguna imagen.");
+        if (file.isEmpty()) {
+            throw new ApiException(ErrorCode.EMPTY_FILE, "No se recibió ninguna imagen.");
         }
-        if (file.getSize() > maxBytes) {
-            throw new InvalidFileException("FILE_TOO_LARGE", "La imagen es demasiado pesada (" + file.getSize() / 1024
-                    + " KB). Usa una imagen de máximo 5 MB o pega la URL de una imagen alojada en internet.");
+        if (file.getSize() > media.maxFileSize().toBytes()) {
+            throw new ApiException(ErrorCode.FILE_TOO_LARGE, "La imagen es demasiado pesada (" + file.getSize() / 1024
+                    + " KB). Usa una imagen de máximo " + media.maxFileSizeLabel()
+                    + " o pega la URL de una imagen alojada en internet.");
         }
-        String extension = detectExtension(file);
-        String fileName = UUID.randomUUID() + "." + extension;
-        try (InputStream in = file.getInputStream()) {
-            Files.createDirectories(uploadDir);
-            Files.copy(in, uploadDir.resolve(fileName), StandardCopyOption.REPLACE_EXISTING);
+        try {
+            byte[] bytes = file.getBytes();
+            String extension = detectExtension(bytes).orElseThrow(() -> new ApiException(ErrorCode.INVALID_FILE_TYPE,
+                    "El archivo seleccionado no es una imagen JPG, PNG o WebP."));
+            String fileName = UUID.randomUUID() + "." + extension;
+            Files.write(uploadDir.resolve(fileName), bytes);
+            return new MediaUploadResponse(AppProperties.Media.PUBLIC_PREFIX + fileName);
         } catch (IOException e) {
             throw new UncheckedIOException("No se pudo guardar la imagen en " + uploadDir, e);
         }
-        return new MediaUploadResponse(PUBLIC_PREFIX + fileName);
     }
 
-    private String detectExtension(MultipartFile file) {
-        byte[] header;
-        try (InputStream in = file.getInputStream()) {
-            header = in.readNBytes(12);
-        } catch (IOException e) {
-            throw new UncheckedIOException("No se pudo leer la imagen subida", e);
+    /** Extensión según la firma de bytes; vacío si no es JPG, PNG ni WebP. */
+    static Optional<String> detectExtension(byte[] bytes) {
+        if (startsWith(bytes, 0, JPEG)) {
+            return Optional.of("jpg");
         }
-        if (startsWith(header, 0, JPEG)) {
-            return "jpg";
+        if (startsWith(bytes, 0, PNG)) {
+            return Optional.of("png");
         }
-        if (startsWith(header, 0, PNG)) {
-            return "png";
+        if (startsWith(bytes, 0, RIFF) && startsWith(bytes, 8, WEBP)) {
+            return Optional.of("webp");
         }
-        if (startsWith(header, 0, RIFF) && startsWith(header, 8, WEBP)) {
-            return "webp";
-        }
-        throw new InvalidFileException("INVALID_FILE_TYPE", "El archivo seleccionado no es una imagen JPG, PNG o WebP.");
+        return Optional.empty();
     }
 
     private static boolean startsWith(byte[] data, int offset, byte[] signature) {

@@ -27,7 +27,7 @@ public record SiteSettingsRequest(
 
         @NotBlank(message = "El teléfono es obligatorio.")
         @Size(max = 40, message = "El teléfono admite máximo 40 caracteres.")
-        @Pattern(regexp = RequestPatterns.PHONE, message = "El teléfono solo puede tener números, espacios, +, guiones y paréntesis.")
+        @Pattern(regexp = RequestPatterns.PHONE, message = "El teléfono debe tener números y solo puede incluir espacios, +, guiones y paréntesis.")
         String phone,
 
         @NotBlank(message = "El correo es obligatorio.")
@@ -36,7 +36,7 @@ public record SiteSettingsRequest(
         String email,
 
         @Size(max = 20, message = "El número de WhatsApp admite máximo 20 caracteres.")
-        @Pattern(regexp = RequestPatterns.WHATSAPP, message = "WhatsApp: número con indicativo de país y sin espacios (ej. 573178463260).")
+        @Pattern(regexp = RequestPatterns.WHATSAPP, message = "WhatsApp: número con indicativo de país, solo dígitos (ej. 573178463260).")
         String whatsappNumber,
 
         @NotNull(message = "Los años de experiencia son obligatorios.")

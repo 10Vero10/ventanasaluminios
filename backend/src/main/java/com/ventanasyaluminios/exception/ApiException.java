@@ -1,27 +1,23 @@
 package com.ventanasyaluminios.exception;
 
-import org.springframework.http.HttpStatus;
-
 /**
- * Base de las excepciones de negocio. Los services las lanzan y {@link GlobalExceptionHandler}
- * las convierte en {@code { "error", "code" }} con el estado HTTP indicado.
+ * Error de negocio que lanzan los services. {@link GlobalExceptionHandler} lo convierte en
+ * {@code { "error", "code" }} con el estado HTTP del {@link ErrorCode}.
  */
-public abstract class ApiException extends RuntimeException {
+public class ApiException extends RuntimeException {
 
-    private final HttpStatus status;
-    private final String code;
+    private final ErrorCode code;
 
-    protected ApiException(HttpStatus status, String code, String message) {
+    /**
+     * @param code    código y estado HTTP del error
+     * @param message mensaje en español, listo para mostrar al usuario
+     */
+    public ApiException(ErrorCode code, String message) {
         super(message);
-        this.status = status;
         this.code = code;
     }
 
-    public HttpStatus getStatus() {
-        return status;
-    }
-
-    public String getCode() {
+    public ErrorCode getCode() {
         return code;
     }
 }

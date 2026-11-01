@@ -8,8 +8,6 @@ import com.ventanasyaluminios.mapper.SettingsMapper;
 import com.ventanasyaluminios.repository.FeaturedLineRepository;
 import com.ventanasyaluminios.service.FeaturedLineService;
 import java.util.List;
-import java.util.function.Function;
-import java.util.stream.Collectors;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -57,13 +55,7 @@ public class FeaturedLineServiceImpl implements FeaturedLineService {
     @Override
     @Transactional
     public List<FeaturedLineResponse> reorder(List<Long> ids) {
-        var byId = repository.findAll().stream().collect(Collectors.toMap(FeaturedLine::getId, Function.identity()));
-        Reordering.requireSameIds(byId.keySet(), ids);
-        for (int i = 0; i < ids.size(); i++) {
-            byId.get(ids.get(i)).setPosition(i + 1);
-        }
-        repository.flush();
-        return list();
+        return Reordering.apply(repository.findAll(), ids).stream().map(mapper::toResponse).toList();
     }
 
     private FeaturedLine find(Long id) {

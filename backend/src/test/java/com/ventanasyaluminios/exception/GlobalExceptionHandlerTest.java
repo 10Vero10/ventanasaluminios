@@ -14,6 +14,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.context.annotation.Import;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -61,6 +62,28 @@ class GlobalExceptionHandlerTest {
     }
 
     @Test
+    void clienteQueNoAceptaJsonRecibe406SinConvertirseEnError500() throws Exception {
+        mockMvc.perform(get("/test/ok").accept(MediaType.APPLICATION_XML))
+                .andExpect(status().isNotAcceptable());
+    }
+
+    @Test
+    void metodoNoPermitidoConservaSuEstado() throws Exception {
+        mockMvc.perform(post("/test/not-found"))
+                .andExpect(status().isMethodNotAllowed())
+                .andExpect(jsonPath("$.code").value("METHOD_NOT_ALLOWED"));
+    }
+
+    @Test
+    void choqueDeIntegridadDevuelve409() throws Exception {
+        mockMvc.perform(get("/test/conflict"))
+                .andExpect(status().isConflict())
+                .andExpect(jsonPath("$.code").value("CONFLICT"))
+                .andExpect(jsonPath("$.error")
+                        .value("Otro cambio se guardó al mismo tiempo. Actualiza la página e intenta de nuevo."));
+    }
+
+    @Test
     void errorInesperadoNoExponeDetallesTecnicos() throws Exception {
         mockMvc.perform(get("/test/boom"))
                 .andExpect(status().isInternalServerError())
@@ -81,6 +104,16 @@ class GlobalExceptionHandlerTest {
 
         @PostMapping("/test/validated")
         void validated(@Valid @RequestBody NamedRequest request) {
+        }
+
+        @GetMapping("/test/ok")
+        NamedRequest ok() {
+            return new NamedRequest("ok");
+        }
+
+        @GetMapping("/test/conflict")
+        void conflict() {
+            throw new DataIntegrityViolationException("duplicate key value violates unique constraint");
         }
 
         @GetMapping("/test/boom")

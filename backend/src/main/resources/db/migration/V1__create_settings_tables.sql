@@ -1,7 +1,7 @@
 -- Configuración del sitio (una sola fila), líneas destacadas de la portada y galería de trabajos.
 
 CREATE TABLE site_settings (
-    id                SMALLINT      PRIMARY KEY CHECK (id = 1),
+    id                INTEGER       PRIMARY KEY CHECK (id = 1),
     hero_title        VARCHAR(120)  NOT NULL,
     hero_subtitle     VARCHAR(300)  NOT NULL,
     hero_image_url    VARCHAR(2048),
@@ -9,7 +9,7 @@ CREATE TABLE site_settings (
     phone             VARCHAR(40)   NOT NULL,
     email             VARCHAR(254)  NOT NULL,
     whatsapp_number   VARCHAR(20)   NOT NULL,
-    experience_years  SMALLINT      NOT NULL CHECK (experience_years BETWEEN 0 AND 150),
+    experience_years  INTEGER       NOT NULL CHECK (experience_years BETWEEN 0 AND 150),
     quoting_enabled   BOOLEAN       NOT NULL,
     favicon_url       VARCHAR(2048),
     about_paragraph1  VARCHAR(2000) NOT NULL,

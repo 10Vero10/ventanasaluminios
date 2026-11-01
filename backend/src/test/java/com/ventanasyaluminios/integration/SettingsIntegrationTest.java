@@ -12,9 +12,12 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.jayway.jsonpath.JsonPath;
+import com.ventanasyaluminios.TestImages;
 import com.ventanasyaluminios.TestcontainersConfiguration;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -35,8 +38,6 @@ import org.springframework.transaction.annotation.Transactional;
 class SettingsIntegrationTest {
 
     private static final Path UPLOAD_DIR = createTempDir();
-
-    private static final byte[] PNG_BYTES = {(byte) 0x89, 'P', 'N', 'G', '\r', '\n', 0x1A, '\n', 0, 0, 0, 0x0D};
 
     @DynamicPropertySource
     static void mediaDir(DynamicPropertyRegistry registry) {
@@ -79,11 +80,13 @@ class SettingsIntegrationTest {
 
     @Test
     void galeriaCrearFiltrarReordenarYEliminar() throws Exception {
+        List<Integer> existingIds = JsonPath.read(getJson("/api/v1/admin/gallery"), "$[*].id");
+
         String created = mockMvc.perform(post("/api/v1/admin/gallery").contentType(MediaType.APPLICATION_JSON)
                         .content("{\"title\":\"\",\"url\":\"https://ejemplo.com/porton.jpg\",\"category\":\"PORTONES\"}"))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.title").value("Imagen"))
-                .andExpect(jsonPath("$.position").value(6))
+                .andExpect(jsonPath("$.position").value(existingIds.size() + 1))
                 .andReturn().getResponse().getContentAsString();
         int newId = JsonPath.read(created, "$.id");
 
@@ -91,8 +94,10 @@ class SettingsIntegrationTest {
                 .andExpect(jsonPath("$", hasSize(1)))
                 .andExpect(jsonPath("$[0].id").value(newId));
 
+        List<Integer> newOrder = new ArrayList<>(existingIds);
+        newOrder.addFirst(newId);
         mockMvc.perform(put("/api/v1/admin/gallery/order").contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"ids\":[" + newId + ",1,2,3,4,5]}"))
+                        .content("{\"ids\":" + newOrder + "}"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[0].id").value(newId))
                 .andExpect(jsonPath("$[0].position").value(1));
@@ -104,9 +109,24 @@ class SettingsIntegrationTest {
     }
 
     @Test
+    void whatsappDerivadoInvalidoDevuelve400YNoGuardaNada() throws Exception {
+        String body = """
+                {"heroTitle":"Otro título","heroSubtitle":"Subtítulo","phone":"+57 300 111 2233 444 555 666 777 88",
+                 "email":"ventas@empresa.com","whatsappNumber":"","experienceYears":25,"quotingEnabled":true,
+                 "aboutParagraph1":"a","aboutParagraph2":"b","aboutHighlight":"c"}
+                """;
+        mockMvc.perform(put("/api/v1/admin/settings").contentType(MediaType.APPLICATION_JSON).content(body))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.code").value("VALIDATION_ERROR"));
+
+        mockMvc.perform(get("/api/v1/site")).andExpect(jsonPath("$.heroTitle").value("Ventanas y Aluminios SAS"));
+    }
+
+    @Test
     void reordenarConIdsQueNoCoincidenSeRechaza() throws Exception {
+        List<Integer> ids = JsonPath.read(getJson("/api/v1/admin/featured-lines"), "$[*].id");
         mockMvc.perform(put("/api/v1/admin/featured-lines/order").contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"ids\":[1,2]}"))
+                        .content("{\"ids\":" + ids.subList(0, ids.size() - 1) + "}"))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.code").value("REORDER_MISMATCH"));
     }
@@ -114,7 +134,7 @@ class SettingsIntegrationTest {
     @Test
     void subirUnaImagenYDescargarlaPorMedia() throws Exception {
         String uploaded = mockMvc.perform(multipart("/api/v1/admin/media")
-                        .file(new MockMultipartFile("file", "foto.png", "image/png", PNG_BYTES)))
+                        .file(new MockMultipartFile("file", "foto.png", "image/png", TestImages.PNG)))
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.url", startsWith("/media/")))
                 .andReturn().getResponse().getContentAsString();
@@ -122,7 +142,7 @@ class SettingsIntegrationTest {
 
         mockMvc.perform(get(url))
                 .andExpect(status().isOk())
-                .andExpect(content().bytes(PNG_BYTES));
+                .andExpect(content().bytes(TestImages.PNG));
     }
 
     @Test
@@ -131,6 +151,10 @@ class SettingsIntegrationTest {
                         .file(new MockMultipartFile("file", "virus.png", "image/png", "MZ".getBytes())))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.code").value("INVALID_FILE_TYPE"));
+    }
+
+    private String getJson(String url) throws Exception {
+        return mockMvc.perform(get(url)).andExpect(status().isOk()).andReturn().getResponse().getContentAsString();
     }
 
     private static Path createTempDir() {

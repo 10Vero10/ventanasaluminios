@@ -13,7 +13,7 @@ import jakarta.persistence.Table;
 /** Tarjeta de la portada que lleva al catálogo filtrado por una línea de producto. */
 @Entity
 @Table(name = "featured_line")
-public class FeaturedLine {
+public class FeaturedLine implements Positioned {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -44,6 +44,7 @@ public class FeaturedLine {
     @Column(name = "target_category", nullable = false)
     private ProductCategory targetCategory;
 
+    @Override
     public Long getId() {
         return id;
     }
@@ -52,6 +53,7 @@ public class FeaturedLine {
         return position;
     }
 
+    @Override
     public void setPosition(int position) {
         this.position = position;
     }

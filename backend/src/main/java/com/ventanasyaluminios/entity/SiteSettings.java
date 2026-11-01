@@ -6,16 +6,16 @@ import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import java.time.Instant;
 
-/** Configuración general del sitio. Hay una sola fila, con id 1. */
+/** Configuración general del sitio. Hay una sola fila, con id 1, creada por la migración V2. */
 @Entity
 @Table(name = "site_settings")
 public class SiteSettings {
 
     /** Id fijo de la única fila. */
-    public static final short SINGLETON_ID = 1;
+    public static final int SINGLETON_ID = 1;
 
     @Id
-    private Short id;
+    private Integer id;
 
     @Column(name = "hero_title", nullable = false)
     private String heroTitle;
@@ -39,7 +39,7 @@ public class SiteSettings {
     private String whatsappNumber;
 
     @Column(name = "experience_years", nullable = false)
-    private short experienceYears;
+    private int experienceYears;
 
     @Column(name = "quoting_enabled", nullable = false)
     private boolean quotingEnabled;
@@ -59,12 +59,8 @@ public class SiteSettings {
     @Column(name = "updated_at", nullable = false)
     private Instant updatedAt;
 
-    public Short getId() {
+    public Integer getId() {
         return id;
-    }
-
-    public void setId(Short id) {
-        this.id = id;
     }
 
     public String getHeroTitle() {
@@ -123,11 +119,11 @@ public class SiteSettings {
         this.whatsappNumber = whatsappNumber;
     }
 
-    public short getExperienceYears() {
+    public int getExperienceYears() {
         return experienceYears;
     }
 
-    public void setExperienceYears(short experienceYears) {
+    public void setExperienceYears(int experienceYears) {
         this.experienceYears = experienceYears;
     }
 

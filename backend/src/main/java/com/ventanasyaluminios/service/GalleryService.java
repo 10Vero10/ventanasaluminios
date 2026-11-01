@@ -8,8 +8,11 @@ import java.util.List;
 /** Galería de trabajos. */
 public interface GalleryService {
 
-    /** Imágenes en orden; con {@code category} solo las de esa línea. */
-    List<GalleryImageResponse> list(ProductCategory category);
+    /** Todas las imágenes en orden. */
+    List<GalleryImageResponse> list();
+
+    /** Solo las imágenes de una línea, en orden. */
+    List<GalleryImageResponse> listByCategory(ProductCategory category);
 
     /** Agrega la imagen al final de la galería. */
     GalleryImageResponse create(GalleryImageRequest request);

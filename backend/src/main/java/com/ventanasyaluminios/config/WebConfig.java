@@ -1,7 +1,5 @@
 package com.ventanasyaluminios.config;
 
-import com.ventanasyaluminios.service.impl.MediaStorageServiceImpl;
-import java.nio.file.Path;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
@@ -39,12 +37,12 @@ public class WebConfig implements WebMvcConfigurer {
     /** Sirve solo los archivos de la carpeta de imágenes; los nombres son UUID generados por el servidor. */
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
-        String location = Path.of(properties.media().uploadDir()).toAbsolutePath().normalize().toUri().toString();
+        String location = properties.media().uploadPath().toUri().toString();
         // toUri() solo agrega la barra final si la carpeta ya existe; sin ella Spring no resuelve los archivos.
         if (!location.endsWith("/")) {
             location += "/";
         }
-        registry.addResourceHandler(MediaStorageServiceImpl.PUBLIC_PREFIX + "**")
+        registry.addResourceHandler(AppProperties.Media.PUBLIC_PREFIX + "**")
                 .addResourceLocations(location);
     }
 }

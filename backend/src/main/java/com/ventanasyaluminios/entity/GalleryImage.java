@@ -14,7 +14,7 @@ import java.time.Instant;
 /** Imagen de la galería de trabajos. Sin línea ({@code category} nula) solo aparece en "Todos". */
 @Entity
 @Table(name = "gallery_image")
-public class GalleryImage {
+public class GalleryImage implements Positioned {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -35,6 +35,7 @@ public class GalleryImage {
     @Column(name = "created_at", nullable = false, updatable = false)
     private Instant createdAt;
 
+    @Override
     public Long getId() {
         return id;
     }
@@ -43,6 +44,7 @@ public class GalleryImage {
         return position;
     }
 
+    @Override
     public void setPosition(int position) {
         this.position = position;
     }

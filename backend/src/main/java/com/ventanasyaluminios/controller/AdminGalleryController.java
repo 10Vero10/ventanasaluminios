@@ -30,7 +30,7 @@ public class AdminGalleryController {
 
     @GetMapping
     public List<GalleryImageResponse> list() {
-        return service.list(null);
+        return service.list();
     }
 
     @PostMapping

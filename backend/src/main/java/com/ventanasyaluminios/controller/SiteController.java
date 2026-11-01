@@ -29,8 +29,9 @@ public class SiteController {
         return siteSettingsService.getPublicSite();
     }
 
+    /** Sin {@code category} devuelve toda la galería. */
     @GetMapping("/gallery")
     public List<GalleryImageResponse> gallery(@RequestParam(required = false) ProductCategory category) {
-        return galleryService.list(category);
+        return category == null ? galleryService.list() : galleryService.listByCategory(category);
     }
 }

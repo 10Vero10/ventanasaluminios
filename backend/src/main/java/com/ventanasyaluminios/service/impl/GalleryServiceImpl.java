@@ -11,17 +11,12 @@ import com.ventanasyaluminios.service.GalleryService;
 import java.time.Clock;
 import java.time.Instant;
 import java.util.List;
-import java.util.function.Function;
-import java.util.stream.Collectors;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 /** Implementación de {@link GalleryService}. */
 @Service
 public class GalleryServiceImpl implements GalleryService {
-
-    /** Título que se usa cuando el administrador no escribe uno (briefing §3.3). */
-    static final String DEFAULT_TITLE = "Imagen";
 
     private final GalleryImageRepository repository;
     private final SettingsMapper mapper;
@@ -35,18 +30,21 @@ public class GalleryServiceImpl implements GalleryService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<GalleryImageResponse> list(ProductCategory category) {
-        List<GalleryImage> images = category == null
-                ? repository.findAllByOrderByPositionAsc()
-                : repository.findByCategoryOrderByPositionAsc(category);
-        return images.stream().map(mapper::toResponse).toList();
+    public List<GalleryImageResponse> list() {
+        return toResponses(repository.findAllByOrderByPositionAsc());
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<GalleryImageResponse> listByCategory(ProductCategory category) {
+        return toResponses(repository.findByCategoryOrderByPositionAsc(category));
     }
 
     @Override
     @Transactional
     public GalleryImageResponse create(GalleryImageRequest request) {
         GalleryImage image = new GalleryImage();
-        apply(request, image);
+        mapper.apply(request, image);
         image.setPosition(repository.findMaxPosition() + 1);
         image.setCreatedAt(Instant.now(clock));
         return mapper.toResponse(repository.save(image));
@@ -56,10 +54,14 @@ public class GalleryServiceImpl implements GalleryService {
     @Transactional
     public GalleryImageResponse update(Long id, GalleryImageRequest request) {
         GalleryImage image = find(id);
-        apply(request, image);
+        mapper.apply(request, image);
         return mapper.toResponse(image);
     }
 
+    /**
+     * Borra la imagen de la galería pero no el archivo de {@code /media}: la misma imagen puede seguir en
+     * uso como portada o en una línea destacada.
+     */
     @Override
     @Transactional
     public void delete(Long id) {
@@ -69,20 +71,11 @@ public class GalleryServiceImpl implements GalleryService {
     @Override
     @Transactional
     public List<GalleryImageResponse> reorder(List<Long> ids) {
-        var byId = repository.findAll().stream().collect(Collectors.toMap(GalleryImage::getId, Function.identity()));
-        Reordering.requireSameIds(byId.keySet(), ids);
-        for (int i = 0; i < ids.size(); i++) {
-            byId.get(ids.get(i)).setPosition(i + 1);
-        }
-        repository.flush();
-        return list(null);
+        return toResponses(Reordering.apply(repository.findAll(), ids));
     }
 
-    private void apply(GalleryImageRequest request, GalleryImage image) {
-        String title = request.title() == null || request.title().isBlank() ? DEFAULT_TITLE : request.title().trim();
-        image.setTitle(title);
-        image.setUrl(request.url().trim());
-        image.setCategory(request.category());
+    private List<GalleryImageResponse> toResponses(List<GalleryImage> images) {
+        return images.stream().map(mapper::toResponse).toList();
     }
 
     private GalleryImage find(Long id) {

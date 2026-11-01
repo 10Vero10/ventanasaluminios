@@ -1,6 +1,11 @@
 package com.ventanasyaluminios.mapper;
 
+import static com.ventanasyaluminios.mapper.TextNormalization.digitsOnly;
+import static com.ventanasyaluminios.mapper.TextNormalization.trimOrDefault;
+import static com.ventanasyaluminios.mapper.TextNormalization.trimToNull;
+
 import com.ventanasyaluminios.dto.request.FeaturedLineRequest;
+import com.ventanasyaluminios.dto.request.GalleryImageRequest;
 import com.ventanasyaluminios.dto.request.SiteSettingsRequest;
 import com.ventanasyaluminios.dto.response.FeaturedLineResponse;
 import com.ventanasyaluminios.dto.response.GalleryImageResponse;
@@ -13,11 +18,14 @@ import java.util.List;
 import org.springframework.stereotype.Component;
 
 /**
- * Conversión entre entidades y DTO del módulo settings (configuración, líneas destacadas y galería).
- * Recorta espacios y guarda los textos opcionales vacíos como {@code null}.
+ * Conversión entre entidades y DTO del módulo settings (configuración, líneas destacadas y galería). Toda
+ * la limpieza de lo que llega del panel (espacios, vacíos, valores por defecto, dígitos) ocurre aquí.
  */
 @Component
 public class SettingsMapper {
+
+    /** Título de una imagen de la galería cuando el administrador no escribe uno (briefing §3.3). */
+    static final String DEFAULT_GALLERY_TITLE = "Imagen";
 
     public SiteSettingsResponse toResponse(SiteSettings settings) {
         return new SiteSettingsResponse(
@@ -55,17 +63,24 @@ public class SettingsMapper {
                 lines.stream().map(this::toResponse).toList());
     }
 
-    /** Copia los campos editables; el WhatsApp normalizado lo decide el service. */
+    /** WhatsApp solo con dígitos; si viene vacío se toma del teléfono (briefing §3.1). */
+    public String normalizedWhatsapp(SiteSettingsRequest request) {
+        String whatsapp = digitsOnly(request.whatsappNumber());
+        return whatsapp.isEmpty() ? digitsOnly(request.phone()) : whatsapp;
+    }
+
+    /** Copia los campos editables; el service valida antes el WhatsApp resultante. */
     public void apply(SiteSettingsRequest request, SiteSettings settings) {
         settings.setHeroTitle(request.heroTitle().trim());
         settings.setHeroSubtitle(request.heroSubtitle().trim());
-        settings.setHeroImageUrl(blankToNull(request.heroImageUrl()));
-        settings.setHeroBadge(blankToNull(request.heroBadge()));
+        settings.setHeroImageUrl(trimToNull(request.heroImageUrl()));
+        settings.setHeroBadge(trimToNull(request.heroBadge()));
         settings.setPhone(request.phone().trim());
         settings.setEmail(request.email().trim());
-        settings.setExperienceYears(request.experienceYears().shortValue());
+        settings.setWhatsappNumber(normalizedWhatsapp(request));
+        settings.setExperienceYears(request.experienceYears());
         settings.setQuotingEnabled(request.quotingEnabled());
-        settings.setFaviconUrl(blankToNull(request.faviconUrl()));
+        settings.setFaviconUrl(trimToNull(request.faviconUrl()));
         settings.setAboutParagraph1(request.aboutParagraph1().trim());
         settings.setAboutParagraph2(request.aboutParagraph2().trim());
         settings.setAboutHighlight(request.aboutHighlight().trim());
@@ -89,7 +104,7 @@ public class SettingsMapper {
         line.setTitle(request.title().trim());
         line.setCategoryTag(request.categoryTag().trim());
         line.setDescription(request.description().trim());
-        line.setImageUrl(blankToNull(request.imageUrl()));
+        line.setImageUrl(trimToNull(request.imageUrl()));
         line.setLinkText(request.linkText().trim());
         line.setTargetCategory(request.targetCategory());
     }
@@ -99,10 +114,9 @@ public class SettingsMapper {
                 image.getCategory());
     }
 
-    static String blankToNull(String value) {
-        if (value == null || value.isBlank()) {
-            return null;
-        }
-        return value.trim();
+    public void apply(GalleryImageRequest request, GalleryImage image) {
+        image.setTitle(trimOrDefault(request.title(), DEFAULT_GALLERY_TITLE));
+        image.setUrl(request.url().trim());
+        image.setCategory(request.category());
     }
 }

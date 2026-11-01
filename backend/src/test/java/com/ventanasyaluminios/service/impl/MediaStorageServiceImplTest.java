@@ -3,8 +3,10 @@ package com.ventanasyaluminios.service.impl;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import com.ventanasyaluminios.TestImages;
 import com.ventanasyaluminios.config.AppProperties;
-import com.ventanasyaluminios.exception.InvalidFileException;
+import com.ventanasyaluminios.exception.ApiException;
+import com.ventanasyaluminios.exception.ErrorCode;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -17,28 +19,42 @@ import org.springframework.util.unit.DataSize;
 
 class MediaStorageServiceImplTest {
 
-    /** Firma mínima de un PNG: suficiente para la detección por bytes. */
-    static final byte[] PNG_BYTES = {(byte) 0x89, 'P', 'N', 'G', '\r', '\n', 0x1A, '\n', 0, 0, 0, 0x0D};
-
     @TempDir
-    Path uploadDir;
+    Path tempDir;
 
+    private Path uploadDir;
     private MediaStorageServiceImpl service;
 
     @BeforeEach
     void setUp() {
+        uploadDir = tempDir.resolve("uploads");
         var properties = new AppProperties(new AppProperties.Cors(List.of()),
                 new AppProperties.Media(uploadDir.toString(), DataSize.ofKilobytes(1)));
         service = new MediaStorageServiceImpl(properties);
     }
 
     @Test
+    void creaLaCarpetaAlArrancar() {
+        assertThat(uploadDir).isDirectory();
+    }
+
+    @Test
     void guardaUnPngConNombreAleatorio() throws Exception {
-        var response = service.store(new MockMultipartFile("file", "foto.png", "image/png", PNG_BYTES));
+        var response = service.store(new MockMultipartFile("file", "foto.png", "image/png", TestImages.PNG));
 
         assertThat(response.url()).startsWith("/media/").endsWith(".png");
         String fileName = response.url().substring("/media/".length());
-        assertThat(Files.readAllBytes(uploadDir.resolve(fileName))).isEqualTo(PNG_BYTES);
+        assertThat(Files.readAllBytes(uploadDir.resolve(fileName))).isEqualTo(TestImages.PNG);
+    }
+
+    @Test
+    void detectaJpegPngYWebpPorSusBytes() {
+        assertThat(MediaStorageServiceImpl.detectExtension(TestImages.JPEG)).contains("jpg");
+        assertThat(MediaStorageServiceImpl.detectExtension(TestImages.PNG)).contains("png");
+        assertThat(MediaStorageServiceImpl.detectExtension(TestImages.WEBP)).contains("webp");
+        assertThat(MediaStorageServiceImpl.detectExtension("<svg onload=alert(1)>".getBytes(StandardCharsets.UTF_8)))
+                .isEmpty();
+        assertThat(MediaStorageServiceImpl.detectExtension(new byte[] {'R', 'I', 'F', 'F'})).isEmpty();
     }
 
     @Test
@@ -46,16 +62,25 @@ class MediaStorageServiceImplTest {
         var fake = new MockMultipartFile("file", "foto.jpg", "image/jpeg", "<script>".getBytes(StandardCharsets.UTF_8));
 
         assertThatThrownBy(() -> service.store(fake))
-                .isInstanceOf(InvalidFileException.class)
+                .isInstanceOf(ApiException.class)
                 .hasMessage("El archivo seleccionado no es una imagen JPG, PNG o WebP.");
     }
 
     @Test
-    void rechazaArchivosMasGrandesQueElLimite() {
+    void rechazaArchivosVacios() {
+        assertThatThrownBy(() -> service.store(new MockMultipartFile("file", "foto.png", "image/png", new byte[0])))
+                .isInstanceOf(ApiException.class)
+                .extracting(ex -> ((ApiException) ex).getCode())
+                .isEqualTo(ErrorCode.EMPTY_FILE);
+    }
+
+    @Test
+    void rechazaArchivosMasGrandesQueElLimiteConfigurado() {
         var big = new MockMultipartFile("file", "foto.png", "image/png", new byte[2048]);
 
         assertThatThrownBy(() -> service.store(big))
-                .isInstanceOf(InvalidFileException.class)
-                .hasMessageStartingWith("La imagen es demasiado pesada (2 KB).");
+                .isInstanceOf(ApiException.class)
+                .hasMessage("La imagen es demasiado pesada (2 KB). Usa una imagen de máximo 1 KB o pega la URL de una"
+                        + " imagen alojada en internet.");
     }
 }
