@@ -1,0 +1,60 @@
+# Blueprint de Render: backend (Docker) y PostgreSQL. En Render: New → Blueprint → este repositorio.
+# El frontend se publica en Vercel (frontend/vercel.json reenvía /api y /media a este servicio).
+services:
+  - type: web
+    name: ventanasyaluminios-api
+    runtime: docker
+    dockerfilePath: ./backend/Dockerfile
+    dockerContext: ./backend
+    # free se duerme tras 15 minutos sin visitas y tarda cerca de un minuto en despertar; starter no se duerme.
+    plan: free
+    branch: main
+    healthCheckPath: /api/v1/health
+    envVars:
+      - key: PORT
+        value: "8080"
+      - key: SERVER_PORT
+        value: "8080"
+      # Deja memoria para el resto del contenedor en planes de 512 MB.
+      - key: JAVA_TOOL_OPTIONS
+        value: -XX:MaxRAMPercentage=70
+      - key: DB_HOST
+        fromDatabase:
+          name: ventanasyaluminios-db
+          property: host
+      - key: POSTGRES_PORT
+        fromDatabase:
+          name: ventanasyaluminios-db
+          property: port
+      - key: POSTGRES_DB
+        fromDatabase:
+          name: ventanasyaluminios-db
+          property: database
+      - key: DB_USER
+        fromDatabase:
+          name: ventanasyaluminios-db
+          property: user
+      - key: DB_PASSWORD
+        fromDatabase:
+          name: ventanasyaluminios-db
+          property: password
+      # Render genera una clave aleatoria de 256 bits.
+      - key: JWT_SECRET
+        generateValue: true
+      - key: AUTH_COOKIE_SECURE
+        value: "true"
+      - key: AUTH_SESSION_DURATION
+        value: 8h
+      - key: MEDIA_UPLOAD_DIR
+        value: /app/uploads
+      # Se piden al crear el Blueprint; la contraseña temporal se cambia en el primer ingreso.
+      - key: ADMIN_EMAIL
+        sync: false
+      - key: ADMIN_INITIAL_PASSWORD
+        sync: false
+
+databases:
+  - name: ventanasyaluminios-db
+    databaseName: ventanas
+    user: ventanas
+    plan: free

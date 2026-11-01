@@ -7,7 +7,8 @@ spring:
       - optional:file:../.env[.properties]
       - optional:file:.env[.properties]
   datasource:
-    url: ${DB_URL:jdbc:postgresql://localhost:${POSTGRES_PORT:5432}/${POSTGRES_DB:ventanas}}
+    # DB_HOST permite armar la URL por partes (Render entrega host, puerto, base, usuario y clave por separado).
+    url: ${DB_URL:jdbc:postgresql://${DB_HOST:localhost}:${POSTGRES_PORT:5432}/${POSTGRES_DB:ventanas}}
     username: ${DB_USER:${POSTGRES_USER:ventanas}}
     password: ${DB_PASSWORD:${POSTGRES_PASSWORD:ventanas}}
   jpa:

@@ -2,6 +2,7 @@ import { Link } from 'react-router'
 
 import { Section } from '@/components/site/Section'
 import { Button } from '@/components/ui/button'
+import { ROUTES } from '@/lib/routes'
 
 export default function NotFoundPage() {
   return (
@@ -18,7 +19,7 @@ export default function NotFoundPage() {
           <Link to="/">Ir al inicio</Link>
         </Button>
         <Button asChild variant="secondary">
-          <Link to="/catalogo">Ver catálogo</Link>
+          <Link to={ROUTES.catalog}>Ver catálogo</Link>
         </Button>
       </div>
     </Section>

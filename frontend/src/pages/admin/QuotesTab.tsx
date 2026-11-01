@@ -32,6 +32,7 @@ export default function QuotesTab() {
   const quotes = useLoad(() => getQuotes({ status, page, size: PAGE_SIZE, newestFirst }), [status, page, newestFirst])
   const glass = useLoad(getAdminGlassOptions, [])
   const [toDelete, setToDelete] = useState<Quote | null>(null)
+  const refreshing = quotes.status === 'ready' && quotes.refreshing
 
   function reload() {
     quotes.reload()
@@ -48,15 +49,15 @@ export default function QuotesTab() {
       title="Cotizaciones"
       description="Solicitudes enviadas desde el formulario de cotización del sitio."
       actions={
-        <Button size="sm" variant="secondary" onClick={reload}>
-          Actualizar
+        <Button size="sm" variant="secondary" onClick={reload} disabled={refreshing} aria-busy={refreshing}>
+          {refreshing ? 'Actualizando…' : 'Actualizar'}
         </Button>
       }
     >
       <div className="flex flex-wrap gap-4">
         <label className="flex flex-col gap-1 text-sm font-semibold">
           Estado
-          <OptionSelect
+          <OptionSelect<QuoteStatus>
             className="py-2 text-sm"
             options={QUOTE_STATUSES}
             noneLabel="Todos los estados"
@@ -74,7 +75,7 @@ export default function QuotesTab() {
             options={ORDERS}
             value={order}
             onChange={(value) => {
-              setOrder(value ?? 'asc')
+              setOrder(value)
               setPage(0)
             }}
           />
@@ -86,8 +87,7 @@ export default function QuotesTab() {
           state={quotes}
           loadingLabel="Cargando cotizaciones…"
           errorTitle="No se pudieron cargar las cotizaciones."
-          isEmpty={(data) => data.content.length === 0}
-          empty={<MessageState title={status ? 'No hay cotizaciones con este estado.' : 'Aún no hay cotizaciones.'} />}
+          empty={(data) => data.content.length === 0 && <MessageState title={status ? 'No hay cotizaciones con este estado.' : 'Aún no hay cotizaciones.'} />}
         >
           {(data) => (
             <>
@@ -171,8 +171,7 @@ function QuoteCard({
   const [busy, setBusy] = useState(false)
   const [history, setHistory] = useState<History>({ status: 'hidden' })
 
-  async function updateStatus(next: QuoteStatus | null) {
-    if (!next) return
+  async function updateStatus(next: QuoteStatus) {
     setBusy(true)
     setStatusError(null)
     try {

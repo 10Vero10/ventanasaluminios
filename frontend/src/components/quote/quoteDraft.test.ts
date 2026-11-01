@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest'
 import { GLASS_OPTIONS } from '@/test/fixtures'
 
 import { INITIAL_CONFIGURATION, resolveConfiguration } from './configuration'
-import { afterSent, applyConfiguration, emptyDraft, syncConfiguration, writeDimensions } from './quoteDraft'
+import { afterSent, applyConfiguration, emptyDraft, syncConfiguration, toQuoteRequest, writeDimensions } from './quoteDraft'
 
 const resolved = resolveConfiguration(INITIAL_CONFIGURATION, GLASS_OPTIONS)!
 const wider = resolveConfiguration({ ...INITIAL_CONFIGURATION, widthCm: 200 }, GLASS_OPTIONS)!
@@ -39,5 +39,22 @@ describe('quoteDraft', () => {
     const applied = applyConfiguration(emptyDraft('Ventanas arquitectónicas'), resolved)
     expect(writeDimensions(applied, 'Dos ventanas').applied).toBeNull()
     expect(afterSent(applied)).toMatchObject({ message: '', lastAutoMessage: null, applied: resolved })
+  })
+})
+
+describe('toQuoteRequest', () => {
+  it('recorta los textos y agrega los datos del configurador solo si hay uno aplicado', () => {
+    const contact = { name: '  Ana ', phone: ' 300 ', website: '' }
+    const plain = toQuoteRequest({ ...emptyDraft('Ventanas arquitectónicas'), message: ' Hola ' }, contact)
+    expect(plain).toEqual({
+      name: 'Ana',
+      phone: '300',
+      productType: 'Ventanas arquitectónicas',
+      dimensionsText: '',
+      message: 'Hola',
+      website: '',
+    })
+    const configured = toQuoteRequest(applyConfiguration(emptyDraft('Ventanas arquitectónicas'), resolved), contact)
+    expect(configured).toMatchObject({ widthCm: 150, heightCm: 120, panes: 1, glassTypeCode: 'CRUDO', thicknessMm: 6 })
   })
 })

@@ -7,21 +7,19 @@ import { LoadingState, MessageState } from './states'
 
 /**
  * Pinta los tres estados de una carga (antislop R-27): cargando, error con "Intentar de nuevo", y los datos. Con
- * {@code isEmpty} y {@code empty} también el estado vacío.
+ * {@code empty} también el estado vacío: devuelve qué mostrar cuando no hay datos, o false si sí los hay.
  */
 export function Loadable<T>({
   state,
   loadingLabel,
   errorTitle,
-  isEmpty,
   empty,
   children,
 }: {
   state: Loaded<T>
   loadingLabel: string
   errorTitle: string
-  isEmpty?: (data: T) => boolean
-  empty?: ReactNode
+  empty?: (data: T) => ReactNode | false
   children: (data: T) => ReactNode
 }) {
   if (state.status === 'loading') return <LoadingState label={loadingLabel} />
@@ -35,6 +33,7 @@ export function Loadable<T>({
       />
     )
   }
-  if (isEmpty?.(state.data) && empty) return <>{empty}</>
+  const emptyView = empty?.(state.data)
+  if (emptyView) return <>{emptyView}</>
   return <>{children(state.data)}</>
 }

@@ -19,7 +19,7 @@ export default function SettingsTab() {
         description="Controla lo que se muestra a las personas en el sitio."
         className="flex flex-col gap-8"
       >
-        {(draft) => (
+        {({ draft, bind, set }) => (
           <>
             <div className="flex items-start justify-between gap-6 rounded-[20px] bg-secondary p-5">
               <div>
@@ -33,7 +33,7 @@ export default function SettingsTab() {
               </div>
               <Switch
                 checked={draft.quotingEnabled}
-                onChange={(value) => settings.set('quotingEnabled', value)}
+                onChange={(value) => set('quotingEnabled', value)}
                 labelledBy="cotizacion-label"
                 describedBy="cotizacion-ayuda"
               />
@@ -41,15 +41,15 @@ export default function SettingsTab() {
 
             <fieldset className="grid gap-5 md:grid-cols-3">
               <legend className="mb-4 font-display text-xl font-semibold">Datos de contacto</legend>
-              <TextField label="Teléfono" type="tel" maxLength={40} placeholder="+57 300 000 0000" {...settings.bind('phone')} />
-              <TextField label="Correo" type="email" maxLength={254} placeholder="correo@empresa.com" {...settings.bind('email')} />
+              <TextField label="Teléfono" type="tel" maxLength={40} placeholder="+57 300 000 0000" {...bind('phone')} />
+              <TextField label="Correo" type="email" maxLength={254} placeholder="correo@empresa.com" {...bind('email')} />
               <TextField
                 label="WhatsApp"
                 hint="Con indicativo de país y sin espacios (ej. 573178463260). Vacío usa el teléfono."
                 inputMode="numeric"
                 maxLength={20}
                 placeholder="573000000000"
-                {...settings.bind('whatsappNumber')}
+                {...bind('whatsappNumber')}
               />
             </fieldset>
 
@@ -68,7 +68,7 @@ export default function SettingsTab() {
                     className="size-10 rounded-[8px] bg-secondary object-contain"
                   />
                   {draft.faviconUrl && draft.faviconUrl !== DEFAULT_FAVICON && (
-                    <Button size="sm" variant="secondary" onClick={() => settings.set('faviconUrl', null)}>
+                    <Button size="sm" variant="secondary" onClick={() => set('faviconUrl', null)}>
                       Usar el logo de 4 paneles
                     </Button>
                   )}
@@ -77,7 +77,7 @@ export default function SettingsTab() {
               <ImagePicker
                 label="Imagen del icono"
                 value={draft.faviconUrl}
-                onChange={(url) => settings.set('faviconUrl', url)}
+                onChange={(url) => set('faviconUrl', url)}
                 aspect="1/1"
                 previewClassName="w-32"
                 allowClear={false}

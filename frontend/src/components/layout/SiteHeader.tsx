@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button'
 import { mailHref, phoneHref, whatsappHref } from '@/lib/contact'
 import { cn } from '@/lib/utils'
 import { useSite } from '@/site/siteContext'
+import { ROUTES } from '@/lib/routes'
 
 import { BrandMark } from './BrandMark'
 import { visibleNav } from './navigation'
@@ -68,7 +69,7 @@ export function SiteHeader() {
         <div className="flex items-center gap-2">
           {site.quotingEnabled && (
             <Button asChild size="sm" className="hidden sm:inline-flex">
-              <Link to="/cotizar">Cotizar proyecto</Link>
+              <Link to={ROUTES.quote}>Cotizar proyecto</Link>
             </Button>
           )}
           <Button

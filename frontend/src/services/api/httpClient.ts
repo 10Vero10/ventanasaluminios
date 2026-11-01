@@ -13,6 +13,28 @@ export const httpClient = axios.create({
   timeout: 15_000,
 })
 
+/** Mensaje cuando lo que responde no es la API (por ejemplo, el hosting devuelve la página en vez del backend). */
+export const API_UNAVAILABLE_MESSAGE = 'El servidor del sitio no está disponible en este momento. Intenta de nuevo más tarde.'
+
+/** El servidor respondió, pero no con JSON de la API. */
+export class ApiUnavailableError extends Error {
+  constructor() {
+    super(API_UNAVAILABLE_MESSAGE)
+    this.name = 'ApiUnavailableError'
+  }
+}
+
+/** Una respuesta con cuerpo debe ser JSON; un 204 o un cuerpo vacío no lo necesitan. */
+export function isApiResponse(contentType: unknown, data: unknown): boolean {
+  const empty = data === undefined || data === null || data === ''
+  return empty || (typeof contentType === 'string' && contentType.includes('json'))
+}
+
+httpClient.interceptors.response.use((response) => {
+  if (!isApiResponse(response.headers['content-type'], response.data)) throw new ApiUnavailableError()
+  return response
+})
+
 type SessionListener = () => void
 const sessionListeners = new Set<SessionListener>()
 
@@ -33,8 +55,14 @@ httpClient.interceptors.response.use(undefined, (error: unknown) => {
   return Promise.reject(error)
 })
 
+/** Si el error es una respuesta HTTP con ese estado. */
+export function isHttpStatus(error: unknown, status: number): boolean {
+  return axios.isAxiosError(error) && error.response?.status === status
+}
+
 /** Mensaje legible de un error de la API; si el backend no respondió, un mensaje genérico en español. */
 export function getErrorMessage(error: unknown): string {
+  if (error instanceof ApiUnavailableError) return error.message
   if (axios.isAxiosError<ApiError>(error)) {
     const message = error.response?.data?.error
     if (message) {

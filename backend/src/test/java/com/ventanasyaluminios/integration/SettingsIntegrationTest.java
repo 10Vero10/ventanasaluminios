@@ -1,5 +1,6 @@
 package com.ventanasyaluminios.integration;
 
+import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.startsWith;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
@@ -54,6 +55,7 @@ class SettingsIntegrationTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.heroTitle").value("Ventanas y Aluminios SAS"))
                 .andExpect(jsonPath("$.experienceYears").value(25))
+                .andExpect(jsonPath("$.aboutImageUrl").value(containsString("photo-1581092160607")))
                 .andExpect(jsonPath("$.quotingEnabled").value(true))
                 .andExpect(jsonPath("$.featuredLines", hasSize(4)))
                 .andExpect(jsonPath("$.featuredLines[0].title").value("Ventanas"))
@@ -66,7 +68,7 @@ class SettingsIntegrationTest {
                 {"heroTitle":"Nuevo título","heroSubtitle":"Subtítulo","heroImageUrl":"",
                  "heroBadge":"","phone":"+57 300 111 2233","email":"ventas@empresa.com","whatsappNumber":"",
                  "experienceYears":26,"quotingEnabled":false,"faviconUrl":"/favicon.svg",
-                 "aboutParagraph1":"a","aboutParagraph2":"b","aboutHighlight":"c"}
+                 "aboutParagraph1":"a","aboutParagraph2":"b","aboutHighlight":"c","aboutImageUrl":"/media/taller.webp"}
                 """;
         mockMvc.perform(put("/api/v1/admin/settings").contentType(MediaType.APPLICATION_JSON).content(body))
                 .andExpect(status().isOk())
@@ -76,7 +78,8 @@ class SettingsIntegrationTest {
                 .andExpect(jsonPath("$.heroTitle").value("Nuevo título"))
                 .andExpect(jsonPath("$.experienceYears").value(26))
                 .andExpect(jsonPath("$.quotingEnabled").value(false))
-                .andExpect(jsonPath("$.heroImageUrl").doesNotExist());
+                .andExpect(jsonPath("$.heroImageUrl").doesNotExist())
+                .andExpect(jsonPath("$.aboutImageUrl").value("/media/taller.webp"));
     }
 
     @Test

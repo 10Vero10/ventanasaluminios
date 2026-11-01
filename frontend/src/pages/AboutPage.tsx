@@ -1,5 +1,5 @@
 import { QuoteCallout } from '@/components/site/QuoteCallout'
-import { Kicker, Section, SectionTitle } from '@/components/site/Section'
+import { Kicker, PageTitle, Section, SectionTitle } from '@/components/site/Section'
 import { useSite } from '@/site/siteContext'
 
 const EXPERIENCE = [
@@ -45,9 +45,7 @@ export default function AboutPage() {
         <div className="grid gap-12 md:grid-cols-[1.2fr_1fr] md:items-center">
           <div>
             <Kicker>¿Quiénes somos?</Kicker>
-            <h1 className="mt-2 font-display text-[40px] leading-[1.05] font-semibold tracking-[-0.02em] text-balance md:text-[64px]">
-              Una empresa que mide todo, menos su dedicación
-            </h1>
+            <PageTitle>Una empresa que mide todo, menos su dedicación</PageTitle>
             <p className="mt-5 max-w-xl text-[19px] text-muted-foreground">
               Fabricación e instalación de soluciones en vidrio, aluminio y otros materiales desde hace más de {years}{' '}
               años.
@@ -57,18 +55,34 @@ export default function AboutPage() {
             <p className="font-display text-[56px] leading-none font-semibold tracking-[-0.02em]">{years}+ años</p>
             <p className="mt-3 text-sm font-semibold text-status">Solidez y confianza</p>
             <p className="text-[17px]">Garantía en obra</p>
-            <p className="mt-6 text-sm text-muted-foreground">Taller de carpintería y ensamble a medida</p>
           </div>
         </div>
       </Section>
 
       <Section tone="mist" labelledBy="historia">
-        <Kicker>Nuestra historia</Kicker>
-        <SectionTitle id="historia">¿Quiénes somos?</SectionTitle>
-        <div className="mt-8 grid max-w-3xl gap-5 text-[19px] leading-relaxed">
-          <p>{site.aboutParagraph1}</p>
-          <p>{site.aboutParagraph2}</p>
-          <p className="border-l-2 border-status pl-5 font-semibold">{site.aboutHighlight}</p>
+        <div className={site.aboutImageUrl ? 'grid gap-10 md:grid-cols-2 md:items-center md:gap-14' : undefined}>
+          {site.aboutImageUrl && (
+            <figure>
+              <img
+                src={site.aboutImageUrl}
+                alt="Taller de carpintería y ensamble a medida de Ventanas y Aluminios"
+                width={1200}
+                height={900}
+                loading="lazy"
+                className="aspect-[4/3] w-full rounded-[28px] bg-background object-cover"
+              />
+              <figcaption className="mt-3 text-sm text-muted-foreground">Taller de carpintería y ensamble a medida</figcaption>
+            </figure>
+          )}
+          <div>
+            <Kicker>Nuestra historia</Kicker>
+            <SectionTitle id="historia">¿Quiénes somos?</SectionTitle>
+            <div className="mt-8 grid max-w-3xl gap-5 text-[19px] leading-relaxed">
+              <p>{site.aboutParagraph1}</p>
+              <p>{site.aboutParagraph2}</p>
+              <p className="border-l-2 border-status pl-5 font-semibold">{site.aboutHighlight}</p>
+            </div>
+          </div>
         </div>
       </Section>
 

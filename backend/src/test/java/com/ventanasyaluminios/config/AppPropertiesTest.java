@@ -32,4 +32,22 @@ class AppPropertiesTest {
         assertThat(new AppProperties.Media("uploads", DataSize.ofMegabytes(5)).maxFileSizeLabel()).isEqualTo("5 MB");
         assertThat(new AppProperties.Media("uploads", DataSize.ofKilobytes(512)).maxFileSizeLabel()).isEqualTo("512 KB");
     }
+
+    @Test
+    void lasClavesDeEjemploDeEnvExampleSeRechazanAlArrancar() {
+        var auth = new AppProperties.Auth("cambiar-por-una-clave-larga-y-aleatoria-de-al-menos-32-caracteres",
+                Duration.ofHours(8), true, "admin@ventanasyaluminios.com", "cambiar-esta-clave-temporal");
+
+        assertThat(validator.validate(auth)).extracting(v -> v.getMessage()).containsExactlyInAnyOrder(
+                "JWT_SECRET sigue con el valor de ejemplo de .env.example: genera una clave propia.",
+                "ADMIN_INITIAL_PASSWORD sigue con el valor de ejemplo de .env.example: elige una contraseña propia.");
+    }
+
+    @Test
+    void clavesPropiasPasanLaValidacion() {
+        var auth = new AppProperties.Auth("una-clave-propia-y-larga-de-mas-de-32-caracteres", Duration.ofHours(8), true,
+                "admin@empresa.com", "Temporal-propia-2026");
+
+        assertThat(validator.validate(auth)).isEmpty();
+    }
 }

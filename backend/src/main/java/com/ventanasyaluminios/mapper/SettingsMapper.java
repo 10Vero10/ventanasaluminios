@@ -42,6 +42,7 @@ public class SettingsMapper {
                 settings.getAboutParagraph1(),
                 settings.getAboutParagraph2(),
                 settings.getAboutHighlight(),
+                settings.getAboutImageUrl(),
                 settings.getUpdatedAt());
     }
 
@@ -60,6 +61,7 @@ public class SettingsMapper {
                 settings.getAboutParagraph1(),
                 settings.getAboutParagraph2(),
                 settings.getAboutHighlight(),
+                settings.getAboutImageUrl(),
                 lines.stream().map(this::toResponse).toList());
     }
 
@@ -84,6 +86,7 @@ public class SettingsMapper {
         settings.setAboutParagraph1(request.aboutParagraph1().trim());
         settings.setAboutParagraph2(request.aboutParagraph2().trim());
         settings.setAboutHighlight(request.aboutHighlight().trim());
+        settings.setAboutImageUrl(trimToNull(request.aboutImageUrl()));
     }
 
     public FeaturedLineResponse toResponse(FeaturedLine line) {
@@ -118,5 +121,21 @@ public class SettingsMapper {
         image.setTitle(trimOrDefault(request.title(), DEFAULT_GALLERY_TITLE));
         image.setUrl(request.url().trim());
         image.setCategory(request.category());
+    }
+
+    /** Configuración actual como solicitud, para el respaldo: el mismo formato que acepta el panel. */
+    public SiteSettingsRequest toRequest(SiteSettingsResponse s) {
+        return new SiteSettingsRequest(s.heroTitle(), s.heroSubtitle(), s.heroImageUrl(), s.heroBadge(), s.phone(),
+                s.email(), s.whatsappNumber(), s.experienceYears(), s.quotingEnabled(), s.faviconUrl(),
+                s.aboutParagraph1(), s.aboutParagraph2(), s.aboutHighlight(), s.aboutImageUrl());
+    }
+
+    public FeaturedLineRequest toRequest(FeaturedLineResponse l) {
+        return new FeaturedLineRequest(l.number(), l.title(), l.categoryTag(), l.description(), l.imageUrl(),
+                l.linkText(), l.targetCategory());
+    }
+
+    public GalleryImageRequest toRequest(GalleryImageResponse g) {
+        return new GalleryImageRequest(g.title(), g.url(), g.category());
     }
 }

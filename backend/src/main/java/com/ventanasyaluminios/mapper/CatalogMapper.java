@@ -6,6 +6,7 @@ import com.ventanasyaluminios.dto.request.GlassColorRequest;
 import com.ventanasyaluminios.dto.request.GlassThicknessRequest;
 import com.ventanasyaluminios.dto.request.GlassTypeRequest;
 import com.ventanasyaluminios.dto.request.ProductRequest;
+import com.ventanasyaluminios.dto.request.ProductSpecRequest;
 import com.ventanasyaluminios.dto.response.GlassColorResponse;
 import com.ventanasyaluminios.dto.response.GlassThicknessResponse;
 import com.ventanasyaluminios.dto.response.GlassTypeResponse;
@@ -113,5 +114,24 @@ public class CatalogMapper {
 
     public void apply(GlassThicknessRequest request, GlassThickness thickness) {
         thickness.setActive(request.active());
+    }
+
+    /** Producto actual como solicitud, para el respaldo. */
+    public ProductRequest toRequest(ProductResponse p) {
+        return new ProductRequest(p.category(), p.categoryNumber(), p.title(), p.subtitle(), p.description(),
+                p.imageUrl(), p.badge(), p.ctaText(), p.active(),
+                p.specs().stream().map(spec -> new ProductSpecRequest(spec.label(), spec.value())).toList(), p.features());
+    }
+
+    public GlassTypeRequest toRequest(GlassTypeResponse t) {
+        return new GlassTypeRequest(t.code(), t.name(), t.active(), t.defaultOption());
+    }
+
+    public GlassColorRequest toRequest(GlassColorResponse c) {
+        return new GlassColorRequest(c.code(), c.name(), c.hex(), c.reflective(), c.note(), c.active(), c.defaultOption());
+    }
+
+    public GlassThicknessRequest toRequest(GlassThicknessResponse t) {
+        return new GlassThicknessRequest(t.mm(), t.active(), t.defaultOption());
     }
 }

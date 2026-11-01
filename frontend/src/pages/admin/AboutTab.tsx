@@ -1,3 +1,4 @@
+import { ImagePicker } from '@/components/admin/ImagePicker'
 import { SettingsForm } from '@/components/admin/SettingsForm'
 import { useSettingsDraft } from '@/components/admin/useSettingsDraft'
 import { TextAreaField, TextField } from '@/components/ui/field'
@@ -14,7 +15,7 @@ export default function AboutTab() {
       description="Textos de la historia y trayectoria de la empresa."
       className="flex max-w-3xl flex-col gap-5"
     >
-      {(draft) => (
+      {({ draft, bind, set }) => (
         <>
           <TextField
             label="Años de experiencia"
@@ -26,12 +27,19 @@ export default function AboutTab() {
             inputClassName="max-w-40"
             value={String(draft.experienceYears)}
             onChange={(value) =>
-              settings.set('experienceYears', Math.min(MAX_YEARS, Math.max(0, Math.round(Number(value) || 0))))
+              set('experienceYears', Math.min(MAX_YEARS, Math.max(0, Math.round(Number(value) || 0))))
             }
           />
-          <TextAreaField label="Párrafo 1 de la historia" maxLength={2000} {...settings.bind('aboutParagraph1')} />
-          <TextAreaField label="Párrafo 2 de la historia" maxLength={2000} {...settings.bind('aboutParagraph2')} />
-          <TextAreaField label="Texto destacado" maxLength={1000} {...settings.bind('aboutHighlight')} />
+          <TextAreaField label="Párrafo 1 de la historia" maxLength={2000} {...bind('aboutParagraph1')} />
+          <TextAreaField label="Párrafo 2 de la historia" maxLength={2000} {...bind('aboutParagraph2')} />
+          <TextAreaField label="Texto destacado" maxLength={1000} {...bind('aboutHighlight')} />
+          <ImagePicker
+            label="Foto del taller (recomendado 4:3)"
+            value={draft.aboutImageUrl}
+            onChange={(url) => set('aboutImageUrl', url)}
+            aspect="4/3"
+            previewClassName="max-w-md"
+          />
         </>
       )}
     </SettingsForm>

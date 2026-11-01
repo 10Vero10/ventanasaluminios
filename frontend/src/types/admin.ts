@@ -15,6 +15,15 @@ export type GlassTypeRequest = Omit<GlassType, 'id' | 'position'>
 export type GlassColorRequest = Omit<GlassColor, 'id' | 'position'>
 export type GlassThicknessRequest = Omit<GlassThickness, 'id' | 'position'>
 
+/** Cada lista de opciones de vidrio con su forma de respuesta y de solicitud. */
+export interface GlassKinds {
+  types: { item: GlassType; request: GlassTypeRequest }
+  colors: { item: GlassColor; request: GlassColorRequest }
+  thicknesses: { item: GlassThickness; request: GlassThicknessRequest }
+}
+
+export type GlassKind = keyof GlassKinds
+
 export interface BackupImportResult {
   featuredLines: number
   galleryImages: number
