@@ -57,6 +57,43 @@ class BackupIntegrationTest {
     }
 
     @Test
+    void elRespaldoIncluyeTodosLosCamposDeLaConfiguracion() throws Exception {
+        var exported = objectMapper.readTree(
+                mockMvc.perform(get("/api/v1/admin/backup")).andReturn().getResponse().getContentAsString());
+        var fields = new java.util.TreeSet<String>();
+        exported.path("content").path("settings").fieldNames().forEachRemaining(fields::add);
+        var components = new java.util.TreeSet<String>();
+        for (var component : com.ventanasyaluminios.dto.request.SiteSettingsRequest.class.getRecordComponents()) {
+            components.add(component.getName());
+        }
+        // Un campo nuevo de configuración que el respaldo olvide fallaría aquí, no al restaurar.
+        org.assertj.core.api.Assertions.assertThat(fields).isEqualTo(components);
+    }
+
+    @Test
+    void unRespaldoAnteriorALaFotoDelTallerLaConserva() throws Exception {
+        ObjectNode backup = (ObjectNode) objectMapper.readTree(
+                mockMvc.perform(get("/api/v1/admin/backup")).andReturn().getResponse().getContentAsString());
+        String photo = backup.path("content").path("settings").path("aboutImageUrl").asText();
+        ((ObjectNode) backup.path("content").path("settings")).remove("aboutImageUrl");
+
+        importing(backup.toString()).andExpect(status().isOk());
+
+        mockMvc.perform(get("/api/v1/site")).andExpect(jsonPath("$.aboutImageUrl").value(photo));
+    }
+
+    @Test
+    void unRespaldoConLaFotoEnNullLaQuita() throws Exception {
+        ObjectNode backup = (ObjectNode) objectMapper.readTree(
+                mockMvc.perform(get("/api/v1/admin/backup")).andReturn().getResponse().getContentAsString());
+        ((ObjectNode) backup.path("content").path("settings")).putNull("aboutImageUrl");
+
+        importing(backup.toString()).andExpect(status().isOk());
+
+        mockMvc.perform(get("/api/v1/site")).andExpect(jsonPath("$.aboutImageUrl").doesNotExist());
+    }
+
+    @Test
     void unaOpcionDeVidrioAusenteEnElRespaldoSeDesactivaYNoSeBorra() throws Exception {
         ObjectNode backup = (ObjectNode) objectMapper.readTree(
                 mockMvc.perform(get("/api/v1/admin/backup")).andReturn().getResponse().getContentAsString());

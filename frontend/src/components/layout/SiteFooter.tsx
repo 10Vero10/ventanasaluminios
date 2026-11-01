@@ -2,6 +2,7 @@ import { Link } from 'react-router'
 
 import { mailHref, phoneHref } from '@/lib/contact'
 import { useSite } from '@/site/siteContext'
+import { ROUTES } from '@/lib/routes'
 
 import { BrandMark } from './BrandMark'
 import { visibleNav } from './navigation'
@@ -28,7 +29,7 @@ export function SiteFooter() {
             {visibleNav(site.quotingEnabled).map((item) => (
               <li key={item.to}>
                 <Link to={item.to} className="text-muted-foreground hover:text-foreground">
-                  {item.to === '/cotizar' ? 'Configurador y cotización' : item.label}
+                  {item.to === ROUTES.quote ? 'Configurador y cotización' : item.label}
                 </Link>
               </li>
             ))}

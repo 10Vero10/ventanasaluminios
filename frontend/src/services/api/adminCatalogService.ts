@@ -1,5 +1,5 @@
-import type { GlassColorRequest, GlassThicknessRequest, GlassTypeRequest } from '@/types/admin'
-import type { GlassColor, GlassOptions, GlassThickness, GlassType, Product, ProductRequest } from '@/types/catalog'
+import type { GlassKind, GlassKinds } from '@/types/admin'
+import type { GlassOptions, Product, ProductRequest } from '@/types/catalog'
 
 import { httpClient } from './httpClient'
 
@@ -37,14 +37,6 @@ export async function getAdminGlassOptions(): Promise<GlassOptions> {
   return data
 }
 
-/** Cada lista de opciones de vidrio con su forma de respuesta y de solicitud. */
-export interface GlassKinds {
-  types: { item: GlassType; request: GlassTypeRequest }
-  colors: { item: GlassColor; request: GlassColorRequest }
-  thicknesses: { item: GlassThickness; request: GlassThicknessRequest }
-}
-
-export type GlassKind = keyof GlassKinds
 
 const GLASS_PATH: Record<GlassKind, string> = {
   types: '/admin/glass-types',

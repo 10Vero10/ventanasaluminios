@@ -10,16 +10,16 @@ import com.ventanasyaluminios.dto.request.GlassColorRequest;
 import com.ventanasyaluminios.dto.request.GlassThicknessRequest;
 import com.ventanasyaluminios.dto.request.GlassTypeRequest;
 import com.ventanasyaluminios.dto.request.ProductRequest;
-import com.ventanasyaluminios.dto.request.ProductSpecRequest;
 import com.ventanasyaluminios.dto.request.SiteSettingsRequest;
 import com.ventanasyaluminios.dto.response.BackupImportResponse;
 import com.ventanasyaluminios.dto.response.GlassColorResponse;
 import com.ventanasyaluminios.dto.response.GlassOptionsResponse;
 import com.ventanasyaluminios.dto.response.GlassThicknessResponse;
 import com.ventanasyaluminios.dto.response.GlassTypeResponse;
-import com.ventanasyaluminios.dto.response.SiteSettingsResponse;
 import com.ventanasyaluminios.exception.ApiException;
 import com.ventanasyaluminios.exception.ErrorCode;
+import com.ventanasyaluminios.mapper.CatalogMapper;
+import com.ventanasyaluminios.mapper.SettingsMapper;
 import com.ventanasyaluminios.repository.FeaturedLineRepository;
 import com.ventanasyaluminios.repository.GalleryImageRepository;
 import com.ventanasyaluminios.repository.ProductRepository;
@@ -60,12 +60,15 @@ public class BackupServiceImpl implements BackupService {
     private final ObjectMapper objectMapper;
     private final Validator validator;
     private final Clock clock;
+    private final SettingsMapper settingsMapper;
+    private final CatalogMapper catalogMapper;
 
     public BackupServiceImpl(SiteSettingsService settingsService, FeaturedLineService featuredLineService,
                              GalleryService galleryService, ProductService productService,
                              GlassOptionService glassOptionService, FeaturedLineRepository featuredLineRepository,
                              GalleryImageRepository galleryImageRepository, ProductRepository productRepository,
-                             ObjectMapper objectMapper, Validator validator, Clock clock) {
+                             ObjectMapper objectMapper, Validator validator, Clock clock,
+                             SettingsMapper settingsMapper, CatalogMapper catalogMapper) {
         this.settingsService = settingsService;
         this.featuredLineService = featuredLineService;
         this.galleryService = galleryService;
@@ -77,36 +80,22 @@ public class BackupServiceImpl implements BackupService {
         this.objectMapper = objectMapper;
         this.validator = validator;
         this.clock = clock;
+        this.settingsMapper = settingsMapper;
+        this.catalogMapper = catalogMapper;
     }
 
     @Override
     @Transactional(readOnly = true)
     public BackupRequest export() {
-        SiteSettingsResponse s = settingsService.getSettings();
-        SiteSettingsRequest settings = new SiteSettingsRequest(s.heroTitle(), s.heroSubtitle(), s.heroImageUrl(),
-                s.heroBadge(), s.phone(), s.email(), s.whatsappNumber(), s.experienceYears(), s.quotingEnabled(),
-                s.faviconUrl(), s.aboutParagraph1(), s.aboutParagraph2(), s.aboutHighlight(), s.aboutImageUrl());
-        List<FeaturedLineRequest> lines = featuredLineService.list().stream()
-                .map(l -> new FeaturedLineRequest(l.number(), l.title(), l.categoryTag(), l.description(), l.imageUrl(),
-                        l.linkText(), l.targetCategory()))
-                .toList();
-        List<GalleryImageRequest> gallery = galleryService.list().stream()
-                .map(g -> new GalleryImageRequest(g.title(), g.url(), g.category()))
-                .toList();
+        SiteSettingsRequest settings = settingsMapper.toRequest(settingsService.getSettings());
+        List<FeaturedLineRequest> lines = featuredLineService.list().stream().map(settingsMapper::toRequest).toList();
+        List<GalleryImageRequest> gallery = galleryService.list().stream().map(settingsMapper::toRequest).toList();
         GlassOptionsResponse glass = glassOptionService.getAllOptions();
         var glassOptions = new BackupRequest.GlassOptions(
-                glass.types().stream().map(t -> new GlassTypeRequest(t.code(), t.name(), t.active(), t.defaultOption()))
-                        .toList(),
-                glass.colors().stream().map(c -> new GlassColorRequest(c.code(), c.name(), c.hex(), c.reflective(),
-                        c.note(), c.active(), c.defaultOption())).toList(),
-                glass.thicknesses().stream().map(t -> new GlassThicknessRequest(t.mm(), t.active(), t.defaultOption()))
-                        .toList());
-        List<ProductRequest> products = productService.list().stream()
-                .map(p -> new ProductRequest(p.category(), p.categoryNumber(), p.title(), p.subtitle(), p.description(),
-                        p.imageUrl(), p.badge(), p.ctaText(), p.active(),
-                        p.specs().stream().map(spec -> new ProductSpecRequest(spec.label(), spec.value())).toList(),
-                        p.features()))
-                .toList();
+                glass.types().stream().map(catalogMapper::toRequest).toList(),
+                glass.colors().stream().map(catalogMapper::toRequest).toList(),
+                glass.thicknesses().stream().map(catalogMapper::toRequest).toList());
+        List<ProductRequest> products = productService.list().stream().map(catalogMapper::toRequest).toList();
         return new BackupRequest(BackupRequest.CURRENT_VERSION, Instant.now(clock),
                 new BackupRequest.Content(settings, lines, gallery, glassOptions), products);
     }
@@ -115,7 +104,7 @@ public class BackupServiceImpl implements BackupService {
     @Transactional
     public BackupImportResponse importBackup(String json) {
         BackupRequest backup = parse(json);
-        settingsService.updateSettings(backup.content().settings());
+        settingsService.updateSettings(settingsToImport(backup, json));
 
         featuredLineRepository.deleteAllInBatch();
         backup.content().featuredLines().forEach(featuredLineService::create);
@@ -132,6 +121,26 @@ public class BackupServiceImpl implements BackupService {
         return new BackupImportResponse(backup.content().featuredLines().size(), backup.content().gallery().size(),
                 backup.products().size(), backup.content().glassOptions().types().size(),
                 backup.content().glassOptions().colors().size(), backup.content().glassOptions().thicknesses().size());
+    }
+
+    /**
+     * Configuración a guardar. Un respaldo anterior a la foto del taller (V7) no trae {@code aboutImageUrl}: en ese caso
+     * se conserva la foto actual en vez de borrarla. Si el campo viene, aunque sea null, se respeta.
+     */
+    private SiteSettingsRequest settingsToImport(BackupRequest backup, String json) {
+        SiteSettingsRequest settings = backup.content().settings();
+        if (hasSettingsField(json, "aboutImageUrl")) {
+            return settings;
+        }
+        return settings.withAboutImageUrl(settingsService.getSettings().aboutImageUrl());
+    }
+
+    private boolean hasSettingsField(String json, String field) {
+        try {
+            return objectMapper.readTree(json).path("content").path("settings").has(field);
+        } catch (JsonProcessingException e) {
+            return false;
+        }
     }
 
     /** Valida el archivo con los mensajes del briefing §3.10 antes de tocar nada. */

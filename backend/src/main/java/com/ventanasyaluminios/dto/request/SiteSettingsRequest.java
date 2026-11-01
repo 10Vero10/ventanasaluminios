@@ -66,4 +66,10 @@ public record SiteSettingsRequest(
         @Size(max = 2048, message = "La URL de la foto del taller es demasiado larga.")
         @Pattern(regexp = RequestPatterns.IMAGE_URL, message = "La foto del taller debe ser una URL http(s) válida.")
         String aboutImageUrl) {
+
+    /** Copia con otra foto del taller. */
+    public SiteSettingsRequest withAboutImageUrl(String url) {
+        return new SiteSettingsRequest(heroTitle, heroSubtitle, heroImageUrl, heroBadge, phone, email, whatsappNumber,
+                experienceYears, quotingEnabled, faviconUrl, aboutParagraph1, aboutParagraph2, aboutHighlight, url);
+    }
 }

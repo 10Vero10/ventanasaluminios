@@ -1,13 +1,14 @@
 import type { ReactNode } from 'react'
 
 import { Loadable } from '@/components/ui/Loadable'
-import type { SiteSettingsRequest } from '@/types/admin'
+import type { SiteSettings } from '@/types/site'
 
 import { Panel } from './Panel'
-import { SaveButton } from './SaveButton'
-import { useSettingsDraft } from './useSettingsDraft'
+import { SaveRow } from './SaveButton'
+import type { SettingsDraft } from './useSettingsDraft'
 
-type SettingsDraft = ReturnType<typeof useSettingsDraft>
+/** Lo que reciben los campos: el borrador ya cargado y las funciones para editarlo. */
+export type SettingsFormState = SettingsDraft & { draft: SiteSettings }
 
 /** Formulario de una parte de la configuración del sitio: carga, error, campos y "Guardar cambios". */
 export function SettingsForm({
@@ -21,7 +22,7 @@ export function SettingsForm({
   title: string
   description: string
   className?: string
-  children: (draft: SiteSettingsRequest) => ReactNode
+  children: (form: SettingsFormState) => ReactNode
 }) {
   return (
     <Panel title={title} description={description}>
@@ -36,8 +37,8 @@ export function SettingsForm({
                 void settings.submit()
               }}
             >
-              <div className={className}>{children(settings.draft)}</div>
-              <SaveButton save={settings.save} />
+              <div className={className}>{children({ ...settings, draft: settings.draft })}</div>
+              <SaveRow save={settings.save} />
             </form>
           )
         }

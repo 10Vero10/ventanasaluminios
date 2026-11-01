@@ -1,4 +1,5 @@
 import { buildAutoMessage, mergeAutoMessage } from '@/lib/configurator'
+import type { QuoteCreateRequest } from '@/types/quote'
 
 import { dimensionsText, glassDescription, type ResolvedConfiguration } from './configuration'
 
@@ -52,4 +53,32 @@ export function writeDimensions(draft: QuoteDraft, text: string): QuoteDraft {
 /** Tras enviar: el mensaje queda vacío, así que no hay sugerencia anterior que reemplazar. */
 export function afterSent(draft: QuoteDraft): QuoteDraft {
   return { ...draft, message: '', lastAutoMessage: null }
+}
+
+/** Datos de contacto del formulario, más el campo trampa. */
+export interface QuoteContact {
+  name: string
+  phone: string
+  website: string
+}
+
+/** Solicitud que se envía: textos recortados y, si hay una configuración aplicada, sus datos estructurados. */
+export function toQuoteRequest(draft: QuoteDraft, contact: QuoteContact): QuoteCreateRequest {
+  const applied = draft.applied
+  return {
+    name: contact.name.trim(),
+    phone: contact.phone.trim(),
+    productType: draft.productType,
+    dimensionsText: draft.dimensionsText.trim(),
+    message: draft.message.trim(),
+    website: contact.website,
+    ...(applied && {
+      widthCm: applied.widthCm,
+      heightCm: applied.heightCm,
+      panes: applied.panes,
+      glassTypeCode: applied.type.code,
+      glassColorCode: applied.color.code,
+      thicknessMm: applied.thickness.mm,
+    }),
+  }
 }

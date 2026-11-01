@@ -41,21 +41,30 @@ function QuoteContent() {
     return resolveConfiguration(next, glassOptions.data)
   }
 
+  // Las actualizaciones son funcionales: el envío de la cotización termina en otro momento y no debe pisar con un
+  // borrador viejo lo que el visitante escribió mientras tanto.
   function changeConfig(patch: Partial<Configuration>) {
     const next = { ...config, ...patch }
+    const resolved = resolveValid(next)
     setConfig(next)
-    setDraft(syncConfiguration(draft, resolveValid(next)))
+    setDraft((current) => syncConfiguration(current, resolved))
   }
 
   function apply() {
     const resolved = resolveValid(config)
-    if (resolved) setDraft(applyConfiguration(draft, resolved))
+    if (resolved) setDraft((current) => applyConfiguration(current, resolved))
     setFeedback(resolved ? 'applied' : 'invalid')
   }
 
   function changeDimensions(text: string) {
-    setDraft(writeDimensions(draft, text))
+    setDraft((current) => writeDimensions(current, text))
     setFeedback('idle')
+  }
+
+  function changeProductType(productType: string) {
+    // Con una medida en 0 se conservan las últimas medidas válidas, pero el tipo de producto sí cambia.
+    const resolved = resolveValid(config)
+    setDraft((current) => syncConfiguration({ ...current, productType }, resolved))
   }
 
   return (
@@ -93,11 +102,10 @@ function QuoteContent() {
             <QuoteForm
               draft={draft}
               productOptions={productOptions}
-              // Con una medida en 0 se conservan las últimas medidas válidas, pero el tipo de producto sí cambia.
-              onProductType={(productType) => setDraft(syncConfiguration({ ...draft, productType }, resolveValid(config)))}
+              onProductType={changeProductType}
               onDimensions={changeDimensions}
-              onMessage={(message) => setDraft({ ...draft, message })}
-              onSent={() => setDraft(afterSent(draft))}
+              onMessage={(message) => setDraft((current) => ({ ...current, message }))}
+              onSent={() => setDraft(afterSent)}
             />
           </section>
         </div>

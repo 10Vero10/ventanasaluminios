@@ -120,3 +120,10 @@ Formato: contexto → decisión → consecuencias.
 - **Orden de listas:** subir y bajar cambian la pantalla al instante y guardan el orden completo; si el servidor lo rechaza, vuelve el orden anterior con el error.
 - **Carga aparte:** el panel es un `lazy()` en `/admin/*`, así el sitio público no descarga su código.
 - **Textos de cotizaciones:** se muestran como texto (React escapa todo), nunca como HTML.
+
+## ADR-018 — Borradores y listas del panel
+
+- **Borrador que sigue al servidor (`useDraft`):** cada formulario del panel edita una copia. Si llega una versión nueva del objeto (recarga, otra fila guardada), los campos sin tocar toman el valor del servidor y los editados se conservan. Así una recarga no borra lo escrito y, por ejemplo, la opción de vidrio que dejó de ser "por defecto" se ve desmarcada.
+- **Reordenar (`useReorder`):** el cambio se ve al instante y se guarda el orden completo; si falla, vuelve el orden anterior solo si no llegaron datos nuevos mientras tanto. Mientras la lista se recarga, subir y bajar quedan deshabilitados.
+- **Cotizar:** el armado de la solicitud y la sincronización con el configurador son funciones puras (`quoteDraft.ts`) y la página las aplica con actualizaciones funcionales, para que el fin de un envío no pise lo escrito mientras tanto.
+- **Respaldo:** las conversiones respuesta → solicitud viven en los mappers. Un respaldo que no trae un campo agregado después (como `aboutImageUrl`) conserva el valor actual en vez de borrarlo; una prueba verifica que la exportación incluya todos los campos de la configuración.

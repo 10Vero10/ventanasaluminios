@@ -1,5 +1,5 @@
 import { QuoteCallout } from '@/components/site/QuoteCallout'
-import { Kicker, Section, SectionTitle } from '@/components/site/Section'
+import { Kicker, PageTitle, Section, SectionTitle } from '@/components/site/Section'
 import { useSite } from '@/site/siteContext'
 
 const EXPERIENCE = [
@@ -45,9 +45,7 @@ export default function AboutPage() {
         <div className="grid gap-12 md:grid-cols-[1.2fr_1fr] md:items-center">
           <div>
             <Kicker>¿Quiénes somos?</Kicker>
-            <h1 className="mt-2 font-display text-[40px] leading-[1.05] font-semibold tracking-[-0.02em] text-balance md:text-[64px]">
-              Una empresa que mide todo, menos su dedicación
-            </h1>
+            <PageTitle>Una empresa que mide todo, menos su dedicación</PageTitle>
             <p className="mt-5 max-w-xl text-[19px] text-muted-foreground">
               Fabricación e instalación de soluciones en vidrio, aluminio y otros materiales desde hace más de {years}{' '}
               años.

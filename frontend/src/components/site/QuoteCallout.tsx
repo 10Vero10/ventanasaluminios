@@ -2,6 +2,7 @@ import { Link } from 'react-router'
 
 import { Button } from '@/components/ui/button'
 import { useSite } from '@/site/siteContext'
+import { ROUTES } from '@/lib/routes'
 
 import { Kicker, Section, SectionTitle } from './Section'
 
@@ -17,7 +18,7 @@ export function QuoteCallout({ kicker, title, text, note }: { kicker: string; ti
       </SectionTitle>
       <p className="mx-auto mt-4 max-w-xl text-[17px] text-muted-foreground">{text}</p>
       <Button asChild size="lg" className="mt-8">
-        <Link to="/cotizar">Cotizar ahora</Link>
+        <Link to={ROUTES.quote}>Cotizar ahora</Link>
       </Button>
       {note && <p className="mt-4 text-sm text-muted-foreground">{note}</p>}
     </Section>

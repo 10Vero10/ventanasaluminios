@@ -10,6 +10,8 @@ import { CATEGORIES, type Product, type ProductCategory, type ProductRequest } f
 import { CategorySelect } from './CategorySelect'
 import { ImagePicker } from './ImagePicker'
 import { SaveButton } from './SaveButton'
+import { SaveFeedback } from './SaveFeedback'
+import { useDraft } from './useDraft'
 import { useSaveState } from './useSaveState'
 
 const MAX_ROWS = 12
@@ -30,9 +32,6 @@ function emptyProduct(category: ProductCategory): ProductRequest {
   }
 }
 
-type TextKey = 'title' | 'subtitle' | 'description'
-type OptionalKey = 'categoryNumber' | 'badge' | 'ctaText'
-
 /**
  * Editor de un producto (briefing §5.7.4): edita {@code product} o, si es null, crea uno nuevo en
  * {@code newCategory}. La ficha técnica y las ventajas se guardan en el orden de la pantalla; las filas vacías se
@@ -49,11 +48,9 @@ export function ProductEditor({
   onSaved: () => void
   onCancel: () => void
 }) {
-  const [draft, setDraft] = useState<ProductRequest>(() => (product ? toProductRequest(product) : emptyProduct(newCategory)))
+  const [initial] = useState<ProductRequest>(() => (product ? toProductRequest(product) : emptyProduct(newCategory)))
+  const { draft, set, bind, bindOptional } = useDraft(initial)
   const save = useSaveState()
-  const set = <K extends keyof ProductRequest>(key: K, value: ProductRequest[K]) => setDraft((d) => ({ ...d, [key]: value }))
-  const bind = (key: TextKey) => ({ value: draft[key], onChange: (value: string) => set(key, value) })
-  const bindOptional = (key: OptionalKey) => ({ value: draft[key] ?? '', onChange: (value: string) => set(key, value || null) })
 
   async function submit(event: FormEvent) {
     event.preventDefault()
@@ -72,7 +69,7 @@ export function ProductEditor({
         <TextField label="Título" required maxLength={80} {...bind('title')} />
         <TextField label="Subtítulo" required maxLength={120} {...bind('subtitle')} />
         <Field label="Línea">
-          {(props) => <CategorySelect {...props} value={draft.category} onChange={(v) => v && set('category', v)} />}
+          {(props) => <CategorySelect {...props} value={draft.category} onChange={(category) => set('category', category)} />}
         </Field>
         <TextField label="Número de la línea" hint="Ejemplo: 01." maxLength={4} {...bindOptional('categoryNumber')} />
         <TextField label="Distintivo" hint="Opcional. Ejemplo: 4 obras instaladas." maxLength={60} {...bindOptional('badge')} />
@@ -117,6 +114,7 @@ export function ProductEditor({
         <Button variant="secondary" onClick={onCancel} disabled={save.saving}>
           Descartar cambios
         </Button>
+        <SaveFeedback state={save.state} />
       </div>
     </form>
   )
