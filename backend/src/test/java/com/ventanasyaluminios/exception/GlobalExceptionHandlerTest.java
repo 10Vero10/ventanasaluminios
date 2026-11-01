@@ -1,0 +1,91 @@
+package com.ventanasyaluminios.exception;
+
+import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.not;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotBlank;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.context.annotation.Import;
+import org.springframework.http.MediaType;
+import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RestController;
+
+/** Verifica que todo error llegue como { error, code } en español y sin detalles técnicos. */
+@WebMvcTest(controllers = GlobalExceptionHandlerTest.FailingController.class)
+@Import(GlobalExceptionHandlerTest.FailingController.class)
+class GlobalExceptionHandlerTest {
+
+    @Autowired
+    private MockMvc mockMvc;
+
+    @Test
+    void excepcionDeNegocioUsaSuEstadoYCodigo() throws Exception {
+        mockMvc.perform(get("/test/not-found"))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.error").value("La imagen no existe."))
+                .andExpect(jsonPath("$.code").value("NOT_FOUND"));
+    }
+
+    @Test
+    void validacionDevuelveElMensajeDelCampo() throws Exception {
+        mockMvc.perform(post("/test/validated").contentType(MediaType.APPLICATION_JSON).content("{\"name\":\"\"}"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.error").value("El nombre es obligatorio."))
+                .andExpect(jsonPath("$.code").value("VALIDATION_ERROR"));
+    }
+
+    @Test
+    void jsonMalFormadoDevuelveMensajeEnEspanol() throws Exception {
+        mockMvc.perform(post("/test/validated").contentType(MediaType.APPLICATION_JSON).content("{no es json"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.error").value("El contenido de la solicitud no es válido."))
+                .andExpect(jsonPath("$.code").value("MALFORMED_REQUEST"));
+    }
+
+    @Test
+    void rutaInexistenteDevuelve404ConFormatoUniforme() throws Exception {
+        mockMvc.perform(get("/test/no-existe"))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.code").value("NOT_FOUND"));
+    }
+
+    @Test
+    void errorInesperadoNoExponeDetallesTecnicos() throws Exception {
+        mockMvc.perform(get("/test/boom"))
+                .andExpect(status().isInternalServerError())
+                .andExpect(jsonPath("$.error").value("Ocurrió un error inesperado. Intenta de nuevo."))
+                .andExpect(content().string(not(containsString("NullPointerException"))));
+    }
+
+    record NamedRequest(@NotBlank(message = "El nombre es obligatorio.") String name) {
+    }
+
+    @RestController
+    static class FailingController {
+
+        @GetMapping("/test/not-found")
+        void notFound() {
+            throw new ResourceNotFoundException("La imagen no existe.");
+        }
+
+        @PostMapping("/test/validated")
+        void validated(@Valid @RequestBody NamedRequest request) {
+        }
+
+        @GetMapping("/test/boom")
+        void boom() {
+            throw new NullPointerException("Cannot read properties of null");
+        }
+    }
+}
