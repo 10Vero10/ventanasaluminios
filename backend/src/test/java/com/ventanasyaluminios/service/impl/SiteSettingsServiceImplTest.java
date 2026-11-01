@@ -87,6 +87,6 @@ class SiteSettingsServiceImplTest {
 
     private SiteSettingsRequest request(String phone, String whatsapp) {
         return new SiteSettingsRequest("  Ventanas y Aluminios SAS  ", "Subtítulo", null, "  ", phone,
-                "ventanaluminio@hotmail.com", whatsapp, 25, true, "", "Párrafo 1", "Párrafo 2", "Destacado");
+                "ventanaluminio@hotmail.com", whatsapp, 25, true, "", "Párrafo 1", "Párrafo 2", "Destacado", null);
     }
 }

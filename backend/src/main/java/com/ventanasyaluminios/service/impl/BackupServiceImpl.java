@@ -85,7 +85,7 @@ public class BackupServiceImpl implements BackupService {
         SiteSettingsResponse s = settingsService.getSettings();
         SiteSettingsRequest settings = new SiteSettingsRequest(s.heroTitle(), s.heroSubtitle(), s.heroImageUrl(),
                 s.heroBadge(), s.phone(), s.email(), s.whatsappNumber(), s.experienceYears(), s.quotingEnabled(),
-                s.faviconUrl(), s.aboutParagraph1(), s.aboutParagraph2(), s.aboutHighlight());
+                s.faviconUrl(), s.aboutParagraph1(), s.aboutParagraph2(), s.aboutHighlight(), s.aboutImageUrl());
         List<FeaturedLineRequest> lines = featuredLineService.list().stream()
                 .map(l -> new FeaturedLineRequest(l.number(), l.title(), l.categoryTag(), l.description(), l.imageUrl(),
                         l.linkText(), l.targetCategory()))

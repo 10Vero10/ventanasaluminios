@@ -39,6 +39,17 @@ describe('AppRouter', () => {
     expect(await screen.findByRole('heading', { name: 'Más de 30 años fortaleciendo procesos' })).toBeInTheDocument()
   })
 
+  it('Quiénes somos muestra la foto del taller si hay una, y sin ella solo el texto', async () => {
+    const { unmount } = renderAt('/nosotros')
+    expect(await screen.findByAltText(/Taller de carpintería/)).toHaveAttribute('src', '/media/taller.webp')
+    unmount()
+
+    vi.mocked(getSite).mockResolvedValue({ ...SITE, aboutImageUrl: null })
+    renderAt('/nosotros')
+    expect(await screen.findByText('Destacado.')).toBeInTheDocument()
+    expect(screen.queryByAltText(/Taller de carpintería/)).not.toBeInTheDocument()
+  })
+
   it('con la cotización apagada /cotizar vuelve al inicio y no hay botones de cotizar', async () => {
     vi.mocked(getSite).mockResolvedValue({ ...SITE, quotingEnabled: false })
     renderAt('/cotizar')

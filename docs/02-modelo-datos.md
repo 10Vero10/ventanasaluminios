@@ -22,7 +22,7 @@ Tablas de PostgreSQL 16. El esquema se crea solo con migraciones de Flyway (`bac
 
 | Tabla | Columnas | Notas |
 |---|---|---|
-| `site_settings` | `id SMALLINT` (`CHECK id = 1`), `hero_title`, `hero_subtitle`, `hero_image_url`, `hero_badge`, `phone`, `email`, `whatsapp_number`, `experience_years`, `quoting_enabled`, `favicon_url`, `about_paragraph1`, `about_paragraph2`, `about_highlight`, `updated_at` | Una sola fila |
+| `site_settings` | `id SMALLINT` (`CHECK id = 1`), `hero_title`, `hero_subtitle`, `hero_image_url`, `hero_badge`, `phone`, `email`, `whatsapp_number`, `experience_years`, `quoting_enabled`, `favicon_url`, `about_paragraph1`, `about_paragraph2`, `about_highlight`, `about_image_url` (V7), `updated_at` | Una sola fila |
 | `featured_line` | `id`, `position` (única, diferible), `number`, `title`, `category_tag`, `description`, `image_url`, `link_text`, `target_category` | Tarjetas de la portada |
 | `gallery_image` | `id`, `position` (única, diferible), `title`, `url`, `category` (nula), `created_at` | Galería de trabajos. `url` externa o `/media/{archivo}`. Sin línea solo aparece en "Todos". Índice `(category, position)` |
 | `product` | `id`, `category`, `category_number`, `title`, `subtitle`, `description`, `image_url`, `badge`, `cta_text`, `position` (única, diferible), `active`, `version` (bloqueo optimista), `created_at`, `updated_at` | Índice `(category, position)` |

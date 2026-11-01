@@ -27,6 +27,8 @@ export interface SiteContent {
   aboutParagraph1: string
   aboutParagraph2: string
   aboutHighlight: string
+  /** Foto del taller en Quiénes somos. */
+  aboutImageUrl: string | null
 }
 
 export interface PublicSite extends SiteContent {

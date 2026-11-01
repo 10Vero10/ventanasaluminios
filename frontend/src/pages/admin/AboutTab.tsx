@@ -1,3 +1,4 @@
+import { ImagePicker } from '@/components/admin/ImagePicker'
 import { SettingsForm } from '@/components/admin/SettingsForm'
 import { useSettingsDraft } from '@/components/admin/useSettingsDraft'
 import { TextAreaField, TextField } from '@/components/ui/field'
@@ -32,6 +33,13 @@ export default function AboutTab() {
           <TextAreaField label="Párrafo 1 de la historia" maxLength={2000} {...settings.bind('aboutParagraph1')} />
           <TextAreaField label="Párrafo 2 de la historia" maxLength={2000} {...settings.bind('aboutParagraph2')} />
           <TextAreaField label="Texto destacado" maxLength={1000} {...settings.bind('aboutHighlight')} />
+          <ImagePicker
+            label="Foto del taller (recomendado 4:3)"
+            value={draft.aboutImageUrl}
+            onChange={(url) => settings.set('aboutImageUrl', url)}
+            aspect="4/3"
+            previewClassName="max-w-md"
+          />
         </>
       )}
     </SettingsForm>
