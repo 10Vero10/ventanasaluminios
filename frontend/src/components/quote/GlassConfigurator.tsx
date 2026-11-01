@@ -54,7 +54,7 @@ export function GlassConfigurator({
         {drawable ? (
           <BlueprintDrawing config={resolved} />
         ) : (
-          <p className="flex h-[296px] items-center justify-center rounded-[20px] bg-secondary px-6 text-center text-muted-foreground">
+          <p className="flex min-h-[200px] items-center justify-center rounded-[20px] bg-secondary px-6 text-center text-muted-foreground">
             Ajusta el ancho y el alto (mayores a 0 cm) para ver el plano.
           </p>
         )}

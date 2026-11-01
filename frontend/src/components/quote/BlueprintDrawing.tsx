@@ -1,7 +1,7 @@
 import { motion, useReducedMotion } from 'motion/react'
 import { useEffect, useRef, useState } from 'react'
 
-import { drawingScale, pxPerCm } from '@/lib/configurator'
+import { drawingScale, MAX_HEIGHT_CM, pxPerCm } from '@/lib/configurator'
 
 import type { ResolvedConfiguration } from './configuration'
 
@@ -34,8 +34,10 @@ export function BlueprintDrawing({ config }: { config: ResolvedConfiguration }) 
   const ppc = pxPerCm(Math.max(0, availableWidth - MARGIN_LEFT - MARGIN_RIGHT), MAX_DRAWING_HEIGHT_PX)
   const width = config.widthCm * ppc
   const height = config.heightCm * ppc
-  const svgHeight = MARGIN_TOP + MAX_DRAWING_HEIGHT_PX + MARGIN_BOTTOM
-  const top = MARGIN_TOP + MAX_DRAWING_HEIGHT_PX - height
+  // Alto del lienzo = alto máximo (260 cm) a esta escala: sin franja vacía sobre el dibujo.
+  const drawingHeight = MAX_HEIGHT_CM * ppc
+  const svgHeight = MARGIN_TOP + drawingHeight + MARGIN_BOTTOM
+  const top = MARGIN_TOP + drawingHeight - height
   const left = MARGIN_LEFT
   const transition = reduceMotion ? { duration: 0 } : SPRING
   const label = `${config.type.name.toLocaleUpperCase('es-CO')} · ${config.thickness.mm} MM`
@@ -105,14 +107,14 @@ export function BlueprintDrawing({ config }: { config: ResolvedConfiguration }) 
             {/* Cota del ancho */}
             <motion.line
               initial={false}
-              animate={{ x1: left, x2: left + width, y1: MARGIN_TOP + MAX_DRAWING_HEIGHT_PX + 18, y2: MARGIN_TOP + MAX_DRAWING_HEIGHT_PX + 18 }}
+              animate={{ x1: left, x2: left + width, y1: MARGIN_TOP + drawingHeight + 18, y2: MARGIN_TOP + drawingHeight + 18 }}
               transition={transition}
               stroke="#707070"
               strokeWidth={1}
             />
             <motion.text
               initial={false}
-              animate={{ x: left + width / 2, y: MARGIN_TOP + MAX_DRAWING_HEIGHT_PX + 36 }}
+              animate={{ x: left + width / 2, y: MARGIN_TOP + drawingHeight + 36 }}
               transition={transition}
               textAnchor="middle"
               className="fill-muted-foreground text-[12px]"
