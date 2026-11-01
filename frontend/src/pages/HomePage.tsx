@@ -3,8 +3,8 @@ import { Link } from 'react-router'
 import { Kicker, Section, SectionTitle } from '@/components/site/Section'
 import { QuoteCallout } from '@/components/site/QuoteCallout'
 import { Button } from '@/components/ui/button'
-import { catalogHref } from '@/lib/categoryParam'
 import { useSite } from '@/site/siteContext'
+import { catalogHref, ROUTES } from '@/lib/routes'
 
 /** Inicio (briefing §5.3): portada editable, trayectoria, líneas destacadas y llamado a cotizar. */
 export default function HomePage() {
@@ -26,11 +26,11 @@ export default function HomePage() {
           <div className="mt-8 flex flex-wrap justify-center gap-3">
             {site.quotingEnabled && (
               <Button asChild size="lg">
-                <Link to="/cotizar">Cotizar</Link>
+                <Link to={ROUTES.quote}>Cotizar</Link>
               </Button>
             )}
             <Button asChild size="lg" variant="secondary">
-              <Link to="/catalogo">Ver catálogo</Link>
+              <Link to={ROUTES.catalog}>Ver catálogo</Link>
             </Button>
           </div>
           <ul className="mt-6 flex flex-wrap justify-center gap-x-6 gap-y-1 text-sm text-muted-foreground">
@@ -70,7 +70,7 @@ export default function HomePage() {
             <SectionTitle id="trayectoria">{site.experienceYears} años fabricando confianza</SectionTitle>
             <p className="mt-4 text-[17px] text-muted-foreground">Desde nuestro taller, a la medida de cada obra.</p>
             <Button asChild variant="link" className="mt-4 text-[17px]">
-              <Link to="/nosotros">Conócenos</Link>
+              <Link to={ROUTES.about}>Conócenos</Link>
             </Button>
           </div>
           <div className="grid gap-4 sm:grid-cols-2">

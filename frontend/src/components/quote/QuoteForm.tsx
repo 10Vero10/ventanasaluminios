@@ -9,7 +9,7 @@ import { getErrorMessage } from '@/services/api/httpClient'
 import { createQuote } from '@/services/api/quoteService'
 import { useSite } from '@/site/siteContext'
 
-import { MAX_MESSAGE, type QuoteDraft } from './quoteDraft'
+import { MAX_MESSAGE, type QuoteDraft, toQuoteRequest } from './quoteDraft'
 
 type SubmitState = { status: 'idle' } | { status: 'sending' } | { status: 'sent' } | { status: 'error'; message: string }
 
@@ -44,24 +44,8 @@ export function QuoteForm({
     if (!name.trim() || !phone.trim()) return setMissingContact(true)
     setMissingContact(false)
     setSubmit({ status: 'sending' })
-    const structured = draft.applied
     try {
-      await createQuote({
-        name: name.trim(),
-        phone: phone.trim(),
-        productType: draft.productType,
-        dimensionsText: draft.dimensionsText.trim(),
-        message: draft.message.trim(),
-        website,
-        ...(structured && {
-          widthCm: structured.widthCm,
-          heightCm: structured.heightCm,
-          panes: structured.panes,
-          glassTypeCode: structured.type.code,
-          glassColorCode: structured.color.code,
-          thicknessMm: structured.thickness.mm,
-        }),
-      })
+      await createQuote(toQuoteRequest(draft, { name, phone, website }))
       setName('')
       setPhone('')
       onSent()
@@ -113,7 +97,7 @@ export function QuoteForm({
       />
       <Field label="Tipo de producto">
         {(props) => (
-          <OptionSelect {...props} options={productOptions} value={draft.productType} onChange={(v) => v && onProductType(v)} />
+          <OptionSelect {...props} options={productOptions} value={draft.productType} onChange={onProductType} />
         )}
       </Field>
       <TextField

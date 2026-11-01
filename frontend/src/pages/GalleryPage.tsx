@@ -32,19 +32,20 @@ export default function GalleryPage() {
           state={images}
           loadingLabel="Cargando trabajos…"
           errorTitle="No pudimos cargar la galería"
-          isEmpty={(data) => data.length === 0}
-          empty={
-            <MessageState
-              title={category ? `Aún no hay trabajos de ${categoryLabel(category).toLowerCase()}` : 'Aún no hay trabajos publicados'}
-              description={category ? 'Mira los trabajos de las otras líneas.' : 'Pronto publicaremos fotos de nuestros proyectos.'}
-              action={
-                category && (
-                  <Button variant="secondary" onClick={() => selectCategory(null)}>
-                    Ver todas las líneas
-                  </Button>
-                )
-              }
-            />
+          empty={(data) =>
+            data.length === 0 && (
+              <MessageState
+                title={category ? `Aún no hay trabajos de ${categoryLabel(category).toLowerCase()}` : 'Aún no hay trabajos publicados'}
+                description={category ? 'Mira los trabajos de las otras líneas.' : 'Pronto publicaremos fotos de nuestros proyectos.'}
+                action={
+                  category && (
+                    <Button variant="secondary" onClick={() => selectCategory(null)}>
+                      Ver todas las líneas
+                    </Button>
+                  )
+                }
+              />
+            )
           }
         >
           {(data) => (

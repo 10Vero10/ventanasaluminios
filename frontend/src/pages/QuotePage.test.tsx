@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from '@testing-library/react'
+import { act, render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { MemoryRouter } from 'react-router'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
@@ -179,5 +179,21 @@ describe('QuotePage, casos límite', () => {
 
     expect((message as HTMLTextAreaElement).value.length).toBe(2000)
     expect((message as HTMLTextAreaElement).value.startsWith('Hola, me interesa')).toBe(true)
+  })
+
+  it('lo que el visitante escribe mientras se envía no se pierde al terminar el envío', async () => {
+    const user = userEvent.setup()
+    let finish: (id: string) => void = () => {}
+    vi.mocked(createQuote).mockImplementation(() => new Promise<string>((resolve) => (finish = resolve)))
+    renderPage()
+    await user.type(screen.getByLabelText(/Nombre y apellido/), 'Ana')
+    await user.type(screen.getByLabelText(/Teléfono/), '300')
+    await user.click(screen.getByRole('button', { name: 'Enviar cotización' }))
+    const dimensions = screen.getByLabelText('Medidas aproximadas (alto x ancho en cm)')
+    await user.type(dimensions, '200 x 100')
+
+    await act(async () => finish('id-1'))
+    await user.click(await screen.findByRole('button', { name: 'Enviar otra cotización' }))
+    expect(screen.getByLabelText('Medidas aproximadas (alto x ancho en cm)')).toHaveValue('200 x 100')
   })
 })

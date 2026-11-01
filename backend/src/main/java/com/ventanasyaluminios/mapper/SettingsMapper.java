@@ -122,4 +122,20 @@ public class SettingsMapper {
         image.setUrl(request.url().trim());
         image.setCategory(request.category());
     }
+
+    /** Configuración actual como solicitud, para el respaldo: el mismo formato que acepta el panel. */
+    public SiteSettingsRequest toRequest(SiteSettingsResponse s) {
+        return new SiteSettingsRequest(s.heroTitle(), s.heroSubtitle(), s.heroImageUrl(), s.heroBadge(), s.phone(),
+                s.email(), s.whatsappNumber(), s.experienceYears(), s.quotingEnabled(), s.faviconUrl(),
+                s.aboutParagraph1(), s.aboutParagraph2(), s.aboutHighlight(), s.aboutImageUrl());
+    }
+
+    public FeaturedLineRequest toRequest(FeaturedLineResponse l) {
+        return new FeaturedLineRequest(l.number(), l.title(), l.categoryTag(), l.description(), l.imageUrl(),
+                l.linkText(), l.targetCategory());
+    }
+
+    public GalleryImageRequest toRequest(GalleryImageResponse g) {
+        return new GalleryImageRequest(g.title(), g.url(), g.category());
+    }
 }

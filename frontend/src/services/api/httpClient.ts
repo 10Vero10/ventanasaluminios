@@ -33,6 +33,11 @@ httpClient.interceptors.response.use(undefined, (error: unknown) => {
   return Promise.reject(error)
 })
 
+/** Si el error es una respuesta HTTP con ese estado. */
+export function isHttpStatus(error: unknown, status: number): boolean {
+  return axios.isAxiosError(error) && error.response?.status === status
+}
+
 /** Mensaje legible de un error de la API; si el backend no respondió, un mensaje genérico en español. */
 export function getErrorMessage(error: unknown): string {
   if (axios.isAxiosError<ApiError>(error)) {

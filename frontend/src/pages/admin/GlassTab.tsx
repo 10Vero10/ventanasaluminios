@@ -1,39 +1,36 @@
 import { type FormEvent, type ReactNode, useState } from 'react'
 
 import { MoveButtons } from '@/components/admin/MoveButtons'
-import { moveItem } from '@/components/admin/moveItem'
 import { Panel } from '@/components/admin/Panel'
-import { SaveButton } from '@/components/admin/SaveButton'
+import { SaveButton, SaveRow } from '@/components/admin/SaveButton'
+import { SaveFeedback } from '@/components/admin/SaveFeedback'
+import { type DraftState, useDraft } from '@/components/admin/useDraft'
+import { useReorder } from '@/components/admin/useReorder'
 import { useSaveState } from '@/components/admin/useSaveState'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Field, TextField } from '@/components/ui/field'
 import { Loadable } from '@/components/ui/Loadable'
 import { InlineError } from '@/components/ui/states'
 import { GLASS_CODE_PATTERN, glassCodeFrom } from '@/lib/glassCode'
-import { useLoad } from '@/lib/useLoad'
-import {
-  getAdminGlassOptions,
-  type GlassKind,
-  type GlassKinds,
-  reorderGlass,
-  saveGlassOption,
-} from '@/services/api/adminCatalogService'
-import { getErrorMessage } from '@/services/api/httpClient'
+import { type Loaded, useLoad } from '@/lib/useLoad'
+import { getAdminGlassOptions, reorderGlass, saveGlassOption } from '@/services/api/adminCatalogService'
+import type { GlassKind, GlassKinds } from '@/types/admin'
 import type { GlassColor, GlassOptions, GlassThickness, GlassType } from '@/types/catalog'
 
 type Item<K extends GlassKind> = GlassKinds[K]['item']
 type Request<K extends GlassKind> = GlassKinds[K]['request']
+type Draft<K extends GlassKind> = DraftState<Item<K>, Item<K>>
 
 /**
  * Lo que distingue a cada lista: cómo se arma la solicitud (también sirve para saber si una fila cambió, comparando
- * solo lo editable), cómo se titula una fila y qué campos propios tiene.
+ * solo lo editable), cómo se nombra una fila, sus campos propios y su formulario para agregar.
  */
 interface KindConfig<K extends GlassKind> {
   kind: K
   title: string
   toRequest: (item: Item<K>) => Request<K>
   rowLabel: (item: Item<K>) => string
-  fields: (draft: Item<K>, set: (patch: Partial<Item<K>>) => void) => ReactNode
+  fields: (draft: Draft<K>) => ReactNode
   newForm: (onCreated: () => void) => ReactNode
 }
 
@@ -42,8 +39,14 @@ const TYPES: KindConfig<'types'> = {
   title: 'Tipos de vidrio',
   toRequest: (t: GlassType) => ({ code: t.code, name: t.name.trim(), active: t.active, defaultOption: t.defaultOption }),
   rowLabel: (t) => t.name,
-  fields: (draft, set) => <NameField code={draft.code} value={draft.name} onChange={(name) => set({ name })} />,
-  newForm: (onCreated) => <NewNamedOption kind="types" onCreated={onCreated} />,
+  fields: ({ draft, bind }) => <NameField code={draft.code} {...bind('name')} />,
+  newForm: (onCreated) => (
+    <NewNamedOption
+      title="Nuevo tipo"
+      onCreated={onCreated}
+      create={(base) => saveGlassOption('types', null, { ...base, active: true, defaultOption: false })}
+    />
+  ),
 }
 
 const COLORS: KindConfig<'colors'> = {
@@ -59,11 +62,11 @@ const COLORS: KindConfig<'colors'> = {
     defaultOption: c.defaultOption,
   }),
   rowLabel: (c) => c.name,
-  fields: (draft, set) => (
+  fields: ({ draft, set, bind, bindOptional }) => (
     <>
-      <NameField code={draft.code} value={draft.name} onChange={(name) => set({ name })} />
-      <ColorField value={draft.hex} onChange={(hex) => set({ hex })} />
-      <Checkbox className="pb-3 text-sm" checked={draft.reflective} onChange={(reflective) => set({ reflective })}>
+      <NameField code={draft.code} {...bind('name')} />
+      <ColorField value={draft.hex} onChange={(hex) => set('hex', hex)} />
+      <Checkbox className="pb-3 text-sm" checked={draft.reflective} onChange={(reflective) => set('reflective', reflective)}>
         Reflectivo
       </Checkbox>
       <TextField
@@ -71,12 +74,20 @@ const COLORS: KindConfig<'colors'> = {
         hint="Opcional. Se muestra al elegir este color."
         className="basis-full"
         maxLength={200}
-        value={draft.note ?? ''}
-        onChange={(note) => set({ note })}
+        {...bindOptional('note')}
       />
     </>
   ),
-  newForm: (onCreated) => <NewNamedOption kind="colors" onCreated={onCreated} />,
+  newForm: (onCreated) => (
+    <NewNamedOption
+      title="Nuevo color"
+      withColor
+      onCreated={onCreated}
+      create={(base, hex) =>
+        saveGlassOption('colors', null, { ...base, hex, reflective: false, note: null, active: true, defaultOption: false })
+      }
+    />
+  ),
 }
 
 const THICKNESSES: KindConfig<'thicknesses'> = {
@@ -84,7 +95,7 @@ const THICKNESSES: KindConfig<'thicknesses'> = {
   title: 'Espesores',
   toRequest: (t: GlassThickness) => ({ mm: t.mm, active: t.active, defaultOption: t.defaultOption }),
   rowLabel: (t) => `${t.mm} mm`,
-  fields: (draft) => <p className="w-20 pb-3 font-display text-xl font-semibold tabular-nums">{draft.mm} mm</p>,
+  fields: ({ draft }) => <p className="w-20 pb-3 font-display text-xl font-semibold tabular-nums">{draft.mm} mm</p>,
   newForm: (onCreated) => <NewThickness onCreated={onCreated} />,
 }
 
@@ -114,36 +125,23 @@ function GlassList<K extends GlassKind>({
 }: {
   config: KindConfig<K>
   items: Item<K>[]
-  options: { reload: () => void; setData: (update: (data: GlassOptions) => GlassOptions) => void }
+  options: Loaded<GlassOptions>
 }) {
-  const [error, setError] = useState<string | null>(null)
-  const [busy, setBusy] = useState(false)
-  const setItems = (next: Item<K>[]) => options.setData((data) => ({ ...data, [config.kind]: next }))
-
-  async function move(from: number, to: number) {
-    const next = moveItem(items, from, to)
-    setItems(next)
-    setBusy(true)
-    setError(null)
-    try {
-      await reorderGlass(config.kind, next.map((i) => i.id))
-    } catch (err) {
-      setItems(items)
-      setError(getErrorMessage(err))
-    } finally {
-      setBusy(false)
-    }
-  }
+  const setItems = (update: (current: Item<K>[]) => Item<K>[]) =>
+    options.setData((data) => ({ ...data, [config.kind]: update(data[config.kind] as Item<K>[]) }))
+  const reorder = useReorder(items, setItems, (ids) => reorderGlass(config.kind, ids))
+  // Mientras se recarga no se ordena sobre datos viejos.
+  const locked = reorder.busy || (options.status === 'ready' && options.refreshing)
 
   return (
     <Panel title={config.title} description="Desactiva una opción para ocultarla del configurador sin perder las cotizaciones que la usan.">
-      <InlineError message={error} className="mb-4" />
+      <InlineError message={reorder.error} className="mb-4" />
       <ul className="flex flex-col gap-3">
         {items.map((item, index) => (
           <li key={item.id} className="flex flex-wrap items-end gap-3 rounded-[20px] border border-border p-4">
             <GlassRow config={config} item={item} onSaved={options.reload} />
             <div className="flex gap-1">
-              <MoveButtons label={config.rowLabel(item)} index={index} count={items.length} onMove={move} disabled={busy} />
+              <MoveButtons label={config.rowLabel(item)} index={index} count={items.length} onMove={reorder.move} disabled={locked} />
             </div>
           </li>
         ))}
@@ -154,10 +152,12 @@ function GlassList<K extends GlassKind>({
 }
 
 function GlassRow<K extends GlassKind>({ config, item, onSaved }: { config: KindConfig<K>; item: Item<K>; onSaved: () => void }) {
-  const [draft, setDraft] = useState(item)
+  // El borrador sigue al servidor en lo que no se tocó: si otra fila pasa a ser la opción por defecto, esta se desmarca.
+  const draftState = useDraft<Item<K>>(item)
+  const { draft } = draftState
   const save = useSaveState()
-  const set = (patch: Partial<Item<K>>) => setDraft((d) => ({ ...d, ...patch }))
   const changed = JSON.stringify(config.toRequest(draft)) !== JSON.stringify(config.toRequest(item))
+  const setFlag = (key: 'active' | 'defaultOption', value: boolean) => draftState.set(key, value as Item<K>[typeof key])
 
   async function submit(event: FormEvent) {
     event.preventDefault()
@@ -167,16 +167,19 @@ function GlassRow<K extends GlassKind>({ config, item, onSaved }: { config: Kind
 
   return (
     <form noValidate onSubmit={submit} className="flex min-w-0 flex-1 flex-wrap items-end gap-4">
-      {config.fields(draft, set)}
+      {config.fields(draftState)}
       <div className="flex flex-wrap gap-5 pb-3 text-sm">
-        <Checkbox checked={draft.active} onChange={(active) => set({ active } as Partial<Item<K>>)}>
+        <Checkbox checked={draft.active} onChange={(value) => setFlag('active', value)}>
           Activa
         </Checkbox>
-        <Checkbox checked={draft.defaultOption} onChange={(defaultOption) => set({ defaultOption } as Partial<Item<K>>)}>
+        <Checkbox checked={draft.defaultOption} onChange={(value) => setFlag('defaultOption', value)}>
           Por defecto
         </Checkbox>
       </div>
-      <SaveButton save={save} label="Guardar" size="sm" disabled={!changed} />
+      <div className="flex flex-wrap items-center gap-4">
+        <SaveButton save={save} label="Guardar" size="sm" disabled={!changed} />
+        <SaveFeedback state={save.state} />
+      </div>
     </form>
   )
 }
@@ -212,7 +215,18 @@ function useCreate(onCreated: () => void, reset: () => void) {
   return { save, run }
 }
 
-function NewNamedOption({ kind, onCreated }: { kind: 'types' | 'colors'; onCreated: () => void }) {
+/** Formulario para agregar un tipo o un color: nombre, código propuesto desde el nombre y, en colores, el color. */
+function NewNamedOption({
+  title,
+  withColor = false,
+  create,
+  onCreated,
+}: {
+  title: string
+  withColor?: boolean
+  create: (base: { code: string; name: string }, hex: string) => Promise<unknown>
+  onCreated: () => void
+}) {
   const [name, setName] = useState('')
   const [code, setCode] = useState<string | null>(null)
   const [hex, setHex] = useState('#E0F2FE')
@@ -230,17 +244,12 @@ function NewNamedOption({ kind, onCreated }: { kind: 'types' | 'colors'; onCreat
       return setError('El código debe tener de 2 a 30 caracteres: letras mayúsculas sin tilde, números o guion bajo.')
     }
     setError(null)
-    const base = { code: effectiveCode, name: name.trim(), active: true, defaultOption: false }
-    void run(() =>
-      kind === 'types'
-        ? saveGlassOption('types', null, base)
-        : saveGlassOption('colors', null, { ...base, hex, reflective: false, note: null }),
-    )
+    void run(() => create({ code: effectiveCode, name: name.trim() }, hex))
   }
 
   return (
     <form noValidate onSubmit={submit} className="flex flex-col gap-4 rounded-[20px] bg-secondary p-5">
-      <p className="font-semibold">{kind === 'types' ? 'Nuevo tipo' : 'Nuevo color'}</p>
+      <p className="font-semibold">{title}</p>
       <div className="flex flex-wrap items-end gap-4">
         <TextField label="Nombre" className="min-w-48 flex-1" maxLength={60} value={name} onChange={setName} />
         <TextField
@@ -251,10 +260,10 @@ function NewNamedOption({ kind, onCreated }: { kind: 'types' | 'colors'; onCreat
           value={effectiveCode}
           onChange={(value) => setCode(value.toUpperCase())}
         />
-        {kind === 'colors' && <ColorField value={hex} onChange={setHex} />}
+        {withColor && <ColorField value={hex} onChange={setHex} />}
       </div>
       <InlineError message={error} />
-      <SaveButton save={save} label="Agregar" busyLabel="Agregando…" size="sm" />
+      <SaveRow save={save} label="Agregar" busyLabel="Agregando…" size="sm" />
     </form>
   )
 }
@@ -285,7 +294,7 @@ function NewThickness({ onCreated }: { onCreated: () => void }) {
         onChange={setMm}
       />
       <InlineError message={error} />
-      <SaveButton save={save} label="Agregar" busyLabel="Agregando…" size="sm" />
+      <SaveRow save={save} label="Agregar" busyLabel="Agregando…" size="sm" />
     </form>
   )
 }

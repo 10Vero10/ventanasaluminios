@@ -4,7 +4,8 @@ import { CategorySelect } from '@/components/admin/CategorySelect'
 import { ImagePicker } from '@/components/admin/ImagePicker'
 import { MoveButtons } from '@/components/admin/MoveButtons'
 import { Panel } from '@/components/admin/Panel'
-import { SaveButton } from '@/components/admin/SaveButton'
+import { SaveRow } from '@/components/admin/SaveButton'
+import { useDraft } from '@/components/admin/useDraft'
 import { useOrderedList } from '@/components/admin/useOrderedList'
 import { useSaveState } from '@/components/admin/useSaveState'
 import { Button } from '@/components/ui/button'
@@ -67,16 +68,12 @@ export function FeaturedLinesPanel() {
 }
 
 function FeaturedLineEditor({ line, onSaved }: { line: FeaturedLine; onSaved: (line: FeaturedLine) => void }) {
-  const [draft, setDraft] = useState(() => toFeaturedLineRequest(line))
+  const { draft, set, bind } = useDraft(line)
   const save = useSaveState()
-  const bind = (key: 'number' | 'title' | 'categoryTag' | 'description' | 'linkText') => ({
-    value: draft[key],
-    onChange: (value: string) => setDraft((d) => ({ ...d, [key]: value })),
-  })
 
   async function submit(event: FormEvent) {
     event.preventDefault()
-    const saved = await save.run(() => updateFeaturedLine(line.id, draft))
+    const saved = await save.run(() => updateFeaturedLine(line.id, toFeaturedLineRequest(draft)))
     if (saved) onSaved(saved)
   }
 
@@ -93,22 +90,13 @@ function FeaturedLineEditor({ line, onSaved }: { line: FeaturedLine; onSaved: (l
           <TextField label="Texto del enlace" maxLength={40} {...bind('linkText')} />
           <Field label="Categoría destino">
             {(props) => (
-              <CategorySelect
-                {...props}
-                value={draft.targetCategory}
-                onChange={(value) => value && setDraft((d) => ({ ...d, targetCategory: value }))}
-              />
+              <CategorySelect {...props} value={draft.targetCategory} onChange={(value) => set('targetCategory', value)} />
             )}
           </Field>
         </div>
-        <SaveButton save={save} label="Guardar línea" />
+        <SaveRow save={save} label="Guardar línea" />
       </div>
-      <ImagePicker
-        label="Imagen de la tarjeta"
-        value={draft.imageUrl}
-        onChange={(imageUrl) => setDraft((d) => ({ ...d, imageUrl }))}
-        aspect="16/10"
-      />
+      <ImagePicker label="Imagen de la tarjeta" value={draft.imageUrl} onChange={(url) => set('imageUrl', url)} aspect="16/10" />
     </form>
   )
 }

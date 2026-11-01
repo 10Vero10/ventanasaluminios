@@ -8,8 +8,8 @@ import { Button } from '@/components/ui/button'
 import { Dialog } from '@/components/ui/dialog'
 import { Loadable } from '@/components/ui/Loadable'
 import { MessageState } from '@/components/ui/states'
-import { galleryHref, useCategoryParam } from '@/lib/categoryParam'
-import { quoteHref } from '@/lib/productType'
+import { useCategoryParam } from '@/lib/categoryParam'
+import { galleryHref, quoteHref } from '@/lib/routes'
 import { useLoad } from '@/lib/useLoad'
 import { getProducts } from '@/services/api/catalogService'
 import { useSite } from '@/site/siteContext'
@@ -57,17 +57,18 @@ export default function CatalogPage() {
           state={products}
           loadingLabel="Cargando productos…"
           errorTitle="No pudimos cargar el catálogo"
-          isEmpty={(data) => data.length === 0}
-          empty={
-            <MessageState
-              title="No hay productos en esta línea"
-              description="Prueba con otra línea o mira todos los sistemas."
-              action={
-                <Button variant="secondary" onClick={() => selectCategory(null)}>
-                  Ver todos los sistemas
-                </Button>
-              }
-            />
+          empty={(data) =>
+            data.length === 0 && (
+              <MessageState
+                title="No hay productos en esta línea"
+                description="Prueba con otra línea o mira todos los sistemas."
+                action={
+                  <Button variant="secondary" onClick={() => selectCategory(null)}>
+                    Ver todos los sistemas
+                  </Button>
+                }
+              />
+            )
           }
         >
           {(data) => (

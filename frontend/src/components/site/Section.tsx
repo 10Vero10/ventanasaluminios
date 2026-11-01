@@ -47,10 +47,22 @@ export function PageHeader({ kicker, title, lead }: { kicker: string; title: str
   return (
     <>
       <Kicker>{kicker}</Kicker>
-      <h1 className="mt-2 max-w-3xl font-display text-[40px] leading-[1.05] font-semibold tracking-[-0.02em] text-balance md:text-[64px]">
-        {title}
-      </h1>
+      <PageTitle className="max-w-3xl">{title}</PageTitle>
       <p className="mt-5 max-w-2xl text-[19px] text-muted-foreground">{lead}</p>
     </>
+  )
+}
+
+/** Título principal (h1) de una página del sitio. */
+export function PageTitle({ children, className }: { children: ReactNode; className?: string }) {
+  return (
+    <h1
+      className={cn(
+        'mt-2 font-display text-[40px] leading-[1.05] font-semibold tracking-[-0.02em] text-balance md:text-[64px]',
+        className,
+      )}
+    >
+      {children}
+    </h1>
   )
 }

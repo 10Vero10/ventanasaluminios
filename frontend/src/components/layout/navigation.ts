@@ -1,3 +1,5 @@
+import { ROUTES } from '@/lib/routes'
+
 /** Secciones públicas del sitio. "Cotizar" solo existe con la cotización activa (briefing §3.1.1). */
 export interface NavItem {
   to: string
@@ -7,10 +9,10 @@ export interface NavItem {
 
 export const NAV_ITEMS: NavItem[] = [
   { to: '/', label: 'Inicio' },
-  { to: '/catalogo', label: 'Catálogo' },
-  { to: '/trabajos', label: 'Trabajos' },
-  { to: '/nosotros', label: 'Nosotros' },
-  { to: '/cotizar', label: 'Cotizar', quoting: true },
+  { to: ROUTES.catalog, label: 'Catálogo' },
+  { to: ROUTES.gallery, label: 'Trabajos' },
+  { to: ROUTES.about, label: 'Nosotros' },
+  { to: ROUTES.quote, label: 'Cotizar', quoting: true },
 ]
 
 export function visibleNav(quotingEnabled: boolean): NavItem[] {
