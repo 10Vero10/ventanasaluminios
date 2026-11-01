@@ -15,8 +15,8 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 /**
  * Aplica un {@link RateLimiter} por IP a un método y una ruta. Al pasar el límite responde 429 con el formato de
- * error de la API y {@code Retry-After}, sin llegar al controller. La IP sale de {@code getRemoteAddr}, que detrás de
- * nginx ya es la del cliente (nginx reemplaza X-Forwarded-For y Spring la aplica).
+ * error de la API y {@code Retry-After}, sin llegar al controller. La IP sale de {@code getRemoteAddr}: detrás de nginx
+ * es la del cliente, porque nginx reemplaza X-Forwarded-For y Tomcat solo lo acepta de proxies internos.
  */
 public class RateLimitFilter extends OncePerRequestFilter {
 
@@ -41,7 +41,7 @@ public class RateLimitFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain)
             throws ServletException, IOException {
-        Duration retryAfter = limiter.acquire(request.getRemoteAddr());
+        Duration retryAfter = limiter.acquire(ClientKey.of(request.getRemoteAddr()));
         if (retryAfter.isZero()) {
             chain.doFilter(request, response);
             return;

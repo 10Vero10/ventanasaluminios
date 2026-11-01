@@ -25,7 +25,7 @@ public class QuoteController {
         this.service = service;
     }
 
-    /** {@code getRemoteAddr} ya trae la IP real: detrás de nginx la toma de X-Forwarded-For (forward-headers-strategy). */
+    /** {@code getRemoteAddr} ya trae la IP real: Tomcat la toma de X-Forwarded-For solo si viene de un proxy interno. */
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public QuoteCreatedResponse create(@RequestBody QuoteCreateRequest request, HttpServletRequest http) {
