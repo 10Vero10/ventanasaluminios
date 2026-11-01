@@ -7,10 +7,12 @@ import com.ventanasyaluminios.dto.response.QuoteResponse;
 import com.ventanasyaluminios.entity.enums.QuoteStatus;
 import com.ventanasyaluminios.exception.ApiException;
 import com.ventanasyaluminios.exception.ErrorCode;
+import com.ventanasyaluminios.security.AuthenticatedAdmin;
 import com.ventanasyaluminios.service.QuoteService;
 import jakarta.validation.Valid;
 import java.util.UUID;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -21,7 +23,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
-/** Bandeja de cotizaciones del panel. Se protege con rol ADMIN en el paso 4. */
+/** Bandeja de cotizaciones del panel (rol ADMIN). */
 @RestController
 @RequestMapping("/api/v1/admin/quotes")
 public class AdminQuoteController {
@@ -54,8 +56,9 @@ public class AdminQuoteController {
     }
 
     @PatchMapping("/{id}/status")
-    public QuoteResponse changeStatus(@PathVariable UUID id, @Valid @RequestBody QuoteStatusRequest request) {
-        return service.changeStatus(id, request.status());
+    public QuoteResponse changeStatus(@PathVariable UUID id, @Valid @RequestBody QuoteStatusRequest request,
+                                      @AuthenticationPrincipal AuthenticatedAdmin admin) {
+        return service.changeStatus(id, request.status(), admin.id());
     }
 
     @DeleteMapping("/{id}")

@@ -118,12 +118,12 @@ public class QuoteServiceImpl implements QuoteService {
 
     @Override
     @Transactional
-    public QuoteResponse changeStatus(UUID id, QuoteStatus status) {
+    public QuoteResponse changeStatus(UUID id, QuoteStatus status, Long changedBy) {
         Quote quote = find(id);
         if (quote.getStatus() != status) {
             Instant now = Instant.now(clock);
             QuoteStatus previous = quote.changeStatus(status, now);
-            statusChangeRepository.save(new QuoteStatusChange(id, previous, status, now, null));
+            statusChangeRepository.save(new QuoteStatusChange(id, previous, status, now, changedBy));
         }
         return mapper.toResponse(quote);
     }

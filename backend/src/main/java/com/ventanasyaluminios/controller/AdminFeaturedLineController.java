@@ -17,7 +17,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
-/** Líneas destacadas de la portada desde el panel. Se protege con rol ADMIN en el paso 4. */
+/** Líneas destacadas de la portada desde el panel. Solo rol ADMIN. */
 @RestController
 @RequestMapping("/api/v1/admin/featured-lines")
 public class AdminFeaturedLineController {

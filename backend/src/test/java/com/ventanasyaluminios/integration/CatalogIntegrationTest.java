@@ -13,6 +13,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.jayway.jsonpath.JsonPath;
+import com.ventanasyaluminios.AdminTestAuthentication;
 import com.ventanasyaluminios.TestcontainersConfiguration;
 import java.util.ArrayList;
 import java.util.List;
@@ -35,7 +36,7 @@ import org.springframework.transaction.annotation.Transactional;
 @SpringBootTest
 @AutoConfigureMockMvc
 @Transactional
-@Import(TestcontainersConfiguration.class)
+@Import({TestcontainersConfiguration.class, AdminTestAuthentication.class})
 class CatalogIntegrationTest {
 
     private static final String HOJAS = "{\"label\":\"Hojas\",\"value\":\"1\"}";

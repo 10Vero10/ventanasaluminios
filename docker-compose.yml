@@ -27,6 +27,11 @@ services:
       DB_USER: ${POSTGRES_USER}
       DB_PASSWORD: ${POSTGRES_PASSWORD}
       MEDIA_UPLOAD_DIR: /app/uploads
+      JWT_SECRET: ${JWT_SECRET}
+      AUTH_SESSION_DURATION: ${AUTH_SESSION_DURATION:-8h}
+      AUTH_COOKIE_SECURE: ${AUTH_COOKIE_SECURE:-true}
+      ADMIN_EMAIL: ${ADMIN_EMAIL:-}
+      ADMIN_INITIAL_PASSWORD: ${ADMIN_INITIAL_PASSWORD:-}
     volumes:
       - uploads:/app/uploads
     depends_on:

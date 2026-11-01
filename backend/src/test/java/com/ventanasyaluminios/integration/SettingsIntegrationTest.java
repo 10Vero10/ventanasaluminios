@@ -13,6 +13,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.jayway.jsonpath.JsonPath;
 import com.ventanasyaluminios.TestImages;
+import com.ventanasyaluminios.AdminTestAuthentication;
 import com.ventanasyaluminios.TestcontainersConfiguration;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -34,7 +35,7 @@ import org.springframework.transaction.annotation.Transactional;
 @SpringBootTest
 @AutoConfigureMockMvc
 @Transactional
-@Import(TestcontainersConfiguration.class)
+@Import({TestcontainersConfiguration.class, AdminTestAuthentication.class})
 class SettingsIntegrationTest {
 
     private static final Path UPLOAD_DIR = createTempDir();

@@ -9,12 +9,14 @@ import com.ventanasyaluminios.service.FeaturedLineService;
 import com.ventanasyaluminios.service.SiteSettingsService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 /** Validaciones de entrada del panel: la solicitud inválida nunca llega al service. */
+@AutoConfigureMockMvc(addFilters = false)
 @WebMvcTest({AdminSettingsController.class, AdminFeaturedLineController.class})
 class AdminSettingsControllerTest {
 

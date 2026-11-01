@@ -16,11 +16,16 @@ Los códigos están en `ErrorCode` (backend), que es la fuente de verdad de esta
 | 400 | `MALFORMED_REQUEST` | El JSON no se puede leer, o un texto trae el carácter nulo (U+0000) |
 | 400 | `INVALID_PARAMETER` | Falta un parámetro o tiene formato inválido (por ejemplo, una línea inexistente) |
 | 400 | `REORDER_MISMATCH` | El nuevo orden no trae exactamente los ids actuales |
+| 400 | `INVALID_BACKUP` | El respaldo no es JSON, le falta `content`, `products` no es lista, la versión no es compatible o sus datos son inválidos |
 | 400 | `IMMUTABLE_FIELD` | Se intentó cambiar el código (o los mm) de una opción de vidrio |
 | 400 | `EMPTY_FILE`, `INVALID_FILE_TYPE` | Imagen vacía, o que no es JPG, PNG ni WebP |
 | 400 | `BAD_REQUEST` | Otra solicitud inválida |
-| 401 | — | No autenticado o sesión vencida (paso 4) |
-| 403 | `QUOTING_DISABLED` | La cotización está apagada (`quotingEnabled = false`). Sin permiso: paso 4 |
+| 401 | `UNAUTHORIZED` | Sin sesión, o sesión vencida, revocada o alterada: "Tu sesión expiró, vuelve a ingresar." |
+| 401 | `INVALID_CREDENTIALS` | "Correo o contraseña incorrectos." (igual si el correo no existe) |
+| 403 | `QUOTING_DISABLED` | La cotización está apagada (`quotingEnabled = false`) |
+| 403 | `PASSWORD_CHANGE_REQUIRED` | El administrador debe cambiar su contraseña temporal antes de usar el panel |
+| 403 | `CSRF_INVALID` | Falta el encabezado `X-XSRF-TOKEN` o no coincide con la cookie `XSRF-TOKEN` |
+| 403 | `FORBIDDEN` | Sin permiso para la acción |
 | 404 | `NOT_FOUND` | Recurso inexistente |
 | 405 | `METHOD_NOT_ALLOWED` | Método no permitido en la ruta |
 | 406 | — | El cliente no acepta JSON (respuesta sin cuerpo) |
@@ -48,8 +53,8 @@ Los códigos están en `ErrorCode` (backend), que es la fuente de verdad de esta
 
 | Método | Ruta | Descripción |
 |---|---|---|
-| `POST` | `/auth/login` | Deja el JWT en cookie httpOnly |
-| `POST` | `/auth/logout` | Invalida la cookie |
+| `POST` | `/auth/login` | Deja el JWT en la cookie httpOnly `vya_session`; 5 intentos por minuto por IP |
+| `POST` | `/auth/logout` | Borra la cookie e invalida todas las sesiones del administrador |
 | `GET` | `/auth/me` | Usuario actual |
 | `POST` | `/auth/change-password` | Cambio de contraseña (obligatorio en el primer ingreso) |
 
@@ -136,3 +141,15 @@ Reglas de `POST /quotes`, en orden (briefing §3.6):
 4. `quotingEnabled = false` → 403.
 5. Datos del configurador: si llega alguno deben llegar ancho, alto, tipo, color y espesor (las hojas son opcionales; por defecto `max(1, ceil(ancho / 150))`). El tipo, color y espesor deben existir y estar activos. El servidor calcula `areaM2` y reemplaza `dimensionsText` con el texto de medidas (ADR-007).
 6. Se guarda con estado `NUEVA`, fecha UTC e IP de origen → 201 `{ id }`.
+
+### Paso 4, auth y respaldo
+
+| DTO | Campos |
+|---|---|
+| `LoginRequest` | `email`, `password` |
+| `ChangePasswordRequest` | `currentPassword`, `newPassword` (12 a 72 caracteres, distinta de la actual) |
+| `AdminUserResponse` | `id`, `email`, `role`, `mustChangePassword`, `lastLoginAt` |
+| `BackupRequest` (export e import) | `version` (1), `exportedAt`, `content` (`settings`, `featuredLines[]`, `gallery[]`, `glassOptions` con `types[]`, `colors[]`, `thicknesses[]`), `products[]`. Cada elemento usa el DTO de entrada de su módulo; el orden de las listas es el orden en pantalla |
+| `BackupImportResponse` | `featuredLines`, `galleryImages`, `products`, `glassTypes`, `glassColors`, `glassThicknesses` |
+
+Sesión: la cookie `vya_session` es httpOnly, `SameSite=Lax`, `Path=/api` y `Secure` (configurable). El cuerpo de las respuestas nunca incluye el token. Mientras `mustChangePassword` es `true`, solo funcionan `/auth/me`, `/auth/change-password` y `/auth/logout`.
