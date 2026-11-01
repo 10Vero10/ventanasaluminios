@@ -34,6 +34,11 @@ Los imports usan el alias `@/` para `src/` (por ejemplo `import { cn } from '@/l
 | `/trabajos?linea=` | Galería de trabajos realizados |
 | `/nosotros` | Quiénes somos |
 | `/cotizar?producto=` | Configurador y formulario de cotización (con la cotización apagada vuelve al inicio) |
+| `/admin/login` | Ingreso al panel |
+| `/admin/cambiar-clave` | Cambio de contraseña (obligatorio con la contraseña temporal) |
+| `/admin/cotizaciones`, `inicio`, `catalogo`, `vidrio`, `nosotros`, `configuracion` | Pestañas del panel |
+
+El panel (`src/pages/admin/`, `src/components/admin/`) se carga en un archivo aparte: las visitas del sitio público no lo descargan. La sesión vive en una cookie httpOnly; `AuthProvider` la consulta con `/auth/me` y, si el backend responde 401 en el panel, vuelve al login con el aviso "Tu sesión expiró".
 
 ## Comandos
 

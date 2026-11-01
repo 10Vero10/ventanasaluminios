@@ -8,7 +8,10 @@ export function AuthCard({ title, description, children }: { title: string; desc
   return (
     <main className="flex min-h-dvh items-center justify-center bg-secondary px-4 py-12">
       <div className="w-full max-w-[420px] rounded-[28px] bg-background p-8 sm:p-10">
-        <BrandMark />
+        <div className="flex items-center gap-3">
+          <BrandMark className="size-10" />
+          <span className="text-[17px] font-semibold">Ventanas y Aluminios</span>
+        </div>
         <h1 className="mt-8 font-display text-[28px] leading-tight font-semibold tracking-[-0.015em]">{title}</h1>
         <p className="mt-2 text-muted-foreground">{description}</p>
         <div className="mt-8">{children}</div>

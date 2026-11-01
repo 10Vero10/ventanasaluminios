@@ -111,5 +111,5 @@ npm run lint && npm test && npm run build
 | 2 | Módulo `catalog` | Hecho |
 | 3 | Módulo `quote` | Hecho |
 | 4 | Módulo `auth` | Hecho |
-| 5 | Frontend conectado a la API | En curso: sitio público en revisión (`feature/frontend-public`), panel pendiente |
+| 5 | Frontend conectado a la API | En revisión: sitio público hecho, panel en `feature/frontend-admin` |
 | 6 | Migración desde Redis y despliegue | Pendiente |

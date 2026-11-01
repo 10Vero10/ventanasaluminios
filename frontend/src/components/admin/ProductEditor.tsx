@@ -145,7 +145,7 @@ export function ProductEditor({
         </Button>
       </fieldset>
 
-      <div className="sticky bottom-0 -mx-6 flex flex-wrap items-center gap-3 border-t border-border bg-background px-6 py-4 sm:-mx-10 sm:px-10">
+      <div className="sticky -bottom-6 -mx-6 -mb-6 flex flex-wrap items-center gap-3 border-t border-border bg-background px-6 py-4 sm:-bottom-10 sm:-mx-10 sm:-mb-10 sm:px-10">
         <Button type="submit" disabled={save.saving}>
           {save.saving ? 'Guardando…' : 'Guardar producto'}
         </Button>

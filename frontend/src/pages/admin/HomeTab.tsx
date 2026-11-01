@@ -160,7 +160,7 @@ function NewGalleryImage({ onCreated }: { onCreated: () => void }) {
   }
 
   return (
-    <form onSubmit={add} className="grid gap-5 rounded-[20px] bg-secondary p-5 lg:grid-cols-[1fr_1fr]">
+    <form onSubmit={add} className="grid gap-5 rounded-[20px] bg-secondary p-5 lg:grid-cols-[minmax(0,360px)_1fr]">
       <ImagePicker label="Nueva imagen" value={url} onChange={setUrl} aspect="4/3" />
       <div className="flex flex-col gap-5">
         <Field label="Título" hint='Sin título queda "Imagen". Ejemplo: Fachada comercial.'>

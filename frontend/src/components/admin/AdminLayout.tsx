@@ -32,9 +32,12 @@ export function AdminLayout() {
     <div className="min-h-dvh bg-secondary">
       <header className="bg-background">
         <div className="mx-auto flex max-w-[1180px] flex-wrap items-center justify-between gap-4 px-4 py-4 sm:px-6">
-          <div className="flex items-center gap-4">
-            <BrandMark />
-            <span className="hidden text-sm text-muted-foreground sm:inline">Panel de control</span>
+          <div className="flex items-center gap-3">
+            <BrandMark className="size-9 shrink-0" />
+            <div className="leading-tight">
+              <p className="text-[15px] font-semibold whitespace-nowrap">Ventanas y Aluminios</p>
+              <p className="text-xs whitespace-nowrap text-muted-foreground">Panel de control</p>
+            </div>
           </div>
           <div className="flex flex-wrap items-center gap-2">
             <span className="hidden text-sm text-muted-foreground md:inline">{user?.email}</span>
