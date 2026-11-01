@@ -1,3 +1,4 @@
+import axios from 'axios'
 import { type ReactNode, useCallback, useEffect, useMemo, useState } from 'react'
 
 import * as authService from '@/services/api/authService'
@@ -37,13 +38,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return admin
   }, [])
 
+  /**
+   * Solo se da por cerrada la sesión si el servidor la cerró (o ya no existía, 401). Si falla por red, la cookie sigue
+   * válida: se lanza el error para avisarlo en vez de aparentar que se cerró.
+   */
   const signOut = useCallback(async () => {
     try {
       await authService.logout()
-    } finally {
-      setExpired(false)
-      setUser(null)
+    } catch (error) {
+      if (!(axios.isAxiosError(error) && error.response?.status === 401)) throw error
     }
+    setExpired(false)
+    setUser(null)
   }, [])
 
   const changePassword = useCallback(async (currentPassword: string, newPassword: string) => {

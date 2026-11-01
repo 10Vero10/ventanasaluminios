@@ -37,9 +37,8 @@ function codeFrom(name: string): string {
  * defecto es la que aparece elegida al abrir el configurador.
  */
 export default function GlassTab() {
-  const [refresh, setRefresh] = useState(0)
-  const options = useLoad(getAdminGlassOptions, [refresh])
-  const reload = () => setRefresh((n) => n + 1)
+  const options = useLoad(getAdminGlassOptions, [])
+  const reload = options.reload
 
   if (options.status === 'loading') return <LoadingState label="Cargando opciones de vidrio…" />
   if (options.status === 'error') {
@@ -118,7 +117,7 @@ function GlassList<T extends { id: number }>({
       )}
       <ul className="flex flex-col gap-3">
         {items.map((item, index) => (
-          <li key={JSON.stringify(item)} className="flex flex-wrap items-end gap-3 rounded-[20px] border border-border p-4">
+          <li key={item.id} className="flex flex-wrap items-end gap-3 rounded-[20px] border border-border p-4">
             <div className="min-w-0 flex-1">{renderRow(item, onChanged)}</div>
             <div className="flex gap-1">
               <MoveButtons label={`opción ${index + 1}`} index={index} count={items.length} onMove={move} disabled={busy} />
@@ -165,13 +164,29 @@ function useRowSave(onSaved: () => void) {
   return { save, run }
 }
 
+// Lo que se envía al guardar cada fila. También sirve para saber si hay cambios: compara solo los campos editables,
+// así la posición o una nota vacía ('' frente a null) no cuentan como cambio.
+const typeRequest = (t: GlassType) => ({ code: t.code, name: t.name.trim(), active: t.active, defaultOption: t.defaultOption })
+const colorRequest = (c: GlassColor) => ({
+  code: c.code,
+  name: c.name.trim(),
+  hex: c.hex.toUpperCase(),
+  reflective: c.reflective,
+  note: c.note?.trim() || null,
+  active: c.active,
+  defaultOption: c.defaultOption,
+})
+const thicknessRequest = (t: GlassThickness) => ({ mm: t.mm, active: t.active, defaultOption: t.defaultOption })
+const sameRequest = <T,>(toRequest: (value: T) => object, a: T, b: T) =>
+  JSON.stringify(toRequest(a)) === JSON.stringify(toRequest(b))
+
 function TypeRow({ item, onSaved }: { item: GlassType; onSaved: () => void }) {
   const [draft, setDraft] = useState(item)
   const { save, run } = useRowSave(onSaved)
-  const changed = JSON.stringify(draft) !== JSON.stringify(item)
+  const changed = !sameRequest(typeRequest, draft, item)
   function submit(event: FormEvent) {
     event.preventDefault()
-    void run(() => saveGlassType(item.id, { code: item.code, name: draft.name, active: draft.active, defaultOption: draft.defaultOption }))
+    void run(() => saveGlassType(item.id, typeRequest(draft)))
   }
   return (
     <form onSubmit={submit} className="flex flex-wrap items-end gap-4">
@@ -195,20 +210,10 @@ function TypeRow({ item, onSaved }: { item: GlassType; onSaved: () => void }) {
 function ColorRow({ item, onSaved }: { item: GlassColor; onSaved: () => void }) {
   const [draft, setDraft] = useState(item)
   const { save, run } = useRowSave(onSaved)
-  const changed = JSON.stringify(draft) !== JSON.stringify(item)
+  const changed = !sameRequest(colorRequest, draft, item)
   function submit(event: FormEvent) {
     event.preventDefault()
-    void run(() =>
-      saveGlassColor(item.id, {
-        code: item.code,
-        name: draft.name,
-        hex: draft.hex.toUpperCase(),
-        reflective: draft.reflective,
-        note: draft.note?.trim() || null,
-        active: draft.active,
-        defaultOption: draft.defaultOption,
-      }),
-    )
+    void run(() => saveGlassColor(item.id, colorRequest(draft)))
   }
   return (
     <form onSubmit={submit} className="flex flex-col gap-4">
@@ -254,10 +259,10 @@ function ColorRow({ item, onSaved }: { item: GlassColor; onSaved: () => void }) 
 function ThicknessRow({ item, onSaved }: { item: GlassThickness; onSaved: () => void }) {
   const [draft, setDraft] = useState(item)
   const { save, run } = useRowSave(onSaved)
-  const changed = JSON.stringify(draft) !== JSON.stringify(item)
+  const changed = !sameRequest(thicknessRequest, draft, item)
   function submit(event: FormEvent) {
     event.preventDefault()
-    void run(() => saveGlassThickness(item.id, { mm: item.mm, active: draft.active, defaultOption: draft.defaultOption }))
+    void run(() => saveGlassThickness(item.id, thicknessRequest(draft)))
   }
   return (
     <form onSubmit={submit} className="flex flex-wrap items-center gap-5">

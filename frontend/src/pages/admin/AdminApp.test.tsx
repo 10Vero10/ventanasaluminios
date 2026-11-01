@@ -5,7 +5,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { changeQuoteStatus, getQuotes } from '@/services/api/adminQuoteService'
 import { getDashboard } from '@/services/api/adminSiteService'
-import { changePassword, getCurrentAdmin, login } from '@/services/api/authService'
+import { changePassword, getCurrentAdmin, login, logout } from '@/services/api/authService'
 import { GLASS_OPTIONS } from '@/test/fixtures'
 import type { AdminUser } from '@/types/auth'
 import type { Quote } from '@/types/quote'
@@ -115,5 +115,16 @@ describe('Panel de administración', () => {
     await user.selectOptions(within(card).getByLabelText('Estado'), 'CONTACTADA')
     expect(changeQuoteStatus).toHaveBeenCalledWith('q-1', 'CONTACTADA')
     expect(getDashboard).toHaveBeenCalledTimes(2)
+  })
+
+  it('si cerrar sesión falla lo avisa y no aparenta haberla cerrado', async () => {
+    const user = userEvent.setup()
+    vi.mocked(getCurrentAdmin).mockResolvedValue(ADMIN)
+    vi.mocked(logout).mockRejectedValue(new Error('sin red'))
+    renderAdmin('/admin')
+
+    await user.click(await screen.findByRole('button', { name: 'Cerrar sesión' }))
+    expect(await screen.findByText(/No se pudo cerrar la sesión/)).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: 'Cotizaciones' })).toBeInTheDocument()
   })
 })

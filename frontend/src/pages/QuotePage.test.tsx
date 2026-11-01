@@ -132,3 +132,52 @@ describe('QuotePage', () => {
     expect(alert).toHaveTextContent(SITE.email)
   })
 })
+
+describe('QuotePage, casos límite', () => {
+  beforeEach(() => {
+    vi.mocked(getGlassOptions).mockResolvedValue(GLASS_OPTIONS)
+    vi.mocked(createQuote).mockReset()
+  })
+
+  it('con una medida en 0 después de aplicar, el tipo de producto sí cambia y se conservan las medidas', async () => {
+    const user = userEvent.setup()
+    renderPage()
+    await user.click(await screen.findByRole('button', { name: 'Aplicar medidas a mi cotización' }))
+    await user.clear(screen.getByLabelText('ancho en centímetros'))
+    await user.selectOptions(screen.getByLabelText('Tipo de producto'), 'Portones tipo americano')
+
+    expect(screen.getByLabelText('Tipo de producto')).toHaveValue('Portones tipo americano')
+    expect(screen.getByLabelText('Medidas aproximadas (alto x ancho en cm)')).toHaveValue(
+      '120 cm alto x 150 cm ancho (1.80 m²) · Vidrio crudo transparente 6 mm',
+    )
+  })
+
+  it('si el cliente escribe las medidas a mano, se envían sus medidas y no las del configurador', async () => {
+    const user = userEvent.setup()
+    vi.mocked(createQuote).mockResolvedValue('id-1')
+    renderPage()
+    await user.click(await screen.findByRole('button', { name: 'Aplicar medidas a mi cotización' }))
+    const dimensions = screen.getByLabelText('Medidas aproximadas (alto x ancho en cm)')
+    await user.clear(dimensions)
+    await user.type(dimensions, 'Dos ventanas de 120 x 150')
+    await user.type(screen.getByLabelText(/Nombre y apellido/), 'Ana')
+    await user.type(screen.getByLabelText(/Teléfono/), '300')
+    await user.click(screen.getByRole('button', { name: 'Enviar cotización' }))
+
+    const request = vi.mocked(createQuote).mock.calls[0][0]
+    expect(request.dimensionsText).toBe('Dos ventanas de 120 x 150')
+    expect(request.widthCm).toBeUndefined()
+  })
+
+  it('el mensaje con la sugerencia no pasa de 2000 caracteres', async () => {
+    const user = userEvent.setup()
+    renderPage()
+    const message = screen.getByLabelText('Mensaje o detalles del proyecto')
+    await user.click(message)
+    await user.paste('x'.repeat(1990))
+    await user.click(await screen.findByRole('button', { name: 'Aplicar medidas a mi cotización' }))
+
+    expect((message as HTMLTextAreaElement).value.length).toBe(2000)
+    expect((message as HTMLTextAreaElement).value.startsWith('Hola, me interesa')).toBe(true)
+  })
+})

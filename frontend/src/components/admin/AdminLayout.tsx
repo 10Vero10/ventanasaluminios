@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button'
 import { useLoad } from '@/lib/useLoad'
 import { cn } from '@/lib/utils'
 import { getDashboard } from '@/services/api/adminSiteService'
+import { getErrorMessage } from '@/services/api/httpClient'
 
 import type { AdminOutletContext } from './adminOutlet'
 
@@ -14,8 +15,8 @@ import type { AdminOutletContext } from './adminOutlet'
 export function AdminLayout() {
   const { user, signOut } = useAuth()
   const location = useLocation()
-  const [refresh, setRefresh] = useState(0)
-  const dashboard = useLoad(getDashboard, [refresh])
+  const [signOutError, setSignOutError] = useState<string | null>(null)
+  const dashboard = useLoad(getDashboard, [])
   const counts = dashboard.status === 'ready' ? dashboard.data : null
   const passwordChanged = (location.state as { passwordChanged?: boolean } | null)?.passwordChanged
 
@@ -49,7 +50,16 @@ export function AdminLayout() {
                 Ver sitio
               </a>
             </Button>
-            <Button size="sm" variant="secondary" onClick={() => void signOut()}>
+            <Button
+              size="sm"
+              variant="secondary"
+              onClick={() => {
+                setSignOutError(null)
+                signOut().catch((error: unknown) =>
+                  setSignOutError(`No se pudo cerrar la sesión. ${getErrorMessage(error)}`),
+                )
+              }}
+            >
               Cerrar sesión
             </Button>
           </div>
@@ -89,12 +99,17 @@ export function AdminLayout() {
         </div>
       </header>
       <main id="contenido" className="mx-auto max-w-[1180px] px-4 py-8 sm:px-6">
+        {signOutError && (
+          <p role="alert" className="mb-6 rounded-[16px] bg-background p-4 text-sm text-destructive">
+            {signOutError}
+          </p>
+        )}
         {passwordChanged && (
           <p role="status" className="mb-6 rounded-[16px] bg-background p-4 text-sm">
             Contraseña actualizada. Las demás sesiones se cerraron.
           </p>
         )}
-        <Outlet context={{ refreshDashboard: () => setRefresh((n) => n + 1) } satisfies AdminOutletContext} />
+        <Outlet context={{ refreshDashboard: dashboard.reload } satisfies AdminOutletContext} />
       </main>
     </div>
   )

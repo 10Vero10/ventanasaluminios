@@ -13,6 +13,9 @@ import { LoadingState, MessageState } from '@/components/ui/states'
 import { exportBackup, importBackup } from '@/services/api/backupService'
 import type { BackupImportResult } from '@/types/admin'
 
+/** Por debajo del límite de nginx (6 MB) para que el error sea este y no uno genérico. */
+const MAX_BACKUP_BYTES = 5 * 1024 * 1024
+
 /** Pestaña Configuración (briefing §5.7.7): cotización, contacto, favicon y respaldo. */
 export default function SettingsTab() {
   const { loaded, draft, set, submit, save, reload } = useSettingsDraft()
@@ -156,13 +159,14 @@ function BackupPanel({ onImported }: { onImported: () => void }) {
   async function pick(file: File | undefined) {
     setFileError(null)
     setResult(null)
+    // Se limpia siempre, para poder elegir otra vez el mismo archivo después de un error.
+    if (fileInput.current) fileInput.current.value = ''
     if (!file) return
-    if (file.size > 10 * 1024 * 1024) {
-      setFileError('El archivo es demasiado grande para ser un respaldo del sitio.')
+    if (file.size > MAX_BACKUP_BYTES) {
+      setFileError('El archivo pesa más de 5 MB: no parece un respaldo de este sitio.')
       return
     }
     setPending({ name: file.name, text: await file.text() })
-    if (fileInput.current) fileInput.current.value = ''
   }
 
   return (

@@ -292,7 +292,7 @@ function FeaturedLinesPanel() {
 function FeaturedLineEditor({ line, onSaved }: { line: FeaturedLine; onSaved: (line: FeaturedLine) => void }) {
   const [draft, setDraft] = useState(line)
   const save = useSaveState()
-  const set = <K extends keyof FeaturedLine>(key: K, value: FeaturedLine[K]) => setDraft({ ...draft, [key]: value })
+  const set = <K extends keyof FeaturedLine>(key: K, value: FeaturedLine[K]) => setDraft((d) => ({ ...d, [key]: value }))
 
   async function submit(event: FormEvent) {
     event.preventDefault()
