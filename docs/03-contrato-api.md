@@ -10,13 +10,14 @@ Rutas, DTO y códigos de error acordados antes de programar. El frontend trabaja
 
 | HTTP | Cuándo |
 |---|---|
-| 400 | Validación (`VALIDATION_ERROR`) |
+| 400 | Validación (`VALIDATION_ERROR`), JSON mal formado (`MALFORMED_REQUEST`), parámetro inválido (`INVALID_PARAMETER`), orden que no coincide (`REORDER_MISMATCH`), imagen inválida (`EMPTY_FILE`, `FILE_TOO_LARGE`, `INVALID_FILE_TYPE`) |
 | 401 | No autenticado o sesión vencida |
 | 403 | Sin permiso, o cotización con el interruptor apagado |
 | 404 | Recurso inexistente |
 | 409 | Conflicto (por ejemplo, código de vidrio repetido) |
 | 429 | Límite de solicitudes por IP |
-| 500 | Error inesperado (mensaje genérico, sin detalles técnicos) |
+| 405 | Método no permitido en la ruta (`METHOD_NOT_ALLOWED`) |
+| 500 | Error inesperado (`INTERNAL_ERROR`, mensaje genérico, sin detalles técnicos) |
 
 ## Públicos
 
@@ -66,3 +67,22 @@ Rutas, DTO y códigos de error acordados antes de programar. El frontend trabaja
 - JWT en cookie `httpOnly`, `Secure`, `SameSite=Lax`, más token CSRF de Spring (`CookieCsrfTokenRepository`; axios envía `X-XSRF-TOKEN`).
 - Límites por IP con filtro propio en memoria: 10 cotizaciones por hora y 5 intentos de login por minuto.
 - Imágenes subidas: máximo 5 MB; solo JPG, PNG y WebP.
+
+## DTO implementados
+
+### Paso 1, settings
+
+| DTO | Campos |
+|---|---|
+| `PublicSiteResponse` | `heroTitle`, `heroSubtitle`, `heroImageUrl`, `heroBadge`, `phone`, `email`, `whatsappNumber`, `experienceYears`, `quotingEnabled`, `faviconUrl`, `aboutParagraph1`, `aboutParagraph2`, `aboutHighlight`, `featuredLines[]` |
+| `SiteSettingsRequest` | Los mismos campos sin `featuredLines`. Obligatorios: títulos, teléfono, correo, años, `quotingEnabled` y textos de "Quiénes somos". `whatsappNumber` vacío se deriva del teléfono |
+| `SiteSettingsResponse` | Los de `SiteSettingsRequest` + `updatedAt` |
+| `FeaturedLineRequest` | `number`, `title`, `categoryTag`, `description`, `imageUrl`, `linkText`, `targetCategory` |
+| `FeaturedLineResponse` | `id`, `position` + los de la solicitud |
+| `GalleryImageRequest` | `title` (opcional, por defecto "Imagen"), `url`, `category` (opcional) |
+| `GalleryImageResponse` | `id`, `position`, `title`, `url`, `category` |
+| `ReorderRequest` | `ids[]`: todos los ids existentes, cada uno una vez |
+| `MediaUploadResponse` | `url` |
+| `ErrorResponse` | `error`, `code` |
+
+Las URLs de imagen aceptan `http(s)://…` o rutas del mismo sitio (`/media/…`, `/favicon.svg`); nunca `data:` ni `javascript:`.

@@ -31,6 +31,10 @@ Las migraciones están en `src/main/resources/db/migration/` (`V1__descripcion.s
 | `DB_USER` | `ventanas` | Usuario de la base |
 | `DB_PASSWORD` | `ventanas` | Clave de la base |
 | `SERVER_PORT` | `8080` | Puerto HTTP |
+| `MEDIA_UPLOAD_DIR` | `uploads` | Carpeta de imágenes subidas (en Docker, `/app/uploads` en el volumen `uploads`) |
+| `CORS_ALLOWED_ORIGINS` | vacío | Orígenes CORS separados por coma. Vacío detrás de nginx, porque todo está en un solo dominio |
+
+Si no se definen, `DB_URL`, `DB_USER` y `DB_PASSWORD` se arman con `POSTGRES_PORT`, `POSTGRES_DB`, `POSTGRES_USER` y `POSTGRES_PASSWORD` del `.env` de la raíz.
 
 ## Comandos
 
@@ -46,5 +50,20 @@ Todos bajo `/api/v1`. Los errores responden `{ "error": "mensaje en español", "
 | Método | Ruta | Acceso | Descripción |
 |---|---|---|---|
 | `GET` | `/api/v1/health` | Público | Estado de la API: `{ "status": "ok" }` |
+| `GET` | `/api/v1/site` | Público | Configuración del sitio y líneas destacadas en orden |
+| `GET` | `/api/v1/gallery?category=` | Público | Galería de trabajos; `category` opcional (`VENTANAS`, `PUERTAS`, `PORTONES`, `DIVISIONES`) |
+| `GET` | `/media/{archivo}` | Público | Imagen subida desde el panel |
+| `GET` · `PUT` | `/api/v1/admin/settings` | Panel | Ver y editar la configuración (`SiteSettingsRequest`) |
+| `GET` · `POST` | `/api/v1/admin/featured-lines` | Panel | Listar y crear líneas destacadas (`FeaturedLineRequest`); la nueva queda al final |
+| `PUT` · `DELETE` | `/api/v1/admin/featured-lines/{id}` | Panel | Editar y eliminar |
+| `PUT` | `/api/v1/admin/featured-lines/order` | Panel | Reordenar: `{ "ids": [3, 1, 2, 4] }` con todos los ids |
+| `GET` · `POST` | `/api/v1/admin/gallery` | Panel | Listar y agregar imágenes (`GalleryImageRequest`); sin título queda "Imagen" |
+| `PUT` · `DELETE` | `/api/v1/admin/gallery/{id}` | Panel | Editar y eliminar |
+| `PUT` | `/api/v1/admin/gallery/order` | Panel | Reordenar, igual que las líneas |
+| `POST` | `/api/v1/admin/media` | Panel | Subir imagen (`multipart/form-data`, campo `file`): JPG, PNG o WebP de máximo 5 MB. Responde `201 { "url": "/media/…" }` |
+
+> Las rutas del panel (`/api/v1/admin/**`) quedan abiertas hasta el paso 4, cuando se protegen con login y rol `ADMIN`. No desplegar antes de eso.
+
+Códigos de error propios de este módulo: `VALIDATION_ERROR`, `NOT_FOUND`, `REORDER_MISMATCH`, `EMPTY_FILE`, `FILE_TOO_LARGE`, `INVALID_FILE_TYPE`, `INVALID_PARAMETER`, `MALFORMED_REQUEST`, `INTERNAL_ERROR`.
 
 El resto de endpoints se documenta aquí a medida que se implementa cada módulo. El contrato completo está en [docs/03-contrato-api.md](../docs/03-contrato-api.md).

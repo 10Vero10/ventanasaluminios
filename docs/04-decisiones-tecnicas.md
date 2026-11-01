@@ -58,3 +58,11 @@ Formato: contexto → decisión → consecuencias.
 ## ADR-011 — Revisión de seguridad y calidad
 
 - **Decisión:** `security-audit` al cerrar los pasos 3 y 4 y antes del despliegue; `thermos` (lo invoca la usuaria) al cerrar cada paso.
+
+## ADR-012 — Detalles del módulo settings
+
+- **Imágenes de la galería sin línea:** `gallery_image.category` es opcional. "Taller de Carpintería y Ensamble" no pertenece a ninguna línea y solo aparece en el filtro "Todos".
+- **Validación de imágenes subidas:** por la firma de bytes del archivo (JPG, PNG, WebP), no por la extensión ni el `Content-Type`. Nombre aleatorio (UUID). Máximo 5 MB. SVG no se acepta porque puede ejecutar código.
+- **Favicon por defecto:** el logo de 4 paneles de la empresa, servido como `/favicon.svg` desde el frontend.
+- **Reordenar:** se envía la lista completa de ids; si no coincide con los existentes, se rechaza (`REORDER_MISMATCH`) para no perder elementos agregados en otra pestaña.
+- **Panel abierto hasta el paso 4:** las rutas `/api/v1/admin/**` existen desde el paso 1 pero se protegen en el paso 4. No se despliega antes.
