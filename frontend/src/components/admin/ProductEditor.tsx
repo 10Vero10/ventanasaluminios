@@ -1,33 +1,59 @@
-import { type FormEvent, useState } from 'react'
+import { type FormEvent, type ReactNode, useState } from 'react'
 
 import { Button } from '@/components/ui/button'
-import { Field, Input, Textarea } from '@/components/ui/field'
+import { Checkbox } from '@/components/ui/checkbox'
+import { Field, TextAreaField, TextField } from '@/components/ui/field'
 import { createProduct, updateProduct } from '@/services/api/adminCatalogService'
-import type { Product, ProductRequest } from '@/types/catalog'
+import { toProductRequest } from '@/types/admin'
+import { CATEGORIES, type Product, type ProductCategory, type ProductRequest } from '@/types/catalog'
 
 import { CategorySelect } from './CategorySelect'
 import { ImagePicker } from './ImagePicker'
-import { SaveFeedback } from './SaveFeedback'
+import { SaveButton } from './SaveButton'
 import { useSaveState } from './useSaveState'
 
 const MAX_ROWS = 12
 
-/** Editor de un producto (briefing §5.7.4). La ficha técnica y las ventajas se guardan en el orden de la pantalla. */
+function emptyProduct(category: ProductCategory): ProductRequest {
+  return {
+    category,
+    categoryNumber: CATEGORIES.find((c) => c.value === category)?.number ?? null,
+    title: '',
+    subtitle: '',
+    description: '',
+    imageUrl: null,
+    badge: null,
+    ctaText: null,
+    active: true,
+    specs: [],
+    features: [],
+  }
+}
+
+type TextKey = 'title' | 'subtitle' | 'description'
+type OptionalKey = 'categoryNumber' | 'badge' | 'ctaText'
+
+/**
+ * Editor de un producto (briefing §5.7.4): edita {@code product} o, si es null, crea uno nuevo en
+ * {@code newCategory}. La ficha técnica y las ventajas se guardan en el orden de la pantalla; las filas vacías se
+ * descartan.
+ */
 export function ProductEditor({
   product,
-  initial,
+  newCategory,
   onSaved,
   onCancel,
 }: {
-  /** null para crear uno nuevo. */
   product: Product | null
-  initial: ProductRequest
-  onSaved: (product: Product) => void
+  newCategory: ProductCategory
+  onSaved: () => void
   onCancel: () => void
 }) {
-  const [draft, setDraft] = useState<ProductRequest>(initial)
+  const [draft, setDraft] = useState<ProductRequest>(() => (product ? toProductRequest(product) : emptyProduct(newCategory)))
   const save = useSaveState()
   const set = <K extends keyof ProductRequest>(key: K, value: ProductRequest[K]) => setDraft((d) => ({ ...d, [key]: value }))
+  const bind = (key: TextKey) => ({ value: draft[key], onChange: (value: string) => set(key, value) })
+  const bindOptional = (key: OptionalKey) => ({ value: draft[key] ?? '', onChange: (value: string) => set(key, value || null) })
 
   async function submit(event: FormEvent) {
     event.preventDefault()
@@ -37,123 +63,101 @@ export function ProductEditor({
       features: draft.features.filter((f) => f.trim()),
     }
     const saved = await save.run(() => (product ? updateProduct(product.id, request) : createProduct(request)))
-    if (saved) onSaved(saved)
+    if (saved) onSaved()
   }
 
   return (
-    <form onSubmit={submit} className="flex flex-col gap-6">
+    <form noValidate onSubmit={submit} className="flex flex-col gap-6">
       <div className="grid gap-5 md:grid-cols-2">
-        <Field label="Título" required>
-          {(props) => <Input {...props} maxLength={80} value={draft.title} onChange={(e) => set('title', e.target.value)} />}
-        </Field>
-        <Field label="Subtítulo" required>
-          {(props) => <Input {...props} maxLength={120} value={draft.subtitle} onChange={(e) => set('subtitle', e.target.value)} />}
-        </Field>
+        <TextField label="Título" required maxLength={80} {...bind('title')} />
+        <TextField label="Subtítulo" required maxLength={120} {...bind('subtitle')} />
         <Field label="Línea">
           {(props) => <CategorySelect {...props} value={draft.category} onChange={(v) => v && set('category', v)} />}
         </Field>
-        <Field label="Número de la línea" hint="Ejemplo: 01.">
-          {(props) => <Input {...props} maxLength={4} value={draft.categoryNumber ?? ''} onChange={(e) => set('categoryNumber', e.target.value || null)} />}
-        </Field>
-        <Field label="Distintivo" hint="Opcional. Ejemplo: 4 obras instaladas.">
-          {(props) => <Input {...props} maxLength={60} value={draft.badge ?? ''} onChange={(e) => set('badge', e.target.value || null)} />}
-        </Field>
-        <Field label="Texto del botón" hint='Opcional. Por defecto "Cotizar este sistema".'>
-          {(props) => <Input {...props} maxLength={60} value={draft.ctaText ?? ''} onChange={(e) => set('ctaText', e.target.value || null)} />}
-        </Field>
+        <TextField label="Número de la línea" hint="Ejemplo: 01." maxLength={4} {...bindOptional('categoryNumber')} />
+        <TextField label="Distintivo" hint="Opcional. Ejemplo: 4 obras instaladas." maxLength={60} {...bindOptional('badge')} />
+        <TextField label="Texto del botón" hint='Opcional. Por defecto "Cotizar este sistema".' maxLength={60} {...bindOptional('ctaText')} />
       </div>
-      <Field label="Descripción" required>
-        {(props) => <Textarea {...props} maxLength={600} value={draft.description} onChange={(e) => set('description', e.target.value)} />}
-      </Field>
-      <label className="flex items-center gap-3 text-[17px]">
-        <input type="checkbox" className="size-5 accent-[#0071e3]" checked={draft.active} onChange={(e) => set('active', e.target.checked)} />
+      <TextAreaField label="Descripción" required maxLength={600} {...bind('description')} />
+      <Checkbox className="text-[17px]" checked={draft.active} onChange={(active) => set('active', active)}>
         Visible en el catálogo
-      </label>
+      </Checkbox>
       <ImagePicker label="Imagen del producto" value={draft.imageUrl} onChange={(url) => set('imageUrl', url)} aspect="16/10" />
 
-      <fieldset>
-        <legend className="font-display text-xl font-semibold">Ficha técnica</legend>
-        <ul className="mt-3 flex flex-col gap-3">
-          {draft.specs.map((spec, i) => (
-            <li key={i} className="grid items-end gap-3 sm:grid-cols-[1fr_2fr_auto]">
-              <Field label={`Etiqueta ${i + 1}`}>
-                {(props) => (
-                  <Input
-                    {...props}
-                    maxLength={60}
-                    value={spec.label}
-                    onChange={(e) => set('specs', draft.specs.map((s, j) => (j === i ? { ...s, label: e.target.value } : s)))}
-                  />
-                )}
-              </Field>
-              <Field label={`Valor ${i + 1}`}>
-                {(props) => (
-                  <Input
-                    {...props}
-                    maxLength={150}
-                    value={spec.value}
-                    onChange={(e) => set('specs', draft.specs.map((s, j) => (j === i ? { ...s, value: e.target.value } : s)))}
-                  />
-                )}
-              </Field>
-              <Button size="sm" variant="ghost" aria-label={`Quitar fila ${i + 1} de la ficha técnica`} onClick={() => set('specs', draft.specs.filter((_, j) => j !== i))}>
-                Quitar
-              </Button>
-            </li>
-          ))}
-        </ul>
-        <Button
-          size="sm"
-          variant="secondary"
-          className="mt-3"
-          disabled={draft.specs.length >= MAX_ROWS}
-          onClick={() => set('specs', [...draft.specs, { label: '', value: '' }])}
-        >
-          Agregar fila
-        </Button>
-      </fieldset>
-
-      <fieldset>
-        <legend className="font-display text-xl font-semibold">Ventajas</legend>
-        <ul className="mt-3 flex flex-col gap-3">
-          {draft.features.map((feature, i) => (
-            <li key={i} className="grid items-end gap-3 sm:grid-cols-[1fr_auto]">
-              <Field label={`Ventaja ${i + 1}`}>
-                {(props) => (
-                  <Input
-                    {...props}
-                    maxLength={150}
-                    value={feature}
-                    onChange={(e) => set('features', draft.features.map((f, j) => (j === i ? e.target.value : f)))}
-                  />
-                )}
-              </Field>
-              <Button size="sm" variant="ghost" aria-label={`Quitar ventaja ${i + 1}`} onClick={() => set('features', draft.features.filter((_, j) => j !== i))}>
-                Quitar
-              </Button>
-            </li>
-          ))}
-        </ul>
-        <Button
-          size="sm"
-          variant="secondary"
-          className="mt-3"
-          disabled={draft.features.length >= MAX_ROWS}
-          onClick={() => set('features', [...draft.features, ''])}
-        >
-          Agregar ventaja
-        </Button>
-      </fieldset>
+      <EditableRows
+        legend="Ficha técnica"
+        addLabel="Agregar fila"
+        rows={draft.specs}
+        onChange={(specs) => set('specs', specs)}
+        newRow={{ label: '', value: '' }}
+        removeLabel={(i) => `Quitar fila ${i + 1} de la ficha técnica`}
+        className="sm:grid-cols-[1fr_2fr_auto]"
+        renderRow={(spec, i, update) => (
+          <>
+            <TextField label={`Etiqueta ${i + 1}`} maxLength={60} value={spec.label} onChange={(label) => update({ ...spec, label })} />
+            <TextField label={`Valor ${i + 1}`} maxLength={150} value={spec.value} onChange={(value) => update({ ...spec, value })} />
+          </>
+        )}
+      />
+      <EditableRows
+        legend="Ventajas"
+        addLabel="Agregar ventaja"
+        rows={draft.features}
+        onChange={(features) => set('features', features)}
+        newRow=""
+        removeLabel={(i) => `Quitar ventaja ${i + 1}`}
+        className="sm:grid-cols-[1fr_auto]"
+        renderRow={(feature, i, update) => (
+          <TextField label={`Ventaja ${i + 1}`} maxLength={150} value={feature} onChange={update} />
+        )}
+      />
 
       <div className="sticky -bottom-6 -mx-6 -mb-6 flex flex-wrap items-center gap-3 border-t border-border bg-background px-6 py-4 sm:-bottom-10 sm:-mx-10 sm:-mb-10 sm:px-10">
-        <Button type="submit" disabled={save.saving}>
-          {save.saving ? 'Guardando…' : 'Guardar producto'}
-        </Button>
+        <SaveButton save={save} label="Guardar producto" />
         <Button variant="secondary" onClick={onCancel} disabled={save.saving}>
           Descartar cambios
         </Button>
-        <SaveFeedback state={save.state} />
       </div>
     </form>
+  )
+}
+
+/** Lista editable de filas (ficha técnica o ventajas) con "Quitar" por fila y "Agregar" hasta 12. */
+function EditableRows<T>({
+  legend,
+  addLabel,
+  rows,
+  onChange,
+  newRow,
+  removeLabel,
+  className,
+  renderRow,
+}: {
+  legend: string
+  addLabel: string
+  rows: T[]
+  onChange: (rows: T[]) => void
+  newRow: T
+  removeLabel: (index: number) => string
+  className: string
+  renderRow: (row: T, index: number, update: (row: T) => void) => ReactNode
+}) {
+  return (
+    <fieldset>
+      <legend className="font-display text-xl font-semibold">{legend}</legend>
+      <ul className="mt-3 flex flex-col gap-3">
+        {rows.map((row, i) => (
+          <li key={i} className={`grid items-end gap-3 ${className}`}>
+            {renderRow(row, i, (next) => onChange(rows.map((r, j) => (j === i ? next : r))))}
+            <Button size="sm" variant="ghost" aria-label={removeLabel(i)} onClick={() => onChange(rows.filter((_, j) => j !== i))}>
+              Quitar
+            </Button>
+          </li>
+        ))}
+      </ul>
+      <Button size="sm" variant="secondary" className="mt-3" disabled={rows.length >= MAX_ROWS} onClick={() => onChange([...rows, newRow])}>
+        {addLabel}
+      </Button>
+    </fieldset>
   )
 }

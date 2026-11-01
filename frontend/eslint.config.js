@@ -19,5 +19,9 @@ export default defineConfig([
       ecmaVersion: 2023,
       globals: globals.browser,
     },
+    rules: {
+      // Permite quitar campos con desestructuración ({ id, ...request }) sin comentarios para silenciar la regla.
+      '@typescript-eslint/no-unused-vars': ['error', { ignoreRestSiblings: true }],
+    },
   },
 ])
