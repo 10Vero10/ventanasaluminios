@@ -31,14 +31,14 @@ Tablas de PostgreSQL 16. El esquema se crea solo con migraciones de Flyway (`bac
 | `glass_type` | `id`, `code` (único, no cambia), `name`, `position` (única, diferible), `active`, `is_default` | Como máximo una fila con `is_default` (restricción `EXCLUDE` diferible) |
 | `glass_color` | `id`, `code` (único, no cambia), `name`, `hex` (`#RRGGBB`), `reflective`, `note`, `position`, `active`, `is_default` | Igual que `glass_type` |
 | `glass_thickness` | `id`, `mm` (único, 1 a 50, no cambia), `position`, `active`, `is_default` | Igual que `glass_type` |
-| `quote` | `id UUID`, `legacy_id` (único, nulo), `created_at`, `updated_at`, `deleted_at`, `name`, `phone`, `product_type`, `width_cm`, `height_cm`, `panes`, `area_m2 NUMERIC(6,2)`, `glass_type_code`, `glass_color_code`, `thickness_mm`, `dimensions_text`, `message`, `status`, `source_ip` | Códigos del vidrio sin FK (copia del momento). Índice parcial `(status, created_at) WHERE deleted_at IS NULL`. `legacy_id` guarda el id de Redis en la migración del paso 6 |
-| `quote_status_history` | `id`, `quote_id` (FK), `from_status`, `to_status`, `changed_at`, `changed_by` (FK `admin_user`) | Rastro de cada cambio de estado |
+| `quote` | `id UUID`, `legacy_id` (único, nulo), `created_at`, `updated_at`, `deleted_at`, `name`, `phone`, `product_type`, `width_cm` (1–600), `height_cm` (1–260), `panes` (1–4), `area_m2 NUMERIC(6,2)`, `glass_type_code`, `glass_color_code`, `thickness_mm`, `dimensions_text`, `message`, `status`, `source_ip` | Los datos del configurador van todos o ninguno (CHECK). Códigos del vidrio sin FK (copia del momento). Índices parciales `(status, created_at)` y `(created_at)` `WHERE deleted_at IS NULL`. Las eliminadas quedan ocultas con `@SQLRestriction`. `legacy_id` guarda el id de Redis en la migración del paso 6 |
+| `quote_status_change` | `id`, `quote_id` (FK, `ON DELETE CASCADE`), `from_status`, `to_status`, `changed_at`, `changed_by` | Rastro de cada cambio de estado. `changed_by` queda nulo hasta el paso 4, que agrega la FK a `admin_user` |
 | `admin_user` | `id`, `email` (único), `password_hash`, `role`, `active`, `must_change_password`, `token_version`, `last_login_at`, `created_at` | `token_version` invalida los JWT al cambiar la contraseña |
 
 ## Relaciones
 
 - `product` 1 — N `product_spec` y `product_feature` (listas ordenadas que se borran con el producto).
-- `quote` 1 — N `quote_status_history`; `admin_user` 1 — N `quote_status_history`.
+- `quote` 1 — N `quote_status_change`; `admin_user` 1 — N `quote_status_change` (desde el paso 4).
 - `site_settings`, `featured_line`, `gallery_image` y las opciones de vidrio no tienen relaciones entre sí.
 
 ## Migraciones
@@ -49,3 +49,4 @@ Tablas de PostgreSQL 16. El esquema se crea solo con migraciones de Flyway (`bac
 | `V2__seed_settings` | Configuración inicial, 4 líneas destacadas y 5 imágenes (briefing §5) |
 | `V3__create_catalog_tables` | `product`, `product_spec`, `product_feature`, `glass_type`, `glass_color`, `glass_thickness` |
 | `V4__seed_catalog` | 8 productos (briefing §5.4.4) y opciones de vidrio (§3.5.1) |
+| `V5__create_quote_tables` | `quote`, `quote_status_change` |

@@ -82,3 +82,13 @@ Formato: contexto → decisión → consecuencias.
 - **Ediciones cruzadas de un producto:** `product.version` (`@Version`). Sin él, dos ediciones simultáneas de la ficha técnica podían dejar huecos en las posiciones y el catálogo entero respondía 500. La segunda edición recibe 409.
 - **Carácter nulo:** un `@JsonComponent` rechaza U+0000 en cualquier texto del JSON (400), porque PostgreSQL no lo admite.
 - **Carga en lote:** `hibernate.default_batch_fetch_size = 50`, para que listar el catálogo no haga una consulta por producto.
+
+## ADR-014 — Módulo quote
+
+- **Orden de validación:** el campo trampa se revisa antes que la validación, para responder éxito a un bot sin darle pistas. Por eso `POST /quotes` valida en el service con `Validator` y no con `@Valid` en el controller.
+- **El servidor recalcula el configurador:** área y texto de medidas se calculan en `GlassConfiguratorRules` con los nombres actuales de las opciones; el texto que manda el navegador se descarta. Las opciones inactivas se rechazan. Los mismos casos de prueba se usan en el frontend.
+- **Límite por IP:** filtro propio (`RateLimitFilter` + `RateLimiter`) con contador en memoria por ventanas fijas, configurable en `app.rate-limit`. Cuenta todo intento a la ruta (también los inválidos y los del campo trampa). IPv6 se agrupa por /64 y la memoria se acota a 100 000 clientes; si se llena, los clientes nuevos reciben 429 hasta que venzan ventanas. Vale para una sola instancia del backend.
+- **IP real del cliente:** `server.forward-headers-strategy=native`. Tomcat acepta `X-Forwarded-For` solo de proxies internos e ignora `Forwarded`; nginx reemplaza `X-Forwarded-For` y borra `Forwarded` y `X-Forwarded-Host/Port/Prefix`. Con `framework`, un cliente podía elegir su IP con el encabezado `Forwarded` y anular el límite (hallazgo de la revisión de seguridad, cubierto por `ForwardedHeaderIntegrationTest`).
+- **Borrado lógico:** `@SQLRestriction("deleted_at IS NULL")` oculta las eliminadas de toda consulta; el service además trata como inexistente una borrada en la misma transacción.
+- **Historial:** tabla `quote_status_change` (nombre final de `quote_status_history`). Repetir el mismo estado no crea entrada. `changed_by` queda nulo hasta el paso 4.
+- **Bandeja:** orden por `createdAt` (y `id` para desempatar), ascendente por defecto; `size` máximo 100. El cuerpo de `POST /quotes` se limita a 64 KB en nginx.
