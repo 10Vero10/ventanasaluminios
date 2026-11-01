@@ -18,7 +18,7 @@ Requisitos: Docker con Docker Compose.
 cp .env.example .env
 ```
 
-Edita `.env` y cambia las claves. Luego:
+Edita `.env` y cambia las claves. `JWT_SECRET` es obligatoria (mínimo 32 caracteres) y `ADMIN_EMAIL` / `ADMIN_INITIAL_PASSWORD` crean el primer administrador, que debe cambiar la contraseña en su primer ingreso. Si ya tenías un `.env` de una versión anterior, agrégale esas variables desde `.env.example`. Luego:
 
 ```bash
 docker compose up -d --build
@@ -109,7 +109,7 @@ npm run build && npm run lint
 | 0 | Estructura, Docker Compose, proyectos inicializados | Hecho (verificado con `docker compose up`) |
 | 1 | Base del backend y módulo `settings` | Hecho |
 | 2 | Módulo `catalog` | Hecho |
-| 3 | Módulo `quote` | En revisión (`feature/quotes`) |
-| 4 | Módulo `auth` | Pendiente |
+| 3 | Módulo `quote` | Hecho |
+| 4 | Módulo `auth` | En revisión (`feature/auth`) |
 | 5 | Frontend conectado a la API | Pendiente |
 | 6 | Migración desde Redis y despliegue | Pendiente |

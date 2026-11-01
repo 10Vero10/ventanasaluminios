@@ -92,3 +92,13 @@ Formato: contexto → decisión → consecuencias.
 - **Borrado lógico:** `@SQLRestriction("deleted_at IS NULL")` oculta las eliminadas de toda consulta; el service además trata como inexistente una borrada en la misma transacción.
 - **Historial:** tabla `quote_status_change` (nombre final de `quote_status_history`). Repetir el mismo estado no crea entrada. `changed_by` queda nulo hasta el paso 4.
 - **Bandeja:** orden por `createdAt` (y `id` para desempatar), ascendente por defecto; `size` máximo 100. El cuerpo de `POST /quotes` se limita a 64 KB en nginx.
+
+## ADR-015 — Autenticación del panel
+
+- **JWT en cookie:** HS256 con `JWT_SECRET` (obligatoria, 32+ caracteres; sin ella el backend no arranca). Se firma y verifica con `spring-security-oauth2-jose` (Nimbus). Algoritmo fijo, emisor y vencimiento verificados. Cookie `vya_session` httpOnly, `SameSite=Lax`, `Path=/api`, `Secure` por defecto.
+- **Sin oauth2-resource-server:** desactiva CSRF en toda solicitud con token; con el token en una cookie que el navegador adjunta solo, eso abría el panel a CSRF (lo detectó `AuthIntegrationTest`). Un filtro propio (`SessionCookieAuthenticationFilter`) lee la cookie solo en rutas con sesión, así una cookie vencida no rompe las páginas públicas.
+- **Revocación:** cada solicitud verifica contra la base que el administrador esté activo y que el `ver` del token sea su `token_version`. Cambiar la contraseña o cerrar sesión sube la versión e invalida todas las sesiones anteriores, aunque alguien haya copiado el token.
+- **CSRF:** `CookieCsrfTokenRepository` (cookie `XSRF-TOKEN` legible por JavaScript, encabezado `X-XSRF-TOKEN`) en todo cambio con sesión. Exentos solo `POST /quotes` y `POST /auth/login`, que no tienen sesión que proteger.
+- **Contraseña temporal:** el administrador inicial (ADR-005) entra con rol temporal y solo puede cambiar la contraseña (403 `PASSWORD_CHANGE_REQUIRED` en el panel). BCrypt costo 12; contraseñas de 12 a 72 bytes (BCrypt ignora lo que pasa de 72 y se rechaza en vez de recortarse).
+- **Login:** el mismo mensaje y el mismo costo (BCrypt contra un hash de referencia) para correo inexistente, inactivo o contraseña equivocada. 5 intentos por minuto por IP con el mismo filtro del ADR-014.
+- **Respaldo:** usa los DTO de entrada de cada módulo y sus services, así cumple las mismas reglas que el panel. Importar reemplaza líneas destacadas, galería y productos en una sola transacción; las opciones de vidrio se actualizan por código y las ausentes se desactivan (no se borran). Las cotizaciones no forman parte del respaldo.

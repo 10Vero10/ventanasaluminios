@@ -33,7 +33,7 @@ Tablas de PostgreSQL 16. El esquema se crea solo con migraciones de Flyway (`bac
 | `glass_thickness` | `id`, `mm` (único, 1 a 50, no cambia), `position`, `active`, `is_default` | Igual que `glass_type` |
 | `quote` | `id UUID`, `legacy_id` (único, nulo), `created_at`, `updated_at`, `deleted_at`, `name`, `phone`, `product_type`, `width_cm` (1–600), `height_cm` (1–260), `panes` (1–4), `area_m2 NUMERIC(6,2)`, `glass_type_code`, `glass_color_code`, `thickness_mm`, `dimensions_text`, `message`, `status`, `source_ip` | Los datos del configurador van todos o ninguno (CHECK). Códigos del vidrio sin FK (copia del momento). Índices parciales `(status, created_at)` y `(created_at)` `WHERE deleted_at IS NULL`. Las eliminadas quedan ocultas con `@SQLRestriction`. `legacy_id` guarda el id de Redis en la migración del paso 6 |
 | `quote_status_change` | `id`, `quote_id` (FK, `ON DELETE CASCADE`), `from_status`, `to_status`, `changed_at`, `changed_by` | Rastro de cada cambio de estado. `changed_by` queda nulo hasta el paso 4, que agrega la FK a `admin_user` |
-| `admin_user` | `id`, `email` (único), `password_hash`, `role`, `active`, `must_change_password`, `token_version`, `last_login_at`, `created_at` | `token_version` invalida los JWT al cambiar la contraseña |
+| `admin_user` | `id`, `email` (único, en minúsculas), `password_hash` (BCrypt), `role`, `active`, `must_change_password`, `token_version`, `last_login_at`, `created_at` | `token_version` va en cada JWT: subirla (cambio de contraseña o cierre de sesión) invalida las sesiones anteriores |
 
 ## Relaciones
 
@@ -50,3 +50,4 @@ Tablas de PostgreSQL 16. El esquema se crea solo con migraciones de Flyway (`bac
 | `V3__create_catalog_tables` | `product`, `product_spec`, `product_feature`, `glass_type`, `glass_color`, `glass_thickness` |
 | `V4__seed_catalog` | 8 productos (briefing §5.4.4) y opciones de vidrio (§3.5.1) |
 | `V5__create_quote_tables` | `quote`, `quote_status_change` |
+| `V6__create_admin_user` | `admin_user` y FK de `quote_status_change.changed_by` |
