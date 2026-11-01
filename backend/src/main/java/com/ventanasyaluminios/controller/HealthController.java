@@ -1,0 +1,17 @@
+package com.ventanasyaluminios.controller;
+
+import com.ventanasyaluminios.dto.response.HealthResponse;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+/** Usado por los healthchecks de Docker y nginx; no toca la base para no reiniciar el contenedor si Postgres se demora. */
+@RestController
+@RequestMapping("/api/v1/health")
+public class HealthController {
+
+    @GetMapping
+    public HealthResponse health() {
+        return new HealthResponse("ok");
+    }
+}

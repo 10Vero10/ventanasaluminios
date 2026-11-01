@@ -1,0 +1,48 @@
+package com.ventanasyaluminios.config;
+
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.web.servlet.config.annotation.CorsRegistry;
+import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
+
+/**
+ * Configuración web: registra {@link AppProperties}, define CORS y sirve las imágenes subidas en
+ * {@code /media/**}. Vive en un WebMvcConfigurer para
+ * que también la carguen las pruebas de controllers ({@code @WebMvcTest}).
+ */
+@Configuration
+@EnableConfigurationProperties(AppProperties.class)
+public class WebConfig implements WebMvcConfigurer {
+
+    private final AppProperties properties;
+
+    public WebConfig(AppProperties properties) {
+        this.properties = properties;
+    }
+
+    /** CORS solo se activa si hay orígenes configurados; detrás de nginx no hace falta. */
+    @Override
+    public void addCorsMappings(CorsRegistry registry) {
+        var origins = properties.cors().allowedOrigins();
+        if (origins.isEmpty()) {
+            return;
+        }
+        registry.addMapping("/api/**")
+                .allowedOrigins(origins.toArray(String[]::new))
+                .allowedMethods("GET", "POST", "PUT", "PATCH", "DELETE")
+                .allowCredentials(true);
+    }
+
+    /** Sirve solo los archivos de la carpeta de imágenes; los nombres son UUID generados por el servidor. */
+    @Override
+    public void addResourceHandlers(ResourceHandlerRegistry registry) {
+        String location = properties.media().uploadPath().toUri().toString();
+        // toUri() solo agrega la barra final si la carpeta ya existe; sin ella Spring no resuelve los archivos.
+        if (!location.endsWith("/")) {
+            location += "/";
+        }
+        registry.addResourceHandler(AppProperties.Media.PUBLIC_PREFIX + "**")
+                .addResourceLocations(location);
+    }
+}
