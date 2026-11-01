@@ -6,13 +6,16 @@ Sitio público y panel de administración de Ventanas y Aluminios SAS. React 19 
 
 ```
 src/
-  auth/            sesión del administrador (paso 4)
+  auth/            sesión del administrador
   components/
     layout/        cabecera, menú, pie de página y layout del panel
-    ui/            componentes de shadcn/ui (se agregan con `npx shadcn add <nombre>`)
-  lib/             utilidades (cn() combina clases de Tailwind sin conflictos)
+    quote/         configurador de vidrio y plano a escala
+    site/          bloques del sitio público (secciones, filtro por línea, llamado a cotizar)
+    ui/            componentes base (Button, Field, Dialog, estados) sobre Radix
+  lib/             utilidades: reglas del configurador, enlaces de contacto, useLoad, cn()
   pages/           una página por ruta
   routes/          AppRouter y protección de rutas
+  site/            SiteProvider y useSite(): configuración pública del sitio
   services/api/    cliente HTTP (httpClient) y un servicio por módulo; las páginas nunca llaman a axios directo
   test/            configuración de Vitest
   types/           tipos que reflejan los DTO del backend
@@ -21,6 +24,16 @@ src/
 ```
 
 Los imports usan el alias `@/` para `src/` (por ejemplo `import { cn } from '@/lib/utils'`).
+
+## Rutas
+
+| Ruta | Página |
+|---|---|
+| `/` | Inicio |
+| `/catalogo?linea=` | Catálogo con filtro por línea y detalle de cada producto |
+| `/trabajos?linea=` | Galería de trabajos realizados |
+| `/nosotros` | Quiénes somos |
+| `/cotizar?producto=` | Configurador y formulario de cotización (con la cotización apagada vuelve al inicio) |
 
 ## Comandos
 

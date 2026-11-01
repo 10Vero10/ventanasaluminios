@@ -102,3 +102,12 @@ Formato: contexto → decisión → consecuencias.
 - **Contraseña temporal:** el administrador inicial (ADR-005) entra con rol temporal y solo puede cambiar la contraseña (403 `PASSWORD_CHANGE_REQUIRED` en el panel). BCrypt costo 12; contraseñas de 12 a 72 bytes (BCrypt ignora lo que pasa de 72 y se rechaza en vez de recortarse).
 - **Login:** el mismo mensaje y el mismo costo (BCrypt contra un hash de referencia) para correo inexistente, inactivo o contraseña equivocada. 5 intentos por minuto por IP con el mismo filtro del ADR-014.
 - **Respaldo:** usa los DTO de entrada de cada módulo y sus services, así cumple las mismas reglas que el panel. Importar reemplaza líneas destacadas, galería y productos en una sola transacción; las opciones de vidrio se actualizan por código y las ausentes se desactivan (no se borran). Las cotizaciones no forman parte del respaldo.
+
+## ADR-016 — Frontend público
+
+- **Configuración del sitio una sola vez:** `SiteProvider` carga `GET /site` al entrar y la reparte con `useSite()`. Sin ella no se pinta el sitio (carga o error con reintento), así ningún texto aparece con valores fijos que luego cambian. También pone el título de la pestaña, la meta descripción y el favicon.
+- **Estados de datos:** `useLoad` da carga, error con mensaje en español y datos, con reintento; toda vista con datos muestra los tres (antislop R-27).
+- **Filtros en la URL:** `?linea=ventanas` en catálogo y trabajos, para compartir el enlace; un valor desconocido equivale a "todas".
+- **Configurador:** el estado vive en la página de cotización y se sincroniza con el formulario en los manejadores de eventos (no en efectos). Las hojas siguen la sugerencia por ancho hasta que el visitante elige otra. Se envían los datos estructurados de la última configuración válida aplicada; el servidor recalcula el texto (ADR-014).
+- **Movimiento:** `motion` con springs sin rebote (apple-design) en el diálogo, el menú y el plano; con `prefers-reduced-motion` se usa un fundido corto o ningún movimiento.
+- **Plano:** SVG a escala real; el lienzo mide 600 × 260 cm a la escala que cabe en el ancho disponible, la misma en ancho y alto.

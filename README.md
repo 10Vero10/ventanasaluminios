@@ -95,7 +95,7 @@ En Windows: `.\mvnw.cmd verify`.
 Frontend:
 
 ```bash
-npm run build && npm run lint
+npm run lint && npm test && npm run build
 ```
 
 ## Ramas
@@ -110,6 +110,6 @@ npm run build && npm run lint
 | 1 | Base del backend y módulo `settings` | Hecho |
 | 2 | Módulo `catalog` | Hecho |
 | 3 | Módulo `quote` | Hecho |
-| 4 | Módulo `auth` | En revisión (`feature/auth`) |
-| 5 | Frontend conectado a la API | Pendiente |
+| 4 | Módulo `auth` | Hecho |
+| 5 | Frontend conectado a la API | En curso: sitio público en revisión (`feature/frontend-public`), panel pendiente |
 | 6 | Migración desde Redis y despliegue | Pendiente |
