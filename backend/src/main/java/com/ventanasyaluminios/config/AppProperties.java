@@ -82,6 +82,24 @@ public record AppProperties(@Valid @NotNull Cors cors, @Valid @NotNull Media med
                        String initialAdminEmail,
                        String initialAdminPassword) {
 
+        /**
+         * Valores de ejemplo de {@code .env.example}. El repositorio es público: con ellos cualquiera podría firmar
+         * sesiones del panel o entrar primero como administrador. Si llegan sin cambiar, el backend no arranca.
+         */
+        static final java.util.Set<String> EXAMPLE_VALUES = java.util.Set.of(
+                "cambiar-por-una-clave-larga-y-aleatoria-de-al-menos-32-caracteres",
+                "cambiar-esta-clave-temporal");
+
+        @AssertTrue(message = "JWT_SECRET sigue con el valor de ejemplo de .env.example: genera una clave propia.")
+        public boolean isJwtSecretNotExample() {
+            return jwtSecret == null || !EXAMPLE_VALUES.contains(jwtSecret.trim());
+        }
+
+        @AssertTrue(message = "ADMIN_INITIAL_PASSWORD sigue con el valor de ejemplo de .env.example: elige una contraseña propia.")
+        public boolean isInitialAdminPasswordNotExample() {
+            return initialAdminPassword == null || !EXAMPLE_VALUES.contains(initialAdminPassword.trim());
+        }
+
         /** El administrador inicial necesita correo y contraseña juntos, o ninguno de los dos. */
         @AssertTrue(message = "ADMIN_EMAIL y ADMIN_INITIAL_PASSWORD van juntos; la contraseña debe tener al menos 12 caracteres.")
         public boolean isInitialAdminConsistent() {
