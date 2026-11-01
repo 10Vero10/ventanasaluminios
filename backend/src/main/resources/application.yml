@@ -45,3 +45,12 @@ app:
     quotes:
       max-requests: 10
       window: 1h
+    login:
+      max-requests: 5
+      window: 1m
+  auth:
+    jwt-secret: ${JWT_SECRET:}
+    session-duration: ${AUTH_SESSION_DURATION:8h}
+    cookie-secure: ${AUTH_COOKIE_SECURE:true}
+    initial-admin-email: ${ADMIN_EMAIL:}
+    initial-admin-password: ${ADMIN_INITIAL_PASSWORD:}

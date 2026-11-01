@@ -1,0 +1,4 @@
+# Solo para pruebas: se carga además de application.yml cuando no hay un perfil activo.
+app:
+  auth:
+    jwt-secret: clave-de-pruebas-que-no-se-usa-en-produccion-0123456789

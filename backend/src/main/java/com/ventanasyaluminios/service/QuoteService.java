@@ -29,8 +29,8 @@ public interface QuoteService {
 
     QuoteDetailResponse get(UUID id);
 
-    /** Cambia el estado libremente (ADR-006) y deja el cambio en el historial. */
-    QuoteResponse changeStatus(UUID id, QuoteStatus status);
+    /** Cambia el estado libremente (ADR-006) y deja el cambio en el historial con el administrador que lo hizo. */
+    QuoteResponse changeStatus(UUID id, QuoteStatus status, Long changedBy);
 
     /** Borrado lógico: la cotización desaparece de la bandeja pero su fila queda. */
     void delete(UUID id);

@@ -23,7 +23,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 /**
  * Opciones del configurador de vidrio desde el panel. No hay DELETE: una opción se desactiva con
- * {@code active: false}. Se protege con rol ADMIN en el paso 4.
+ * {@code active: false}. Solo rol ADMIN.
  */
 @RestController
 @RequestMapping("/api/v1/admin")

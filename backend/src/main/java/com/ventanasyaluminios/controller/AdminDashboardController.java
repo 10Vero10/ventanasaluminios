@@ -6,7 +6,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-/** Indicadores del encabezado del panel. Se protege con rol ADMIN en el paso 4. */
+/** Indicadores del encabezado del panel. Solo rol ADMIN. */
 @RestController
 @RequestMapping("/api/v1/admin/dashboard")
 public class AdminDashboardController {

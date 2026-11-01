@@ -35,7 +35,7 @@ public class QuoteStatusChange {
     @Column(name = "changed_at", nullable = false, updatable = false)
     private Instant changedAt;
 
-    /** Administrador que hizo el cambio; nulo hasta que exista el login (paso 4). */
+    /** Administrador que hizo el cambio; nulo en los cambios anteriores al login (paso 4). */
     @Column(name = "changed_by", updatable = false)
     private Long changedBy;
 

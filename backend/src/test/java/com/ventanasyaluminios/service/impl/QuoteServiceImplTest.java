@@ -165,13 +165,14 @@ class QuoteServiceImplTest {
         Quote quote = new Quote(UUID.randomUUID(), NOW.minusSeconds(60), "1.1.1.1");
         when(quoteRepository.findById(quote.getId())).thenReturn(Optional.of(quote));
 
-        service.changeStatus(quote.getId(), QuoteStatus.CONTACTADA);
-        service.changeStatus(quote.getId(), QuoteStatus.CONTACTADA);
+        service.changeStatus(quote.getId(), QuoteStatus.CONTACTADA, 7L);
+        service.changeStatus(quote.getId(), QuoteStatus.CONTACTADA, 7L);
 
         ArgumentCaptor<QuoteStatusChange> change = ArgumentCaptor.forClass(QuoteStatusChange.class);
         verify(statusChangeRepository).save(change.capture());
         assertThat(change.getValue().getFromStatus()).isEqualTo(QuoteStatus.NUEVA);
         assertThat(change.getValue().getToStatus()).isEqualTo(QuoteStatus.CONTACTADA);
+        assertThat(change.getValue().getChangedBy()).isEqualTo(7L);
         assertThat(quote.getUpdatedAt()).isEqualTo(NOW);
     }
 

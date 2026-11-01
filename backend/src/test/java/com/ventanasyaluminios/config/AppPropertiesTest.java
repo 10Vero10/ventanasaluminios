@@ -11,15 +11,17 @@ import org.springframework.util.unit.DataSize;
 
 class AppPropertiesTest {
 
-    private static final AppProperties.RateLimit RATE_LIMIT =
-            new AppProperties.RateLimit(new AppProperties.Rule(10, Duration.ofHours(1)));
+    private static final AppProperties.RateLimit RATE_LIMIT = new AppProperties.RateLimit(
+            new AppProperties.Rule(10, Duration.ofHours(1)), new AppProperties.Rule(5, Duration.ofMinutes(1)));
+    private static final AppProperties.Auth AUTH = new AppProperties.Auth("x".repeat(32), Duration.ofHours(8), true,
+            null, null);
 
     private final Validator validator = Validation.buildDefaultValidatorFactory().getValidator();
 
     @Test
     void corsConComodinSeRechazaAlArrancar() {
         var properties = new AppProperties(new AppProperties.Cors(List.of("*")),
-                new AppProperties.Media("uploads", DataSize.ofMegabytes(5)), RATE_LIMIT);
+                new AppProperties.Media("uploads", DataSize.ofMegabytes(5)), RATE_LIMIT, AUTH);
 
         assertThat(validator.validate(properties)).extracting(v -> v.getMessage())
                 .containsExactly("app.cors.allowed-origins no puede contener '*': lista los orígenes exactos.");

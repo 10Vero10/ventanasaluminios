@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
-/** Subida de imágenes desde el panel. Se protege con rol ADMIN en el paso 4. */
+/** Subida de imágenes desde el panel. Solo rol ADMIN. */
 @RestController
 @RequestMapping("/api/v1/admin/media")
 public class AdminMediaController {

@@ -31,4 +31,17 @@ public class RateLimitConfig {
         registration.setName("quoteRateLimitFilter");
         return registration;
     }
+
+    @Bean
+    public FilterRegistrationBean<RateLimitFilter> loginRateLimitFilter(AppProperties properties, Clock clock,
+                                                                        ObjectMapper objectMapper) {
+        AppProperties.Rule rule = properties.rateLimit().login();
+        RateLimitFilter filter = new RateLimitFilter("POST", new RateLimiter(rule.maxRequests(), rule.window(), clock),
+                objectMapper, "Demasiados intentos. Espera un minuto.");
+        FilterRegistrationBean<RateLimitFilter> registration = new FilterRegistrationBean<>(filter);
+        registration.addUrlPatterns("/api/v1/auth/login");
+        registration.setOrder(ORDER);
+        registration.setName("loginRateLimitFilter");
+        return registration;
+    }
 }
