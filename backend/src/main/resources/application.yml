@@ -1,10 +1,15 @@
 spring:
   application:
     name: ventanasyaluminios
+  # Lee el .env de la raíz del repo al correr desde backend/ o desde la raíz (IntelliJ, mvnw). En Docker no existe y se ignora.
+  config:
+    import:
+      - optional:file:../.env[.properties]
+      - optional:file:.env[.properties]
   datasource:
-    url: ${DB_URL:jdbc:postgresql://localhost:5432/ventanas}
-    username: ${DB_USER:ventanas}
-    password: ${DB_PASSWORD:ventanas}
+    url: ${DB_URL:jdbc:postgresql://localhost:${POSTGRES_PORT:5432}/${POSTGRES_DB:ventanas}}
+    username: ${DB_USER:${POSTGRES_USER:ventanas}}
+    password: ${DB_PASSWORD:${POSTGRES_PASSWORD:ventanas}}
   jpa:
     open-in-view: false
     hibernate:

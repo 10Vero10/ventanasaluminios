@@ -1,5 +1,6 @@
-package com.ventanasyaluminios.common.controller;
+package com.ventanasyaluminios.controller;
 
+import com.ventanasyaluminios.dto.HealthResponse;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -8,9 +9,6 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/api/v1/health")
 public class HealthController {
-
-    public record HealthResponse(String status) {
-    }
 
     @GetMapping
     public HealthResponse health() {
