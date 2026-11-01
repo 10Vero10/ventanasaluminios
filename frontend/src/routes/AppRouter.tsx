@@ -1,6 +1,8 @@
+import { lazy, Suspense } from 'react'
 import { Route, Routes } from 'react-router'
 
 import { PublicLayout } from '@/components/layout/PublicLayout'
+import { LoadingState } from '@/components/ui/states'
 import AboutPage from '@/pages/AboutPage'
 import CatalogPage from '@/pages/CatalogPage'
 import GalleryPage from '@/pages/GalleryPage'
@@ -9,10 +11,20 @@ import NotFoundPage from '@/pages/NotFoundPage'
 import QuotePage from '@/pages/QuotePage'
 import { SiteProvider } from '@/site/SiteProvider'
 
-/** Rutas del sitio público. Todas comparten la configuración del sitio y el layout. */
+const AdminApp = lazy(() => import('@/pages/admin/AdminApp'))
+
+/** Rutas del sitio público (comparten configuración y layout) y del panel, que se carga aparte. */
 export default function AppRouter() {
   return (
     <Routes>
+      <Route
+        path="admin/*"
+        element={
+          <Suspense fallback={<LoadingState label="Cargando el panel…" className="justify-center" />}>
+            <AdminApp />
+          </Suspense>
+        }
+      />
       <Route
         element={
           <SiteProvider>

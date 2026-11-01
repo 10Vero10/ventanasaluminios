@@ -13,6 +13,26 @@ export const httpClient = axios.create({
   timeout: 15_000,
 })
 
+type SessionListener = () => void
+const sessionListeners = new Set<SessionListener>()
+
+/** Avisa cuando el backend rechaza la sesión (401) en una ruta del panel; devuelve la función para dejar de escuchar. */
+export function onSessionExpired(listener: SessionListener): () => void {
+  sessionListeners.add(listener)
+  return () => sessionListeners.delete(listener)
+}
+
+httpClient.interceptors.response.use(undefined, (error: unknown) => {
+  if (axios.isAxiosError(error) && error.response?.status === 401) {
+    const url = error.config?.url ?? ''
+    // El login y la consulta inicial de sesión responden 401 como parte normal del flujo.
+    if (url.startsWith('/admin') || url === '/auth/change-password' || url === '/auth/logout') {
+      sessionListeners.forEach((listener) => listener())
+    }
+  }
+  return Promise.reject(error)
+})
+
 /** Mensaje legible de un error de la API; si el backend no respondió, un mensaje genérico en español. */
 export function getErrorMessage(error: unknown): string {
   if (axios.isAxiosError<ApiError>(error)) {

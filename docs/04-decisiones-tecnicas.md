@@ -111,3 +111,12 @@ Formato: contexto → decisión → consecuencias.
 - **Configurador:** el estado vive en la página de cotización y se sincroniza con el formulario en los manejadores de eventos (no en efectos). Las hojas siguen la sugerencia por ancho hasta que el visitante elige otra. Se envían los datos estructurados de la última configuración válida aplicada; el servidor recalcula el texto (ADR-014).
 - **Movimiento:** `motion` con springs sin rebote (apple-design) en el diálogo, el menú y el plano; con `prefers-reduced-motion` se usa un fundido corto o ningún movimiento.
 - **Plano:** SVG a escala real; el lienzo mide 600 × 260 cm a la escala que cabe en el ancho disponible, la misma en ancho y alto.
+
+## ADR-017 — Frontend del panel
+
+- **Sesión sin token en JavaScript:** el panel nunca ve el JWT (cookie httpOnly). `AuthProvider` pregunta `/auth/me` al abrir; un 401 en cualquier ruta del panel lo avisa `httpClient` y la vista vuelve al login. `RequireAdmin` solo evita pintar pantallas que el backend rechazaría.
+- **CSRF:** axios envía la cookie `XSRF-TOKEN` en `X-XSRF-TOKEN` en las solicitudes al mismo dominio, sin código extra.
+- **Configuración por pestañas:** Inicio, Quiénes somos y Configuración editan partes de la misma configuración; cada una guarda la configuración completa leída al abrirla (`PUT /admin/settings` reemplaza todo).
+- **Orden de listas:** subir y bajar cambian la pantalla al instante y guardan el orden completo; si el servidor lo rechaza, vuelve el orden anterior con el error.
+- **Carga aparte:** el panel es un `lazy()` en `/admin/*`, así el sitio público no descarga su código.
+- **Textos de cotizaciones:** se muestran como texto (React escapa todo), nunca como HTML.
