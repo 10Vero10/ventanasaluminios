@@ -13,7 +13,7 @@ Los códigos están en `ErrorCode` (backend), que es la fuente de verdad de esta
 | HTTP | `code` | Cuándo |
 |---|---|---|
 | 400 | `VALIDATION_ERROR` | Un campo no cumple las reglas (el mensaje dice cuál) |
-| 400 | `MALFORMED_REQUEST` | El JSON no se puede leer |
+| 400 | `MALFORMED_REQUEST` | El JSON no se puede leer, o un texto trae el carácter nulo (U+0000) |
 | 400 | `INVALID_PARAMETER` | Falta un parámetro o tiene formato inválido (por ejemplo, una línea inexistente) |
 | 400 | `REORDER_MISMATCH` | El nuevo orden no trae exactamente los ids actuales |
 | 400 | `IMMUTABLE_FIELD` | Se intentó cambiar el código (o los mm) de una opción de vidrio |
@@ -25,7 +25,7 @@ Los códigos están en `ErrorCode` (backend), que es la fuente de verdad de esta
 | 405 | `METHOD_NOT_ALLOWED` | Método no permitido en la ruta |
 | 406 | — | El cliente no acepta JSON (respuesta sin cuerpo) |
 | 409 | `DUPLICATE_CODE` | Ya existe una opción de vidrio con ese código o espesor |
-| 409 | `CONFLICT` | Dos cambios simultáneos chocaron (por ejemplo, la misma posición); se pide actualizar e intentar de nuevo |
+| 409 | `CONFLICT` | Dos cambios simultáneos chocaron (la misma posición, dos ediciones cruzadas del mismo producto o un registro borrado mientras se editaba); se pide actualizar e intentar de nuevo |
 | 413 | `FILE_TOO_LARGE` | Imagen más grande que el límite configurado (5 MB) |
 | 415 | `UNSUPPORTED_MEDIA_TYPE` | Tipo de contenido no soportado |
 | 429 | — | Límite de solicitudes por IP (pasos 3 y 4) |
