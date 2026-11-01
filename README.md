@@ -59,11 +59,17 @@ Backend en http://localhost:8080, leyendo las variables del `.env`:
 cd backend && set -a && . ../.env && set +a && DB_USER=$POSTGRES_USER DB_PASSWORD=$POSTGRES_PASSWORD DB_URL=jdbc:postgresql://localhost:${POSTGRES_PORT:-5432}/$POSTGRES_DB ./mvnw spring-boot:run
 ```
 
-Frontend en http://localhost:5173 (Vite reenvía `/api` y `/media` al backend local):
+Frontend en http://localhost:5173 (Vite reenvía `/api` y `/media` al backend local). Desde la raíz del repo:
 
 ```bash
-cd frontend && npm install && npm run dev
+npm install
 ```
+
+```bash
+npm run dev
+```
+
+`npm install` en la raíz también instala las dependencias de `frontend/`. Los scripts `dev`, `build`, `lint` y `preview` de la raíz ejecutan los del frontend; también puedes correrlos dentro de `frontend/`.
 
 ## Pruebas
 
@@ -76,7 +82,7 @@ cd backend && ./mvnw verify
 Frontend:
 
 ```bash
-cd frontend && npm run build && npm run lint
+npm run build && npm run lint
 ```
 
 ## Estado
