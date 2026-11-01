@@ -16,6 +16,12 @@ public final class RequestPatterns {
     /** WhatsApp tal como lo escribe el administrador: dígitos, espacios y +. Se guarda solo con dígitos. */
     public static final String WHATSAPP = "^[0-9+\\s]*$";
 
+    /** Código de una opción de vidrio: mayúsculas, números y guion bajo (ej. AZUL_LAGO). */
+    public static final String OPTION_CODE = "^[A-Z0-9_]{2,30}$";
+
+    /** Color en hexadecimal de seis dígitos (ej. #396DC6). */
+    public static final String HEX_COLOR = "^#[0-9A-Fa-f]{6}$";
+
     private RequestPatterns() {
     }
 }

@@ -10,8 +10,8 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 /**
- * Reordenamiento común a toda lista ordenable (líneas destacadas, galería y, en el catálogo, productos,
- * especificaciones y opciones de vidrio).
+ * Reordenamiento común a toda lista ordenable (líneas destacadas, galería, productos y opciones de vidrio).
+ * La ficha técnica y las características de un producto no pasan por aquí: su orden es el de la lista.
  */
 final class Reordering {
 

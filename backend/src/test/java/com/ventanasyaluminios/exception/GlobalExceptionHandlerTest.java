@@ -15,6 +15,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -84,6 +85,20 @@ class GlobalExceptionHandlerTest {
     }
 
     @Test
+    void edicionCruzadaDevuelve409() throws Exception {
+        mockMvc.perform(get("/test/stale"))
+                .andExpect(status().isConflict())
+                .andExpect(jsonPath("$.code").value("CONFLICT"));
+    }
+
+    @Test
+    void textoConCaracterNuloSeRechazaCon400() throws Exception {
+        mockMvc.perform(post("/test/validated").contentType(MediaType.APPLICATION_JSON).content("{\"name\":\"a\\u0000b\"}"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.code").value("MALFORMED_REQUEST"));
+    }
+
+    @Test
     void errorInesperadoNoExponeDetallesTecnicos() throws Exception {
         mockMvc.perform(get("/test/boom"))
                 .andExpect(status().isInternalServerError())
@@ -109,6 +124,11 @@ class GlobalExceptionHandlerTest {
         @GetMapping("/test/ok")
         NamedRequest ok() {
             return new NamedRequest("ok");
+        }
+
+        @GetMapping("/test/stale")
+        void stale() {
+            throw new ObjectOptimisticLockingFailureException(Object.class, 1L);
         }
 
         @GetMapping("/test/conflict")
