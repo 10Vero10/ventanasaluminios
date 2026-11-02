@@ -98,7 +98,7 @@ function QuoteContent() {
         <div className="grid gap-12 lg:grid-cols-2 lg:gap-16">
           <section aria-labelledby="configurador">
             <p className="text-sm font-semibold text-status">Configurador dimensional a escala</p>
-            <SectionTitle id="configurador" className="text-[24px] md:text-[32px]">
+            <SectionTitle id="configurador" size="md">
               Plano Esquemático Dinámico
             </SectionTitle>
             <div className="mt-8">
@@ -108,7 +108,7 @@ function QuoteContent() {
 
           <section id="solicitud" aria-labelledby="formulario" className="scroll-mt-20 lg:sticky lg:top-24 lg:self-start">
             <p className="text-sm font-semibold text-status">Formulario directo</p>
-            <SectionTitle id="formulario" className="text-[24px] md:text-[32px]">
+            <SectionTitle id="formulario" size="md">
               Solicitud de Cotización Rápida
             </SectionTitle>
             <p className="mt-3 text-muted-foreground">

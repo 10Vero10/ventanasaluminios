@@ -4,7 +4,7 @@ import { useId } from 'react'
 import { cn } from '@/lib/utils'
 
 const controlClass =
-  'w-full rounded-[12px] border border-input bg-background px-4 py-3 text-[17px] tracking-[-0.022em] text-foreground placeholder:text-muted-foreground transition-colors focus-visible:border-ring focus-visible:outline-2 focus-visible:outline-offset-0 focus-visible:outline-ring/40 disabled:bg-muted aria-invalid:border-destructive'
+  'w-full rounded-[12px] border border-input bg-background px-4 py-3 text-body tracking-[-0.022em] text-foreground placeholder:text-muted-foreground transition-colors focus-visible:border-ring focus-visible:outline-2 focus-visible:outline-offset-0 focus-visible:outline-ring/40 disabled:bg-muted aria-invalid:border-destructive'
 
 /** Lo que Field pasa al control para conectarlo con su etiqueta, su ayuda y su error. */
 export interface FieldControlProps {

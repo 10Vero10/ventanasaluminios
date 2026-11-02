@@ -35,7 +35,7 @@ export function FeaturedLinesPanel() {
                     <p className="text-xs text-muted-foreground">
                       {line.number} · {categoryLabel(line.targetCategory)}
                     </p>
-                    <p className="text-[17px] font-semibold">{line.title}</p>
+                    <p className="text-body font-semibold">{line.title}</p>
                   </div>
                   <div className="flex flex-wrap gap-2">
                     <Button

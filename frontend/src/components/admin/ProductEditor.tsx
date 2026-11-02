@@ -76,7 +76,7 @@ export function ProductEditor({
         <TextField label="Texto del botón" hint='Opcional. Por defecto "Cotizar este sistema".' maxLength={60} {...bindOptional('ctaText')} />
       </div>
       <TextAreaField label="Descripción" required maxLength={600} {...bind('description')} />
-      <Checkbox className="text-[17px]" checked={draft.active} onChange={(active) => set('active', active)}>
+      <Checkbox className="text-body" checked={draft.active} onChange={(active) => set('active', active)}>
         Visible en el catálogo
       </Checkbox>
       <ImagePicker label="Imagen del producto" value={draft.imageUrl} onChange={(url) => set('imageUrl', url)} aspect="16/10" />

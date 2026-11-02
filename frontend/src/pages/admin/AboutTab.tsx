@@ -1,16 +1,13 @@
 import { ImagePicker } from '@/components/admin/ImagePicker'
 import { SettingsForm } from '@/components/admin/SettingsForm'
-import { useSettingsDraft } from '@/components/admin/useSettingsDraft'
 import { TextAreaField, TextField } from '@/components/ui/field'
 
 const MAX_YEARS = 150
 
 /** Pestaña Quiénes somos (briefing §5.7.5). Los años se usan en todo el sitio. */
 export default function AboutTab() {
-  const settings = useSettingsDraft()
   return (
     <SettingsForm
-      settings={settings}
       title="Quiénes somos"
       description="Textos de la historia y trayectoria de la empresa."
       className="flex max-w-3xl flex-col gap-5"

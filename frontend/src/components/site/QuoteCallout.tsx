@@ -16,7 +16,7 @@ export function QuoteCallout({ kicker, title, text, note }: { kicker: string; ti
       <SectionTitle id="llamado-cotizar" className="mx-auto max-w-2xl">
         {title}
       </SectionTitle>
-      <p className="mx-auto mt-4 max-w-xl text-[17px] text-muted-foreground">{text}</p>
+      <p className="mx-auto mt-4 max-w-xl text-body text-muted-foreground">{text}</p>
       <Button asChild size="lg" className="mt-8">
         <Link to={ROUTES.quote}>Cotizar ahora</Link>
       </Button>

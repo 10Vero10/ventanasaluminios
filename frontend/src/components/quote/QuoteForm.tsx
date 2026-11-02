@@ -58,8 +58,8 @@ export function QuoteForm({
   if (submit.status === 'sent') {
     return (
       <div role="status" className="mt-8 rounded-[28px] bg-secondary p-8">
-        <p className="font-display text-[28px] font-semibold">¡Cotización enviada!</p>
-        <p className="mt-2 text-[17px] text-muted-foreground">
+        <p className="font-display text-title-2 font-semibold">¡Cotización enviada!</p>
+        <p className="mt-2 text-body text-muted-foreground">
           Recibimos tu solicitud. Nos pondremos en contacto contigo a la brevedad al número que indicaste.
         </p>
         <Button variant="secondary" className="mt-6" onClick={() => setSubmit({ status: 'idle' })}>

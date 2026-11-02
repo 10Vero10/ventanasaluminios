@@ -7,6 +7,12 @@ import type { ApiError } from '@/types/api'
  * La sesión viaja en cookie httpOnly del mismo dominio; axios reenvía solo la cookie XSRF-TOKEN de Spring
  * en el encabezado X-XSRF-TOKEN.
  */
+/**
+ * Tiempo para la primera solicitud de una visita: en el plan gratis de Render el servidor se duerme y tarda cerca de
+ * un minuto en despertar. Las demás solicitudes usan el tiempo normal.
+ */
+export const WAKE_UP_TIMEOUT_MS = 120_000
+
 export const httpClient = axios.create({
   baseURL: '/api/v1',
   headers: { 'Content-Type': 'application/json' },

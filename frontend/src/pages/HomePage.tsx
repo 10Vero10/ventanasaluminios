@@ -12,15 +12,15 @@ export default function HomePage() {
   return (
     <>
       <section aria-labelledby="portada" className="bg-background">
-        <div className="mx-auto max-w-[1080px] px-5 pt-10 text-center sm:px-6 md:pt-20">
+        <div className="page-container pt-10 text-center md:pt-20">
           <Kicker>Fábrica · Instalación · A medida</Kicker>
           <h1
             id="portada"
-            className="mx-auto mt-3 max-w-4xl font-display text-[38px] leading-[1.05] font-semibold tracking-[-0.025em] text-balance sm:text-[44px] md:text-[80px] md:tracking-[-0.015em]"
+            className="mx-auto mt-3 max-w-4xl font-display text-hero-sm leading-[1.05] font-semibold tracking-[-0.025em] text-balance sm:text-hero md:text-display-xl md:tracking-[-0.015em]"
           >
             {site.heroTitle}
           </h1>
-          <p className="mx-auto mt-4 max-w-2xl text-[17px] leading-snug text-muted-foreground md:mt-5 md:text-[21px]">
+          <p className="mx-auto mt-4 max-w-2xl text-body leading-snug text-muted-foreground md:mt-5 md:text-intro-lg">
             {site.heroSubtitle}
           </p>
           <div className="mt-7 flex flex-wrap justify-center gap-3 md:mt-8">
@@ -56,7 +56,7 @@ export default function HomePage() {
               )}
               <div className="absolute right-3 bottom-3 left-3 rounded-[16px] bg-white/90 p-3 backdrop-blur-md sm:right-auto sm:bottom-4 sm:left-4 sm:max-w-xs sm:rounded-[20px] sm:p-4">
                 <p className="text-xs font-semibold text-status">Ingeniería estructural</p>
-                <p className="mt-1 text-[15px] font-semibold sm:text-[17px]">Calibre europeo y sellado térmico</p>
+                <p className="mt-1 text-callout font-semibold sm:text-body">Calibre europeo y sellado térmico</p>
               </div>
             </figure>
           </div>
@@ -68,18 +68,18 @@ export default function HomePage() {
           <div>
             <Kicker>Nuestra trayectoria</Kicker>
             <SectionTitle id="trayectoria">{site.experienceYears} años fabricando confianza</SectionTitle>
-            <p className="mt-4 text-[17px] text-muted-foreground">Desde nuestro taller, a la medida de cada obra.</p>
-            <Button asChild variant="link" className="mt-4 text-[17px]">
+            <p className="mt-4 text-body text-muted-foreground">Desde nuestro taller, a la medida de cada obra.</p>
+            <Button asChild variant="link" className="mt-4 text-body">
               <Link to={ROUTES.about}>Conócenos</Link>
             </Button>
           </div>
           <div className="grid gap-4 sm:grid-cols-2">
-            <article className="rounded-[24px] bg-background p-5 md:rounded-[28px] md:p-7">
+            <article className="tile bg-background">
               <p className="text-xs font-semibold text-muted-foreground">Ajuste técnico</p>
               <h3 className="mt-2 font-display text-2xl font-semibold tracking-[-0.01em]">Medida milimétrica</h3>
               <p className="mt-2 text-muted-foreground">Precisión milimétrica.</p>
             </article>
-            <article className="rounded-[24px] bg-background p-5 md:rounded-[28px] md:p-7">
+            <article className="tile bg-background">
               <p className="text-xs font-semibold text-muted-foreground">Garantía</p>
               <h3 className="mt-2 font-display text-2xl font-semibold tracking-[-0.01em]">Instalación limpia</h3>
               <p className="mt-2 text-muted-foreground">
@@ -95,7 +95,7 @@ export default function HomePage() {
         <div className="max-w-2xl">
           <Kicker>Líneas especializadas</Kicker>
           <SectionTitle id="lineas">Lo que fabricamos</SectionTitle>
-          <p className="mt-4 text-[17px] text-muted-foreground">
+          <p className="mt-4 text-body text-muted-foreground">
             Cuatro líneas de trabajo y una sola obsesión: medidas exactas, instalación limpia y acabados que duren.
           </p>
         </div>
@@ -120,7 +120,7 @@ export default function HomePage() {
                   <p className="text-xs font-semibold text-muted-foreground">
                     {line.number} · {line.categoryTag}
                   </p>
-                  <h3 className="mt-2 font-display text-[24px] font-semibold tracking-[-0.015em] md:text-[28px]">{line.title}</h3>
+                  <h3 className="mt-2 font-display text-title-3 font-semibold tracking-[-0.015em] md:text-title-2">{line.title}</h3>
                   <p className="mt-2 text-muted-foreground">{line.description}</p>
                   <p className="mt-4 text-link group-hover:underline">{line.linkText}</p>
                 </div>

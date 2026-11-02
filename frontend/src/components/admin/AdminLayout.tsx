@@ -37,7 +37,7 @@ export function AdminLayout() {
           <div className="flex items-center gap-3">
             <BrandMark className="size-9 shrink-0" />
             <div className="leading-tight">
-              <p className="text-[15px] font-semibold whitespace-nowrap">Ventanas y Aluminios</p>
+              <p className="text-callout font-semibold whitespace-nowrap">Ventanas y Aluminios</p>
               <p className="text-xs whitespace-nowrap text-muted-foreground">Panel de control</p>
             </div>
           </div>
@@ -78,7 +78,7 @@ export function AdminLayout() {
               { label: 'Cotizaciones nuevas', value: counts?.newQuotes },
             ].map((item) => (
               <div key={item.label} className="rounded-[14px] bg-secondary px-3 py-2 sm:rounded-[16px] sm:px-4 sm:py-3">
-                <dt className="text-[11px] leading-tight text-muted-foreground sm:text-xs">{item.label}</dt>
+                <dt className="text-caption leading-tight text-muted-foreground sm:text-xs">{item.label}</dt>
                 <dd className="font-display text-xl font-semibold tabular-nums sm:text-2xl">{item.value ?? '·'}</dd>
               </div>
             ))}

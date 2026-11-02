@@ -18,10 +18,10 @@ export function MobileTabBar() {
           <li key={item.to} className="flex-1">
             <NavLink
               to={item.to}
-              end={item.to === '/'}
+              end={item.end}
               className={({ isActive }) =>
                 cn(
-                  'flex min-h-14 items-center justify-center text-xs',
+                  'flex min-h-tabbar items-center justify-center text-xs',
                   isActive ? 'font-semibold text-link' : 'text-foreground/70',
                 )
               }

@@ -44,7 +44,7 @@ export function Dialog({ open, onOpenChange, title, description, children, class
                 exit={reduceMotion ? { opacity: 0 } : { opacity: 0, y: 40 }}
                 transition={reduceMotion ? { duration: 0.15 } : SPRING}
               >
-                <DialogPrimitive.Title className="pr-12 font-display text-[28px] leading-tight font-semibold tracking-[-0.015em]">
+                <DialogPrimitive.Title className="pr-12 font-display text-title-2 leading-tight font-semibold tracking-[-0.015em]">
                   {title}
                 </DialogPrimitive.Title>
                 {description ? (

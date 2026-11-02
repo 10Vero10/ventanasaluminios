@@ -48,7 +48,7 @@ export function MeasureInput({
           aria-label={`${name} en centímetros`}
           aria-describedby={hintId}
           onChange={(event) => set(event.target.value === '' ? 0 : Number(event.target.value))}
-          className="h-11 w-full min-w-0 rounded-[12px] border border-input bg-background text-center text-[17px] tabular-nums focus-visible:border-ring focus-visible:outline-2 focus-visible:outline-ring/40"
+          className="h-11 w-full min-w-0 rounded-[12px] border border-input bg-background text-center text-body tabular-nums focus-visible:border-ring focus-visible:outline-2 focus-visible:outline-ring/40"
         />
         <button
           type="button"

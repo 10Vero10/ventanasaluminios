@@ -19,7 +19,7 @@ import type { GlassColor, GlassOptions, GlassThickness, GlassType } from '@/type
 
 type Item<K extends GlassKind> = GlassKinds[K]['item']
 type Request<K extends GlassKind> = GlassKinds[K]['request']
-type Draft<K extends GlassKind> = DraftState<Item<K>, Item<K>>
+type Draft<K extends GlassKind> = DraftState<Item<K>>
 
 /**
  * Lo que distingue a cada lista: cómo se arma la solicitud (también sirve para saber si una fila cambió, comparando

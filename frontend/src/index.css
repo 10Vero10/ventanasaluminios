@@ -65,6 +65,58 @@
   --color-status: var(--status);
 }
 
+/*
+  Escala de tipo del sitio (apple-style-reference). Cada tamaño tiene nombre para no repetir píxeles sueltos:
+  text-caption 11 · text-callout 15 · text-body 17 · text-intro 19 · text-intro-lg 21 · text-title-3 24 · text-title-2 28
+  text-title-1 32 · text-display-xs 34 · text-hero-sm 38 · text-display-sm 40 · text-hero 44 · text-display 48
+  text-display-md 56 · text-display-lg 64 · text-display-xl 80.
+  Alturas fijas compartidas: la cabecera y la barra inferior del celular miden 3.5rem (h-header, top-header, …).
+*/
+@theme {
+  --text-caption: 11px;
+  --text-callout: 15px;
+  --text-body: 17px;
+  --text-intro: 19px;
+  --text-intro-lg: 21px;
+  --text-title-3: 24px;
+  --text-title-2: 28px;
+  --text-title-1: 32px;
+  --text-display-xs: 34px;
+  --text-hero-sm: 38px;
+  --text-display-sm: 40px;
+  --text-hero: 44px;
+  --text-display: 48px;
+  --text-display-md: 56px;
+  --text-display-lg: 64px;
+  --text-display-xl: 80px;
+
+  --spacing-header: 3.5rem;
+  --spacing-tabbar: 3.5rem;
+}
+
+/* Contenedor de página: ancho máximo y márgenes laterales que respetan la muesca del celular en horizontal. */
+@utility page-container {
+  margin-inline: auto;
+  width: 100%;
+  max-width: 1080px;
+  padding-left: max(1.25rem, env(safe-area-inset-left));
+  padding-right: max(1.25rem, env(safe-area-inset-right));
+  @media (width >= 40rem) {
+    padding-left: max(1.5rem, env(safe-area-inset-left));
+    padding-right: max(1.5rem, env(safe-area-inset-right));
+  }
+}
+
+/* Tarjeta de contenido: radio y relleno menores en el celular. */
+@utility tile {
+  border-radius: 24px;
+  padding: 1.25rem;
+  @media (width >= 48rem) {
+    border-radius: var(--radius-xl);
+    padding: 1.75rem;
+  }
+}
+
 @layer base {
   * {
     @apply border-border outline-ring/50;

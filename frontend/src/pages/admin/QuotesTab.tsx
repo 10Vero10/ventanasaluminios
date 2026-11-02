@@ -213,7 +213,7 @@ function QuoteCard({
           <p className="text-xs text-muted-foreground">
             #{number} · {DATE_FORMAT.format(new Date(quote.createdAt))}
           </p>
-          <h3 className="mt-1 text-[19px] font-semibold">{quote.name}</h3>
+          <h3 className="mt-1 text-intro font-semibold">{quote.name}</h3>
           <a href={phoneHref(quote.phone)} className="text-link hover:underline">
             {quote.phone}
           </a>

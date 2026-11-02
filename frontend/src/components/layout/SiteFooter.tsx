@@ -12,9 +12,9 @@ export function SiteFooter() {
   const site = useSite()
   return (
     <footer className="bg-secondary pb-24 md:pb-0">
-      <div className="mx-auto grid max-w-[1080px] gap-10 px-6 py-14 text-sm md:grid-cols-[2fr_1fr_1.5fr]">
+      <div className="page-container grid gap-10 py-14 text-sm md:grid-cols-[2fr_1fr_1.5fr]">
         <div>
-          <p className="flex items-center gap-2.5 font-display text-[17px] font-semibold">
+          <p className="flex items-center gap-2.5 font-display text-body font-semibold">
             <BrandMark className="size-7" />
             Ventanas y Aluminios
           </p>
@@ -53,7 +53,7 @@ export function SiteFooter() {
         </div>
       </div>
       <div className="border-t border-border">
-        <p className="mx-auto max-w-[1080px] px-5 py-5 text-xs sm:px-6 text-muted-foreground">
+        <p className="page-container py-5 text-xs text-muted-foreground">
           © {new Date().getFullYear()} Ventanas y Aluminios. Fabricación e instalación a medida. Todos los derechos
           reservados.
         </p>

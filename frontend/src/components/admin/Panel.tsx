@@ -20,7 +20,7 @@ export function Panel({
     <section className={cn('rounded-[24px] bg-background p-4 sm:rounded-[28px] sm:p-8', className)}>
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div>
-          <h2 className="font-display text-[24px] leading-tight font-semibold tracking-[-0.01em]">{title}</h2>
+          <h2 className="font-display text-title-3 leading-tight font-semibold tracking-[-0.01em]">{title}</h2>
           {description && <p className="mt-1 text-muted-foreground">{description}</p>}
         </div>
         {actions && <div className="flex flex-wrap gap-2">{actions}</div>}
