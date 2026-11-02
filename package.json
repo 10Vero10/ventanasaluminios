@@ -1,7 +1,7 @@
 {
   "name": "ventanasyaluminios",
   "private": true,
-  "description": "Atajos para trabajar el frontend desde la ra\u00edz del repositorio.",
+  "description": "Atajos para trabajar el frontend desde la raíz del repositorio.",
   "scripts": {
     "postinstall": "npm --prefix frontend install",
     "dev": "npm --prefix frontend run dev",
@@ -9,5 +9,9 @@
     "lint": "npm --prefix frontend run lint",
     "preview": "npm --prefix frontend run preview",
     "test": "npm --prefix frontend run test"
+  },
+  "dependencies": {
+    "@neon/config": "^1.10.0",
+    "@neon/env": "^1.6.8"
   }
 }

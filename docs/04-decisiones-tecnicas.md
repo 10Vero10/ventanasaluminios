@@ -138,7 +138,7 @@ Formato: contexto → decisión → consecuencias.
   - Vercel limita el cuerpo de las solicitudes reenviadas (unos 4,5 MB): una imagen cercana a 5 MB puede fallar al subirse por esta vía.
   - Límite por IP: detrás de Vercel y del proxy de Render, Tomcat solo confía en proxies internos, así que la IP que ve es la del borde de Vercel y varios visitantes pueden compartir un mismo contador. Es lo seguro (no se puede falsear la IP llamando directo a Render), a cambio de un límite más grueso.
 
-## ADR-020 — Todo en Render, con nginx delante
+## ADR-020 — Todo en Render, con nginx delante (la base pasa a Neon en ADR-021)
 
 - **Motivo:** detrás de Vercel el backend veía la IP de Vercel y no la del visitante, así que los límites por IP (5 intentos de inicio de sesión por minuto, 10 cotizaciones por hora) eran compartidos y cualquiera podía bloquear el panel o el formulario para todos. Además, sin nginx nada limitaba el tamaño de las solicitudes y el plan Hobby de Vercel es para uso personal no comercial.
 - **Topología:** `render.yaml` crea el sitio (imagen `web` con nginx, la misma de Docker Compose), el backend y PostgreSQL. La plantilla `frontend/nginx/default.conf.template` toma `BACKEND_ORIGIN` y `PROXY_SECRET` al arrancar.
@@ -146,3 +146,12 @@ Formato: contexto → decisión → consecuencias.
 - **Tamaño de las solicitudes:** el backend limita el cuerpo por su cuenta (`RequestSizeLimitFilter`: 64 KB para cotización e inicio de sesión, 6 MB para el resto), porque en Render se puede llamar sin pasar por nginx.
 - **Servicios dormidos:** la primera visita tras 15 minutos puede tardar hasta un minuto; nginx espera hasta 120 s al backend y el sitio espera más la configuración inicial, mostrando "Despertando el servidor…".
 - **Límites que siguen:** la base gratis vence según las condiciones de Render y las imágenes subidas se pierden en cada despliegue sin un disco persistente (de pago).
+
+## ADR-021 — PostgreSQL en Neon
+
+- **Motivo:** la base gratis de Render vence a los 30 días y se borra si no se pasa a un plan pago. El plan gratis de Neon no vence: la base se suspende tras unos minutos sin uso y despierta sola en menos de un segundo. El sitio y el backend siguen en Render (ADR-020).
+- **Conexión:** el backend usa la conexión **directa** de Neon (sin `-pooler`) con el driver JDBC de siempre y HikariCP: es un servidor de larga vida, no un entorno serverless, y Flyway necesita una sesión de verdad para las migraciones. `render.yaml` deja `DB_URL`, `DB_USER` y `DB_PASSWORD` para llenarlos en Render; `application.yml` ya los leía. Sin código nuevo ni librerías.
+- **Región:** la misma que el backend en Render (Oregon → AWS US West 2), porque cada página hace varias consultas.
+- **Entornos:** el proyecto de Neon está enlazado con `neon init` (`neon.ts`, rama `production`). La conexión de producción no va en el `.env` de la raíz: ese archivo lo leen el backend y Docker Compose en el computador, que siguen usando el PostgreSQL local.
+- **Migrar datos:** el contenido se trae con el respaldo del panel; las cotizaciones, si hiciera falta, con `pg_dump`/`pg_restore` entre las dos bases.
+
