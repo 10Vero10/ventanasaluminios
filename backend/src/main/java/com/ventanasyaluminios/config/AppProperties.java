@@ -9,6 +9,7 @@ import jakarta.validation.constraints.Size;
 import java.nio.file.Path;
 import java.time.Duration;
 import java.util.List;
+import java.util.Set;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.util.unit.DataSize;
 import org.springframework.validation.annotation.Validated;
@@ -62,10 +63,17 @@ public record AppProperties(@Valid @NotNull Cors cors, @Valid @NotNull Media med
     }
 
     /**
-     * @param quotes envíos del formulario de cotización (briefing §3.6: 10 por hora)
-     * @param login  intentos de inicio de sesión (5 por minuto)
+     * @param quotes             envíos del formulario de cotización (briefing §3.6: 10 por hora)
+     * @param login              intentos de inicio de sesión (5 por minuto)
+     * @param trustedProxySecret clave que comparte el proxy del sitio (nginx en Render) para decir cuál es la IP real
+     *                           del visitante con {@code X-Client-Ip}; vacía, solo cuenta la IP de la conexión
      */
-    public record RateLimit(@Valid @NotNull Rule quotes, @Valid @NotNull Rule login) {
+    public record RateLimit(@Valid @NotNull Rule quotes, @Valid @NotNull Rule login, String trustedProxySecret) {
+
+        @AssertTrue(message = "PROXY_SECRET debe tener al menos 32 caracteres o quedar vacía.")
+        public boolean isTrustedProxySecretStrong() {
+            return trustedProxySecret == null || trustedProxySecret.isBlank() || trustedProxySecret.length() >= 32;
+        }
     }
 
     /**
@@ -86,7 +94,7 @@ public record AppProperties(@Valid @NotNull Cors cors, @Valid @NotNull Media med
          * Valores de ejemplo de {@code .env.example}. El repositorio es público: con ellos cualquiera podría firmar
          * sesiones del panel o entrar primero como administrador. Si llegan sin cambiar, el backend no arranca.
          */
-        static final java.util.Set<String> EXAMPLE_VALUES = java.util.Set.of(
+        static final Set<String> EXAMPLE_VALUES = Set.of(
                 "cambiar-por-una-clave-larga-y-aleatoria-de-al-menos-32-caracteres",
                 "cambiar-esta-clave-temporal");
 
@@ -100,15 +108,15 @@ public record AppProperties(@Valid @NotNull Cors cors, @Valid @NotNull Media med
             return initialAdminPassword == null || !EXAMPLE_VALUES.contains(initialAdminPassword.trim());
         }
 
-        /** El administrador inicial necesita correo y contraseña juntos, o ninguno de los dos. */
-        @AssertTrue(message = "ADMIN_EMAIL y ADMIN_INITIAL_PASSWORD van juntos; la contraseña debe tener al menos 12 caracteres.")
+        /**
+         * Una contraseña inicial necesita su correo y al menos 12 caracteres. El correo solo, sin contraseña, es válido:
+         * después del primer ingreso se puede borrar ADMIN_INITIAL_PASSWORD del .env.
+         */
+        @AssertTrue(message = "ADMIN_INITIAL_PASSWORD necesita ADMIN_EMAIL y al menos 12 caracteres.")
         public boolean isInitialAdminConsistent() {
             boolean hasEmail = initialAdminEmail != null && !initialAdminEmail.isBlank();
             boolean hasPassword = initialAdminPassword != null && !initialAdminPassword.isBlank();
-            if (hasEmail != hasPassword) {
-                return false;
-            }
-            return !hasPassword || initialAdminPassword.length() >= 12;
+            return !hasPassword || (hasEmail && initialAdminPassword.length() >= 12);
         }
     }
 

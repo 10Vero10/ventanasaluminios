@@ -49,6 +49,8 @@ app:
     login:
       max-requests: 5
       window: 1m
+    # Clave compartida con nginx en Render para recibir la IP real del visitante (ver ClientAddress). Vacía en Docker.
+    trusted-proxy-secret: ${PROXY_SECRET:}
   auth:
     jwt-secret: ${JWT_SECRET:}
     session-duration: ${AUTH_SESSION_DURATION:8h}

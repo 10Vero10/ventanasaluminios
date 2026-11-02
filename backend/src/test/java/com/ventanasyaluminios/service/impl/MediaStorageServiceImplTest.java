@@ -21,7 +21,7 @@ import org.springframework.util.unit.DataSize;
 class MediaStorageServiceImplTest {
 
     private static final AppProperties.RateLimit RATE_LIMIT = new AppProperties.RateLimit(
-            new AppProperties.Rule(10, Duration.ofHours(1)), new AppProperties.Rule(5, Duration.ofMinutes(1)));
+            new AppProperties.Rule(10, Duration.ofHours(1)), new AppProperties.Rule(5, Duration.ofMinutes(1)), null);
     private static final AppProperties.Auth AUTH = new AppProperties.Auth("x".repeat(32), Duration.ofHours(8), true,
             null, null);
 
