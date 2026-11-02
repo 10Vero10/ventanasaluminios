@@ -1,4 +1,4 @@
-# Blueprint de Render: el sitio (nginx con el frontend), el backend (Docker) y PostgreSQL.
+# Blueprint de Render: el sitio (nginx con el frontend) y el backend (Docker). PostgreSQL está en Neon (ADR-021).
 # En Render: New → Blueprint → este repositorio. Ver README ("Publicar en internet") y ADR-020.
 services:
   # Sitio público y panel: nginx sirve el frontend y reenvía /api y /media al backend, como en Docker Compose.
@@ -41,26 +41,14 @@ services:
           type: web
           name: ventanasyaluminios
           envVarKey: PROXY_SECRET
-      - key: DB_HOST
-        fromDatabase:
-          name: ventanasyaluminios-db
-          property: host
-      - key: POSTGRES_PORT
-        fromDatabase:
-          name: ventanasyaluminios-db
-          property: port
-      - key: POSTGRES_DB
-        fromDatabase:
-          name: ventanasyaluminios-db
-          property: database
+      # Base PostgreSQL en Neon (ADR-021). Se pegan a mano en Environment: la URL JDBC de la conexión directa
+      # (sin "-pooler"), p. ej. jdbc:postgresql://ep-xxxx.us-west-2.aws.neon.tech/neondb?sslmode=require
+      - key: DB_URL
+        sync: false
       - key: DB_USER
-        fromDatabase:
-          name: ventanasyaluminios-db
-          property: user
+        sync: false
       - key: DB_PASSWORD
-        fromDatabase:
-          name: ventanasyaluminios-db
-          property: password
+        sync: false
       # Render genera una clave aleatoria de 256 bits.
       - key: JWT_SECRET
         generateValue: true
@@ -76,8 +64,3 @@ services:
       - key: ADMIN_INITIAL_PASSWORD
         sync: false
 
-databases:
-  - name: ventanasyaluminios-db
-    databaseName: ventanas
-    user: ventanas
-    plan: free
