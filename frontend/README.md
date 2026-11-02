@@ -61,7 +61,7 @@ Copia `.env.example` como `.env.local` si necesitas cambiar algo.
 |---|---|---|
 | `VITE_API_PROXY_TARGET` | `http://localhost:8080` | Backend al que `npm run dev` reenvía `/api` y `/media` |
 
-En producción no hace falta: nginx sirve el sitio y reenvía `/api` y `/media` al backend en el mismo dominio (ver `nginx.conf`).
+En producción no hace falta: nginx sirve el sitio y reenvía `/api` y `/media` al backend en el mismo dominio (ver `nginx/default.conf.template`; `BACKEND_ORIGIN` y `PROXY_SECRET` se completan al arrancar).
 
 ## Agregar componentes de shadcn/ui
 

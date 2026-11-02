@@ -42,7 +42,8 @@ public class InitialAdminCreator implements ApplicationRunner {
         if (repository.count() > 0) {
             return;
         }
-        if (auth.initialAdminEmail() == null || auth.initialAdminEmail().isBlank()) {
+        if (auth.initialAdminEmail() == null || auth.initialAdminEmail().isBlank()
+                || auth.initialAdminPassword() == null || auth.initialAdminPassword().isBlank()) {
             log.warn("No hay administradores. Define ADMIN_EMAIL y ADMIN_INITIAL_PASSWORD para crear el primero.");
             return;
         }

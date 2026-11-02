@@ -1,23 +1,46 @@
-# Blueprint de Render: backend (Docker) y PostgreSQL. En Render: New → Blueprint → este repositorio.
-# El frontend se publica en Vercel (frontend/vercel.json reenvía /api y /media a este servicio).
+# Blueprint de Render: el sitio (nginx con el frontend), el backend (Docker) y PostgreSQL.
+# En Render: New → Blueprint → este repositorio. Ver README ("Publicar en internet") y ADR-020.
 services:
+  # Sitio público y panel: nginx sirve el frontend y reenvía /api y /media al backend, como en Docker Compose.
+  - type: web
+    name: ventanasyaluminios
+    runtime: docker
+    dockerfilePath: ./frontend/Dockerfile
+    dockerContext: ./frontend
+    # free se duerme tras 15 minutos sin visitas; starter no se duerme.
+    plan: free
+    branch: main
+    healthCheckPath: /
+    envVars:
+      - key: PORT
+        value: "80"
+      # El plan gratis no recibe tráfico por la red privada: nginx llama al backend por su dirección pública.
+      # Si Render le da otra dirección al backend, cámbiala aquí.
+      - key: BACKEND_ORIGIN
+        value: https://ventanasyaluminios-api.onrender.com
+      # Clave con la que nginx le dice al backend la IP real del visitante (límites por IP).
+      - key: PROXY_SECRET
+        generateValue: true
+
   - type: web
     name: ventanasyaluminios-api
     runtime: docker
     dockerfilePath: ./backend/Dockerfile
     dockerContext: ./backend
-    # free se duerme tras 15 minutos sin visitas y tarda cerca de un minuto en despertar; starter no se duerme.
     plan: free
     branch: main
     healthCheckPath: /api/v1/health
     envVars:
       - key: PORT
         value: "8080"
-      - key: SERVER_PORT
-        value: "8080"
       # Deja memoria para el resto del contenedor en planes de 512 MB.
       - key: JAVA_TOOL_OPTIONS
         value: -XX:MaxRAMPercentage=70
+      - key: PROXY_SECRET
+        fromService:
+          type: web
+          name: ventanasyaluminios
+          envVarKey: PROXY_SECRET
       - key: DB_HOST
         fromDatabase:
           name: ventanasyaluminios-db

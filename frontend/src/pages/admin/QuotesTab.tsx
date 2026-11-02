@@ -58,7 +58,7 @@ export default function QuotesTab() {
         <label className="flex flex-col gap-1 text-sm font-semibold">
           Estado
           <OptionSelect<QuoteStatus>
-            className="py-2 text-base sm:text-sm"
+            compact
             options={QUOTE_STATUSES}
             noneLabel="Todos los estados"
             value={status}
@@ -71,7 +71,7 @@ export default function QuotesTab() {
         <label className="flex flex-col gap-1 text-sm font-semibold">
           Orden
           <OptionSelect
-            className="py-2 text-base sm:text-sm"
+            compact
             options={ORDERS}
             value={order}
             onChange={(value) => {
@@ -213,7 +213,7 @@ function QuoteCard({
           <p className="text-xs text-muted-foreground">
             #{number} · {DATE_FORMAT.format(new Date(quote.createdAt))}
           </p>
-          <h3 className="mt-1 text-[19px] font-semibold">{quote.name}</h3>
+          <h3 className="mt-1 text-intro font-semibold">{quote.name}</h3>
           <a href={phoneHref(quote.phone)} className="text-link hover:underline">
             {quote.phone}
           </a>
@@ -221,7 +221,7 @@ function QuoteCard({
         <label className="flex flex-col gap-1 text-xs font-semibold">
           Estado
           <OptionSelect
-            className="py-2 text-base sm:text-sm"
+            compact
             options={QUOTE_STATUSES}
             value={quote.status}
             disabled={busy}

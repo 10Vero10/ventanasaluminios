@@ -31,7 +31,8 @@ spring:
       max-request-size: 6MB
 
 server:
-  port: ${SERVER_PORT:8080}
+  # Render indica el puerto en PORT; en local y en Docker se usa SERVER_PORT o 8080.
+  port: ${SERVER_PORT:${PORT:8080}}
   # Tomcat solo acepta X-Forwarded-For de proxies internos (nginx en la red de Docker) e ignora "Forwarded".
   # Con "framework", Spring tomaba la IP del encabezado "Forwarded" que manda el cliente y anulaba el límite por IP.
   forward-headers-strategy: native
@@ -49,6 +50,8 @@ app:
     login:
       max-requests: 5
       window: 1m
+    # Clave compartida con nginx en Render para recibir la IP real del visitante (ver ClientAddress). Vacía en Docker.
+    trusted-proxy-secret: ${PROXY_SECRET:}
   auth:
     jwt-secret: ${JWT_SECRET:}
     session-duration: ${AUTH_SESSION_DURATION:8h}

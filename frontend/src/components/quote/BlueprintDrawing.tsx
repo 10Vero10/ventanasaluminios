@@ -103,7 +103,7 @@ export function BlueprintDrawing({ config }: { config: ResolvedConfiguration }) 
                 transition={transition}
                 textAnchor="middle"
                 dominantBaseline="middle"
-                className="fill-foreground text-[11px] font-semibold tracking-[0.04em]"
+                className="fill-foreground text-caption font-semibold tracking-[0.04em]"
               >
                 {label}
               </motion.text>
@@ -121,7 +121,7 @@ export function BlueprintDrawing({ config }: { config: ResolvedConfiguration }) 
               animate={{ x: left + width / 2, y: MARGIN_TOP + drawingHeight + 36 }}
               transition={transition}
               textAnchor="middle"
-              className="fill-muted-foreground text-[12px]"
+              className="fill-muted-foreground text-xs"
             >
               {config.widthCm} cm
             </motion.text>
@@ -139,7 +139,7 @@ export function BlueprintDrawing({ config }: { config: ResolvedConfiguration }) 
               transition={transition}
               textAnchor="end"
               dominantBaseline="middle"
-              className="fill-muted-foreground text-[12px]"
+              className="fill-muted-foreground text-xs"
             >
               {config.heightCm} cm
             </motion.text>

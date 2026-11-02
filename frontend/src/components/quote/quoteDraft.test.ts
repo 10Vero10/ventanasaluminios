@@ -38,7 +38,13 @@ describe('quoteDraft', () => {
   it('escribir las medidas a mano desconecta el configurador; enviar vacía el mensaje', () => {
     const applied = applyConfiguration(emptyDraft('Ventanas arquitectónicas'), resolved)
     expect(writeDimensions(applied, 'Dos ventanas').applied).toBeNull()
-    expect(afterSent(applied)).toMatchObject({ message: '', lastAutoMessage: null, applied: resolved })
+    expect(afterSent(applied, applied.message)).toMatchObject({ message: '', lastAutoMessage: null, applied: resolved })
+  })
+
+  it('enviar conserva el mensaje si se siguió escribiendo mientras se enviaba', () => {
+    const applied = applyConfiguration(emptyDraft('Ventanas arquitectónicas'), resolved)
+    const edited = { ...applied, message: `${applied.message} Segundo piso.` }
+    expect(afterSent(edited, applied.message)).toBe(edited)
   })
 })
 

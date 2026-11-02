@@ -27,7 +27,7 @@ export default function GalleryPage() {
         </div>
       </Section>
 
-      <section aria-label="Imágenes de trabajos" className="mx-auto max-w-[1080px] px-5 pb-12 sm:px-6 md:pb-24">
+      <section aria-label="Imágenes de trabajos" className="page-container pb-12 md:pb-24">
         <Loadable
           state={images}
           loadingLabel="Cargando trabajos…"
@@ -62,7 +62,7 @@ export default function GalleryPage() {
                       className="aspect-[4/3] w-full rounded-[20px] bg-secondary object-cover"
                     />
                     <figcaption className="mt-3">
-                      <span className="block text-[17px] font-semibold">{image.title}</span>
+                      <span className="block text-body font-semibold">{image.title}</span>
                       {image.category && <span className="text-sm text-muted-foreground">{categoryLabel(image.category)}</span>}
                     </figcaption>
                   </figure>

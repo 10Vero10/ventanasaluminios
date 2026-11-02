@@ -37,7 +37,6 @@ export async function getAdminGlassOptions(): Promise<GlassOptions> {
   return data
 }
 
-
 const GLASS_PATH: Record<GlassKind, string> = {
   types: '/admin/glass-types',
   colors: '/admin/glass-colors',

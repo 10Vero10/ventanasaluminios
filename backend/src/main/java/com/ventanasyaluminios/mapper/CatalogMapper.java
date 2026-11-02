@@ -134,4 +134,17 @@ public class CatalogMapper {
     public GlassThicknessRequest toRequest(GlassThicknessResponse t) {
         return new GlassThicknessRequest(t.mm(), t.active(), t.defaultOption());
     }
+
+    /** Opción ausente en un respaldo: igual, pero inactiva y sin ser la de por defecto (no se borra). */
+    public GlassTypeRequest toInactiveRequest(GlassTypeResponse t) {
+        return new GlassTypeRequest(t.code(), t.name(), false, false);
+    }
+
+    public GlassColorRequest toInactiveRequest(GlassColorResponse c) {
+        return new GlassColorRequest(c.code(), c.name(), c.hex(), c.reflective(), c.note(), false, false);
+    }
+
+    public GlassThicknessRequest toInactiveRequest(GlassThicknessResponse t) {
+        return new GlassThicknessRequest(t.mm(), false, false);
+    }
 }

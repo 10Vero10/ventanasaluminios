@@ -6,8 +6,7 @@ import { ConfirmDialog } from '@/components/admin/ConfirmDialog'
 import { ImagePicker } from '@/components/admin/ImagePicker'
 import { MoveButtons } from '@/components/admin/MoveButtons'
 import { Panel } from '@/components/admin/Panel'
-import { SaveButton, SaveRow } from '@/components/admin/SaveButton'
-import { SaveFeedback } from '@/components/admin/SaveFeedback'
+import { SaveRow } from '@/components/admin/SaveRow'
 import { useDraft } from '@/components/admin/useDraft'
 import { useOrderedList } from '@/components/admin/useOrderedList'
 import { useSaveState } from '@/components/admin/useSaveState'
@@ -33,7 +32,7 @@ export function GalleryPanel() {
   const list = useOrderedList(getAdminGallery, reorderGallery)
   const [toDelete, setToDelete] = useState<GalleryImage | null>(null)
   const changed = () => {
-    list.reload()
+    list.loaded.reload()
     refreshDashboard()
   }
 
@@ -57,7 +56,7 @@ export function GalleryPanel() {
                     onSaved={list.replace}
                     onDelete={() => setToDelete(image)}
                     moveButtons={
-                      <MoveButtons label={image.title} index={index} count={images.length} onMove={list.move} disabled={list.busy} />
+                      <MoveButtons label={image.title} index={index} count={images.length} onMove={list.move} disabled={list.locked} />
                     }
                   />
                 </li>
@@ -83,8 +82,7 @@ export function GalleryPanel() {
 }
 
 function NewGalleryImage({ onCreated }: { onCreated: () => void }) {
-  const [initial] = useState(EMPTY_IMAGE)
-  const { draft, set, bind, reset } = useDraft(initial)
+  const { draft, set, bind, commit } = useDraft(EMPTY_IMAGE)
   const [error, setError] = useState<string | null>(null)
   const save = useSaveState()
 
@@ -95,9 +93,11 @@ function NewGalleryImage({ onCreated }: { onCreated: () => void }) {
       return
     }
     setError(null)
-    const created = await save.run(() => createGalleryImage({ ...draft, title: draft.title.trim() }))
+    const sent = draft
+    const created = await save.run(() => createGalleryImage({ ...sent, title: sent.title.trim() }))
     if (created) {
-      reset(EMPTY_IMAGE)
+      // Vacía el formulario salvo lo que se empezó a escribir mientras se agregaba.
+      commit(sent, EMPTY_IMAGE)
       onCreated()
     }
   }
@@ -128,19 +128,20 @@ function GalleryRow({
   onDelete: () => void
   moveButtons: ReactNode
 }) {
-  const { draft, set, bind, reset } = useDraft(image)
+  const { draft, set, bind, commit } = useDraft(image)
   const save = useSaveState()
   const changed = draft.title.trim() !== image.title || draft.category !== image.category
 
   async function submit(event: FormEvent) {
     event.preventDefault()
+    const sent = draft
     const saved = await save.run(() =>
-      updateGalleryImage(image.id, { title: draft.title.trim(), url: image.url, category: draft.category }),
+      updateGalleryImage(image.id, { title: sent.title.trim(), url: image.url, category: sent.category }),
     )
     if (saved) {
       onSaved(saved)
-      // Un título vacío se guarda como "Imagen": se muestra lo que quedó guardado.
-      reset(saved)
+      // Un título vacío se guarda como "Imagen": se muestra lo guardado, salvo lo que se siguió editando.
+      commit(sent, saved)
     }
   }
 
@@ -154,14 +155,12 @@ function GalleryRow({
             {(props) => <OptionalCategorySelect {...props} value={draft.category} onChange={(category) => set('category', category)} />}
           </Field>
         </div>
-        <div className="flex flex-wrap items-center gap-2">
-          <SaveButton save={save} label="Guardar" size="sm" disabled={!changed} />
+        <SaveRow save={save} label="Guardar" size="sm" disabled={!changed} className="gap-2">
           {moveButtons}
           <Button size="sm" variant="destructive" onClick={onDelete}>
             Eliminar
           </Button>
-          <SaveFeedback state={save.state} />
-        </div>
+        </SaveRow>
       </div>
     </form>
   )

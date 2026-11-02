@@ -103,8 +103,9 @@ public class BackupServiceImpl implements BackupService {
     @Override
     @Transactional
     public BackupImportResponse importBackup(String json) {
-        BackupRequest backup = parse(json);
-        settingsService.updateSettings(settingsToImport(backup, json));
+        JsonNode root = readTree(json);
+        BackupRequest backup = parse(root);
+        settingsService.updateSettings(settingsToImport(backup, root));
 
         featuredLineRepository.deleteAllInBatch();
         backup.content().featuredLines().forEach(featuredLineService::create);
@@ -127,24 +128,15 @@ public class BackupServiceImpl implements BackupService {
      * Configuración a guardar. Un respaldo anterior a la foto del taller (V7) no trae {@code aboutImageUrl}: en ese caso
      * se conserva la foto actual en vez de borrarla. Si el campo viene, aunque sea null, se respeta.
      */
-    private SiteSettingsRequest settingsToImport(BackupRequest backup, String json) {
+    private SiteSettingsRequest settingsToImport(BackupRequest backup, JsonNode root) {
         SiteSettingsRequest settings = backup.content().settings();
-        if (hasSettingsField(json, "aboutImageUrl")) {
+        if (root.path("content").path("settings").has("aboutImageUrl")) {
             return settings;
         }
         return settings.withAboutImageUrl(settingsService.getSettings().aboutImageUrl());
     }
 
-    private boolean hasSettingsField(String json, String field) {
-        try {
-            return objectMapper.readTree(json).path("content").path("settings").has(field);
-        } catch (JsonProcessingException e) {
-            return false;
-        }
-    }
-
-    /** Valida el archivo con los mensajes del briefing §3.10 antes de tocar nada. */
-    private BackupRequest parse(String json) {
+    private JsonNode readTree(String json) {
         JsonNode root;
         try {
             root = objectMapper.readTree(json == null ? "" : json);
@@ -154,6 +146,11 @@ public class BackupServiceImpl implements BackupService {
         if (root == null || !root.isObject()) {
             throw invalid("El archivo no es un JSON válido.");
         }
+        return root;
+    }
+
+    /** Valida el archivo con los mensajes del briefing §3.10 antes de tocar nada. */
+    private BackupRequest parse(JsonNode root) {
         if (!root.hasNonNull("content")) {
             throw invalid("El archivo no parece un respaldo del sitio (falta \"content\").");
         }
@@ -192,7 +189,7 @@ public class BackupServiceImpl implements BackupService {
                     : glassOptionService.updateType(existing.id(), request).id());
         }
         types.values().forEach(absent -> typeOrder.add(glassOptionService.updateType(absent.id(),
-                new GlassTypeRequest(absent.code(), absent.name(), false, false)).id()));
+                catalogMapper.toInactiveRequest(absent)).id()));
         glassOptionService.reorderTypes(typeOrder);
 
         var colors = current.colors().stream().collect(Collectors.toMap(GlassColorResponse::code, Function.identity()));
@@ -203,8 +200,7 @@ public class BackupServiceImpl implements BackupService {
                     : glassOptionService.updateColor(existing.id(), request).id());
         }
         colors.values().forEach(absent -> colorOrder.add(glassOptionService.updateColor(absent.id(),
-                new GlassColorRequest(absent.code(), absent.name(), absent.hex(), absent.reflective(), absent.note(),
-                        false, false)).id()));
+                catalogMapper.toInactiveRequest(absent)).id()));
         glassOptionService.reorderColors(colorOrder);
 
         Map<Integer, GlassThicknessResponse> thicknesses = current.thicknesses()
@@ -216,7 +212,7 @@ public class BackupServiceImpl implements BackupService {
                     : glassOptionService.updateThickness(existing.id(), request).id());
         }
         thicknesses.values().forEach(absent -> thicknessOrder.add(glassOptionService.updateThickness(absent.id(),
-                new GlassThicknessRequest(absent.mm(), false, false)).id()));
+                catalogMapper.toInactiveRequest(absent)).id()));
         glassOptionService.reorderThicknesses(thicknessOrder);
     }
 

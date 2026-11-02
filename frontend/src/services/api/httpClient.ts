@@ -7,6 +7,12 @@ import type { ApiError } from '@/types/api'
  * La sesión viaja en cookie httpOnly del mismo dominio; axios reenvía solo la cookie XSRF-TOKEN de Spring
  * en el encabezado X-XSRF-TOKEN.
  */
+/**
+ * Tiempo para la primera solicitud de una visita: en el plan gratis de Render el servidor se duerme y tarda cerca de
+ * un minuto en despertar. Las demás solicitudes usan el tiempo normal.
+ */
+export const WAKE_UP_TIMEOUT_MS = 120_000
+
 export const httpClient = axios.create({
   baseURL: '/api/v1',
   headers: { 'Content-Type': 'application/json' },
@@ -14,7 +20,7 @@ export const httpClient = axios.create({
 })
 
 /** Mensaje cuando lo que responde no es la API (por ejemplo, el hosting devuelve la página en vez del backend). */
-export const API_UNAVAILABLE_MESSAGE = 'El servidor del sitio no está disponible en este momento. Intenta de nuevo más tarde.'
+const API_UNAVAILABLE_MESSAGE = 'El servidor del sitio no está disponible en este momento. Intenta de nuevo más tarde.'
 
 /** El servidor respondió, pero no con JSON de la API. */
 export class ApiUnavailableError extends Error {

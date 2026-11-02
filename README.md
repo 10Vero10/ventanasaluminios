@@ -44,16 +44,15 @@ Detener todo (los datos se conservan en los volúmenes `pgdata` y `uploads`):
 docker compose down
 ```
 
-## Publicar en internet (Render + Vercel)
+## Publicar en internet (Render)
 
-El backend y PostgreSQL van en Render (`render.yaml`) y el frontend en Vercel (`frontend/vercel.json`). Vercel reenvía `/api` y `/media` al backend, así el sitio sigue en un solo dominio y la sesión del panel funciona igual.
+Todo va en Render con `render.yaml`: el sitio (`ventanasyaluminios`, nginx con el frontend, igual que en Docker Compose), el backend (`ventanasyaluminios-api`) y la base `ventanasyaluminios-db`. nginx reenvía `/api` y `/media` al backend, así el sitio está en un solo dominio.
 
-1. **Render** → New → Blueprint → elige este repositorio. Crea `ventanasyaluminios-api` (Docker, desde `main`) y la base `ventanasyaluminios-db`. Pide `ADMIN_EMAIL` y `ADMIN_INITIAL_PASSWORD` (mínimo 12 caracteres); `JWT_SECRET` lo genera Render.
-2. Cuando el servicio esté en verde, comprueba `https://ventanasyaluminios-api.onrender.com/api/v1/health` (debe responder `{"status":"ok"}`). Si Render le dio otra dirección, cámbiala en `frontend/vercel.json`.
-3. **Vercel** → proyecto con Root Directory `frontend`, preset Vite, sin variables de entorno. En Settings → Git, Production Branch `main`.
-4. Entra a `https://<tu-proyecto>.vercel.app/admin` con el correo y la contraseña temporal y crea la tuya.
+1. **Render** → New → Blueprint → elige este repositorio (rama `main`). Pide `ADMIN_EMAIL` y `ADMIN_INITIAL_PASSWORD` (mínimo 12 caracteres); `JWT_SECRET` y `PROXY_SECRET` los genera Render.
+2. Cuando los tres estén en verde, abre `https://ventanasyaluminios-api.onrender.com/api/v1/health` (debe responder `{"status":"ok"}`). Si Render le dio otra dirección al backend, cámbiala en `BACKEND_ORIGIN` del servicio `ventanasyaluminios` (Environment) o en `render.yaml`.
+3. Abre `https://ventanasyaluminios.onrender.com` (o la dirección que Render le dé al sitio) y entra a `/admin` con el correo y la contraseña temporal para crear la tuya.
 
-Límites de los planes gratis (detalle en ADR-019): el backend se duerme tras 15 minutos sin visitas y tarda cerca de un minuto en despertar; la base gratis de Render vence; las imágenes subidas desde el panel se pierden en cada despliegue sin un disco persistente (de pago); Vercel limita el cuerpo de cada solicitud a unos 4,5 MB.
+Límites de los planes gratis (detalle en ADR-020): los servicios se duermen tras 15 minutos sin visitas y la primera visita tarda hasta un minuto (el sitio muestra "Despertando el servidor…"); la base gratis de Render vence; las imágenes subidas desde el panel se pierden en cada despliegue sin un disco persistente (de pago).
 
 ## Desarrollo local
 
