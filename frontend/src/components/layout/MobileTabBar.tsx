@@ -11,7 +11,7 @@ export function MobileTabBar() {
   return (
     <nav
       aria-label="Secciones"
-      className="fixed inset-x-0 bottom-0 z-40 border-t border-black/5 bg-white/85 pb-[env(safe-area-inset-bottom)] backdrop-blur-xl md:hidden"
+      className="fixed inset-x-0 bottom-0 z-40 border-t border-black/5 bg-white/95 pb-[env(safe-area-inset-bottom)] backdrop-blur-xl md:hidden"
     >
       <ul className="flex">
         {visibleNav(site.quotingEnabled).map((item) => (

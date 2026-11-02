@@ -22,6 +22,18 @@ export default function QuotePage() {
   return <QuoteContent />
 }
 
+/**
+ * En el celular el formulario queda debajo del configurador: después de "Aplicar" se baja hasta él para que se vean
+ * las medidas puestas. En pantallas anchas están lado a lado y no hace falta.
+ */
+function showFormOnSmallScreens() {
+  if (window.matchMedia('(min-width: 1024px)').matches) return
+  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+  requestAnimationFrame(() =>
+    document.getElementById('solicitud')?.scrollIntoView({ behavior: reduceMotion ? 'auto' : 'smooth', block: 'start' }),
+  )
+}
+
 function QuoteContent() {
   const [params] = useSearchParams()
   const preselected = params.get('producto')?.trim().slice(0, MAX_PRODUCT_TYPE) || null
@@ -52,7 +64,10 @@ function QuoteContent() {
 
   function apply() {
     const resolved = resolveValid(config)
-    if (resolved) setDraft((current) => applyConfiguration(current, resolved))
+    if (resolved) {
+      setDraft((current) => applyConfiguration(current, resolved))
+      showFormOnSmallScreens()
+    }
     setFeedback(resolved ? 'applied' : 'invalid')
   }
 
@@ -83,7 +98,7 @@ function QuoteContent() {
         <div className="grid gap-12 lg:grid-cols-2 lg:gap-16">
           <section aria-labelledby="configurador">
             <p className="text-sm font-semibold text-status">Configurador dimensional a escala</p>
-            <SectionTitle id="configurador" className="text-[28px] md:text-[32px]">
+            <SectionTitle id="configurador" className="text-[24px] md:text-[32px]">
               Plano Esquemático Dinámico
             </SectionTitle>
             <div className="mt-8">
@@ -91,9 +106,9 @@ function QuoteContent() {
             </div>
           </section>
 
-          <section aria-labelledby="formulario" className="lg:sticky lg:top-24 lg:self-start">
+          <section id="solicitud" aria-labelledby="formulario" className="scroll-mt-20 lg:sticky lg:top-24 lg:self-start">
             <p className="text-sm font-semibold text-status">Formulario directo</p>
-            <SectionTitle id="formulario" className="text-[28px] md:text-[32px]">
+            <SectionTitle id="formulario" className="text-[24px] md:text-[32px]">
               Solicitud de Cotización Rápida
             </SectionTitle>
             <p className="mt-3 text-muted-foreground">

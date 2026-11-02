@@ -46,7 +46,7 @@ export default function AboutPage() {
           <div>
             <Kicker>¿Quiénes somos?</Kicker>
             <PageTitle>Una empresa que mide todo, menos su dedicación</PageTitle>
-            <p className="mt-5 max-w-xl text-[19px] text-muted-foreground">
+            <p className="mt-4 max-w-xl text-[17px] text-muted-foreground md:mt-5 md:text-[19px]">
               Fabricación e instalación de soluciones en vidrio, aluminio y otros materiales desde hace más de {years}{' '}
               años.
             </p>
@@ -77,7 +77,7 @@ export default function AboutPage() {
           <div>
             <Kicker>Nuestra historia</Kicker>
             <SectionTitle id="historia">¿Quiénes somos?</SectionTitle>
-            <div className="mt-8 grid max-w-3xl gap-5 text-[19px] leading-relaxed">
+            <div className="mt-6 grid max-w-3xl gap-4 text-[17px] leading-relaxed md:mt-8 md:gap-5 md:text-[19px]">
               <p>{site.aboutParagraph1}</p>
               <p>{site.aboutParagraph2}</p>
               <p className="border-l-2 border-status pl-5 font-semibold">{site.aboutHighlight}</p>
@@ -101,9 +101,9 @@ export default function AboutPage() {
             <span className="text-sm text-muted-foreground">Años de experiencia</span>
           </p>
         </div>
-        <ul className="mt-12 grid gap-4 md:grid-cols-3">
+        <ul className="mt-8 grid gap-4 md:mt-12 md:grid-cols-3">
           {EXPERIENCE.map((item) => (
-            <li key={item.title} className="rounded-[28px] bg-secondary p-7">
+            <li key={item.title} className="rounded-[24px] bg-secondary p-5 md:rounded-[28px] md:p-7">
               {item.subtitle && <p className="text-xs font-semibold text-muted-foreground">{item.subtitle}</p>}
               <h3 className="mt-1 font-display text-2xl font-semibold tracking-[-0.01em]">{item.title}</h3>
               <p className="mt-2 text-muted-foreground">{item.text}</p>
@@ -121,7 +121,7 @@ export default function AboutPage() {
         </p>
         <ul className="mt-10 grid gap-4 md:grid-cols-3">
           {COMMITMENT.map((item) => (
-            <li key={item.title} className="rounded-[28px] bg-background p-7">
+            <li key={item.title} className="rounded-[24px] bg-background p-5 md:rounded-[28px] md:p-7">
               <h3 className="font-display text-2xl font-semibold tracking-[-0.01em]">{item.title}</h3>
               <p className="mt-2 text-muted-foreground">{item.text}</p>
             </li>

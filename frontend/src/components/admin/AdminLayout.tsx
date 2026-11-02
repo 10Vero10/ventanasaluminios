@@ -33,7 +33,7 @@ export function AdminLayout() {
   return (
     <div className="min-h-dvh bg-secondary">
       <header className="bg-background">
-        <div className="mx-auto flex max-w-[1180px] flex-wrap items-center justify-between gap-4 px-4 py-4 sm:px-6">
+        <div className="mx-auto flex max-w-[1180px] flex-wrap items-center justify-between gap-x-4 gap-y-3 px-4 py-3 sm:px-6 sm:py-4">
           <div className="flex items-center gap-3">
             <BrandMark className="size-9 shrink-0" />
             <div className="leading-tight">
@@ -41,10 +41,13 @@ export function AdminLayout() {
               <p className="text-xs whitespace-nowrap text-muted-foreground">Panel de control</p>
             </div>
           </div>
-          <div className="flex flex-wrap items-center gap-2">
+          <div className="flex items-center gap-1 sm:gap-2">
             <span className="hidden text-sm text-muted-foreground md:inline">{user?.email}</span>
             <Button asChild size="sm" variant="ghost">
-              <Link to="/admin/cambiar-clave">Cambiar contraseña</Link>
+              <Link to="/admin/cambiar-clave" aria-label="Cambiar contraseña">
+                <span className="sm:hidden">Contraseña</span>
+                <span className="hidden sm:inline">Cambiar contraseña</span>
+              </Link>
             </Button>
             <Button asChild size="sm" variant="secondary">
               <a href="/" target="_blank" rel="noopener noreferrer">
@@ -54,6 +57,7 @@ export function AdminLayout() {
             <Button
               size="sm"
               variant="secondary"
+              aria-label="Cerrar sesión"
               onClick={() => {
                 setSignOutError(null)
                 signOut().catch((error: unknown) =>
@@ -61,20 +65,21 @@ export function AdminLayout() {
                 )
               }}
             >
-              Cerrar sesión
+              <span className="sm:hidden">Salir</span>
+              <span className="hidden sm:inline">Cerrar sesión</span>
             </Button>
           </div>
         </div>
         <div className="mx-auto max-w-[1180px] px-4 sm:px-6">
-          <dl className="grid grid-cols-3 gap-3 pb-5">
+          <dl className="grid grid-cols-3 gap-2 pb-3 sm:gap-3 sm:pb-5">
             {[
               { label: 'Productos en catálogo', value: counts?.products },
               { label: 'Imágenes en galería', value: counts?.galleryImages },
               { label: 'Cotizaciones nuevas', value: counts?.newQuotes },
             ].map((item) => (
-              <div key={item.label} className="rounded-[16px] bg-secondary px-4 py-3">
-                <dt className="text-xs text-muted-foreground">{item.label}</dt>
-                <dd className="font-display text-2xl font-semibold tabular-nums">{item.value ?? '·'}</dd>
+              <div key={item.label} className="rounded-[14px] bg-secondary px-3 py-2 sm:rounded-[16px] sm:px-4 sm:py-3">
+                <dt className="text-[11px] leading-tight text-muted-foreground sm:text-xs">{item.label}</dt>
+                <dd className="font-display text-xl font-semibold tabular-nums sm:text-2xl">{item.value ?? '·'}</dd>
               </div>
             ))}
           </dl>
@@ -99,7 +104,7 @@ export function AdminLayout() {
           </nav>
         </div>
       </header>
-      <main id="contenido" className="mx-auto max-w-[1180px] px-4 py-8 sm:px-6">
+      <main id="contenido" className="mx-auto max-w-[1180px] px-3 py-4 sm:px-6 sm:py-8">
         {signOutError && (
           <p role="alert" className="mb-6 rounded-[16px] bg-background p-4 text-sm text-destructive">
             {signOutError}

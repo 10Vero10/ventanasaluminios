@@ -72,7 +72,7 @@ export default function CatalogTab() {
               ) : (
                 <ul className="flex flex-col gap-3">
                   {visible.map((product, index) => (
-                    <li key={product.id} className="grid items-center gap-4 rounded-[20px] border border-border p-4 sm:grid-cols-[96px_1fr_auto]">
+                    <li key={product.id} className="grid grid-cols-[72px_1fr] items-center gap-x-3 gap-y-3 rounded-[20px] border border-border p-3 sm:grid-cols-[96px_1fr_auto] sm:gap-4 sm:p-4">
                       {product.imageUrl ? (
                         <img src={product.imageUrl} alt="" className="aspect-[16/10] w-full rounded-[12px] bg-secondary object-cover" loading="lazy" />
                       ) : (
@@ -86,7 +86,7 @@ export default function CatalogTab() {
                         <p className="text-[17px] font-semibold">{product.title}</p>
                         <p className="text-sm text-muted-foreground">{product.subtitle}</p>
                       </div>
-                      <div className="flex flex-wrap gap-2">
+                      <div className="col-span-2 flex flex-wrap gap-2 sm:col-span-1">
                         <MoveButtons label={product.title} index={index} count={visible.length} onMove={moveVisible} disabled={list.busy} />
                         <Button size="sm" variant="secondary" onClick={() => setEditing({ product })}>
                           Editar
