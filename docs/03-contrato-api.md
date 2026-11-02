@@ -32,6 +32,7 @@ Los códigos están en `ErrorCode` (backend), que es la fuente de verdad de esta
 | 409 | `DUPLICATE_CODE` | Ya existe una opción de vidrio con ese código o espesor |
 | 409 | `CONFLICT` | Dos cambios simultáneos chocaron (la misma posición, dos ediciones cruzadas del mismo producto o un registro borrado mientras se editaba); se pide actualizar e intentar de nuevo |
 | 413 | `FILE_TOO_LARGE` | Imagen más grande que el límite configurado (5 MB) |
+| 413 | `PAYLOAD_TOO_LARGE` | Cuerpo de la solicitud demasiado grande: 64 KB en `/quotes` y `/auth/*`, 6 MB en el resto (la subida de imágenes tiene su propio límite) |
 | 415 | `UNSUPPORTED_MEDIA_TYPE` | Tipo de contenido no soportado |
 | 429 | `RATE_LIMITED` | Límite de solicitudes por IP; incluye `Retry-After` en segundos |
 | 500 | `INTERNAL_ERROR` | Error inesperado; mensaje genérico, sin detalles técnicos |
