@@ -27,7 +27,7 @@ export default function GalleryPage() {
         </div>
       </Section>
 
-      <section aria-label="Imágenes de trabajos" className="mx-auto max-w-[1080px] px-6 pb-16 md:pb-24">
+      <section aria-label="Imágenes de trabajos" className="mx-auto max-w-[1080px] px-5 pb-12 sm:px-6 md:pb-24">
         <Loadable
           state={images}
           loadingLabel="Cargando trabajos…"

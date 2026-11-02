@@ -1,4 +1,5 @@
 import { AnimatePresence, motion, useReducedMotion } from 'motion/react'
+import { createPortal } from 'react-dom'
 import { useEffect, useState } from 'react'
 import { Link, NavLink, useLocation } from 'react-router'
 
@@ -102,12 +103,14 @@ function MobileMenu({ open }: { open: boolean }) {
     }
   }, [open])
 
-  return (
+  // Se dibuja en <body>: la cabecera usa backdrop-filter, que vuelve a la cabecera el marco de los elementos "fixed"
+  // y recortaba el menú a su altura, dejando ver la página por debajo.
+  return createPortal(
     <AnimatePresence>
       {open && (
         <motion.div
           id="menu-movil"
-          className="fixed inset-x-0 top-14 bottom-0 overflow-y-auto bg-white px-6 pt-4 pb-28 md:hidden"
+          className="fixed inset-x-0 top-14 bottom-0 z-40 overflow-y-auto bg-white px-6 pt-4 pb-28 md:hidden"
           initial={reduceMotion ? { opacity: 0 } : { opacity: 0, y: -12 }}
           animate={{ opacity: 1, y: 0 }}
           exit={reduceMotion ? { opacity: 0 } : { opacity: 0, y: -12 }}
@@ -149,6 +152,7 @@ function MobileMenu({ open }: { open: boolean }) {
           </div>
         </motion.div>
       )}
-    </AnimatePresence>
+    </AnimatePresence>,
+    document.body,
   )
 }

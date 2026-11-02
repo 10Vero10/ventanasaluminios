@@ -20,6 +20,7 @@ class ResizeObserverStub {
 }
 globalThis.ResizeObserver = ResizeObserverStub as unknown as typeof ResizeObserver
 window.scrollTo = vi.fn() as unknown as typeof window.scrollTo
+Element.prototype.scrollIntoView = vi.fn()
 window.matchMedia ??= ((query: string) => ({
   matches: false,
   media: query,

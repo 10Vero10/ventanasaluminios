@@ -58,7 +58,7 @@ export default function QuotesTab() {
         <label className="flex flex-col gap-1 text-sm font-semibold">
           Estado
           <OptionSelect<QuoteStatus>
-            className="py-2 text-sm"
+            className="py-2 text-base sm:text-sm"
             options={QUOTE_STATUSES}
             noneLabel="Todos los estados"
             value={status}
@@ -71,7 +71,7 @@ export default function QuotesTab() {
         <label className="flex flex-col gap-1 text-sm font-semibold">
           Orden
           <OptionSelect
-            className="py-2 text-sm"
+            className="py-2 text-base sm:text-sm"
             options={ORDERS}
             value={order}
             onChange={(value) => {
@@ -221,7 +221,7 @@ function QuoteCard({
         <label className="flex flex-col gap-1 text-xs font-semibold">
           Estado
           <OptionSelect
-            className="py-2 text-sm"
+            className="py-2 text-base sm:text-sm"
             options={QUOTE_STATUSES}
             value={quote.status}
             disabled={busy}

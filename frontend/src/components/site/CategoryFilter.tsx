@@ -21,7 +21,7 @@ export function CategoryFilter({
     ...CATEGORIES.map((c) => ({ value: c.value, label: c.label })),
   ]
   return (
-    <div role="group" aria-label={label} className="-mx-6 overflow-x-auto px-6">
+    <div role="group" aria-label={label} className="-mx-5 overflow-x-auto px-5 sm:-mx-6 sm:px-6">
       <div className="inline-flex gap-1 rounded-full bg-secondary p-1">
         {options.map((option) => {
           const active = option.value === value
