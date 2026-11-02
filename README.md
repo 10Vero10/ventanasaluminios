@@ -46,13 +46,23 @@ docker compose down
 
 ## Publicar en internet (Render)
 
-Todo va en Render con `render.yaml`: el sitio (`ventanasyaluminios`, nginx con el frontend, igual que en Docker Compose), el backend (`ventanasyaluminios-api`) y la base `ventanasyaluminios-db`. nginx reenvía `/api` y `/media` al backend, así el sitio está en un solo dominio.
+El sitio (`ventanasyaluminios`, nginx con el frontend, igual que en Docker Compose) y el backend (`ventanasyaluminios-api`) van en Render con `render.yaml`; la base PostgreSQL está en Neon (proyecto enlazado en `neon.ts`, ver ADR-021). nginx reenvía `/api` y `/media` al backend, así el sitio está en un solo dominio.
 
-1. **Render** → New → Blueprint → elige este repositorio (rama `main`). Pide `ADMIN_EMAIL` y `ADMIN_INITIAL_PASSWORD` (mínimo 12 caracteres); `JWT_SECRET` y `PROXY_SECRET` los genera Render.
-2. Cuando los tres estén en verde, abre `https://ventanasyaluminios-api.onrender.com/api/v1/health` (debe responder `{"status":"ok"}`). Si Render le dio otra dirección al backend, cámbiala en `BACKEND_ORIGIN` del servicio `ventanasyaluminios` (Environment) o en `render.yaml`.
+**Base en Neon.** En la consola de Neon → Connect, elige la conexión **directa** (sin `-pooler` en el host; Flyway la necesita para las migraciones) y copia sus partes a `ventanasyaluminios-api` → Environment en Render:
+
+| Variable | Valor |
+|---|---|
+| `DB_URL` | `jdbc:postgresql://<host>/<base>?sslmode=require` (p. ej. `jdbc:postgresql://ep-xxxx.us-west-2.aws.neon.tech/neondb?sslmode=require`) |
+| `DB_USER` | el usuario (p. ej. `neondb_owner`) |
+| `DB_PASSWORD` | la contraseña |
+
+Al arrancar, el backend crea las tablas y los datos iniciales. Para traer el contenido de una base anterior, usa el respaldo del panel (Configuración → Respaldo). No ejecutes `neon env pull` ni `neon deploy` en la raíz: escriben la conexión de producción en `.env`, que también leen el backend y Docker Compose en tu computador.
+
+1. **Render** → New → Blueprint → elige este repositorio (rama `main`). Pide `ADMIN_EMAIL` y `ADMIN_INITIAL_PASSWORD` (mínimo 12 caracteres) y los tres datos de la base en Neon; `JWT_SECRET` y `PROXY_SECRET` los genera Render.
+2. Cuando los dos servicios estén en verde, abre `https://ventanasyaluminios-api.onrender.com/api/v1/health` (debe responder `{"status":"ok"}`). Si Render le dio otra dirección al backend, cámbiala en `BACKEND_ORIGIN` del servicio `ventanasyaluminios` (Environment) o en `render.yaml`.
 3. Abre `https://ventanasyaluminios.onrender.com` (o la dirección que Render le dé al sitio) y entra a `/admin` con el correo y la contraseña temporal para crear la tuya.
 
-Límites de los planes gratis (detalle en ADR-020): los servicios se duermen tras 15 minutos sin visitas y la primera visita tarda hasta un minuto (el sitio muestra "Despertando el servidor…"); la base gratis de Render vence; las imágenes subidas desde el panel se pierden en cada despliegue sin un disco persistente (de pago).
+Límites de los planes gratis (detalle en ADR-020): los servicios se duermen tras 15 minutos sin visitas y la primera visita tarda hasta un minuto (el sitio muestra "Despertando el servidor…"); la base gratis de Neon no vence, pero se suspende sin uso y despierta en menos de un segundo; las imágenes subidas desde el panel se pierden en cada despliegue sin un disco persistente (de pago).
 
 ## Desarrollo local
 

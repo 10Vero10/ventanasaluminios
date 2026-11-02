@@ -44,3 +44,4 @@ frontend/dist/
 
 # Imágenes subidas si el backend se ejecuta desde la raíz del repo
 /uploads/
+.neon
