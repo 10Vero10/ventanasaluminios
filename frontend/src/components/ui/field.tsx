@@ -67,7 +67,7 @@ export type SelectProps = ComponentProps<'select'> & {
 }
 
 export function Select({ className, compact = false, ...props }: SelectProps) {
-  return <select className={cn(controlClass, 'appearance-auto pr-10', compact && 'py-2 text-base sm:text-sm', className)} {...props} />
+  return <select className={cn(controlClass, 'appearance-auto pr-10', compact && 'py-2 text-base font-normal sm:text-sm', className)} {...props} />
 }
 
 type TextFieldProps = FieldLabelProps & {

@@ -65,11 +65,12 @@ function QuoteContent() {
 
   /**
    * En el celular el formulario queda debajo del configurador: después de "Aplicar" se baja hasta él para que se vean
-   * las medidas puestas. Si ya está a la vista (pantallas anchas, lado a lado) no se mueve nada.
+   * las medidas puestas. Si el formulario ya empieza en la mitad de arriba de la pantalla (pantallas anchas, lado a
+   * lado) no se mueve nada.
    */
   function revealForm() {
     const form = formRef.current
-    if (!form || form.getBoundingClientRect().top < window.innerHeight) return
+    if (!form || form.getBoundingClientRect().top < window.innerHeight / 2) return
     requestAnimationFrame(() => form.scrollIntoView({ behavior: reduceMotion ? 'auto' : 'smooth', block: 'start' }))
   }
 
