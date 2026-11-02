@@ -18,22 +18,43 @@ export function Section({
 }) {
   return (
     <section id={id} aria-labelledby={labelledBy} className={cn(tone === 'mist' ? 'bg-secondary' : 'bg-background')}>
-      <div className={cn('mx-auto max-w-[1080px] px-5 py-12 sm:px-6 md:py-24', className)}>{children}</div>
+      <div className={cn('page-container py-12 md:py-24', className)}>{children}</div>
     </section>
   )
 }
 
 /** Antetítulo corto sobre un título de sección. */
 export function Kicker({ children, className }: { children: ReactNode; className?: string }) {
-  return <p className={cn('text-[15px] font-semibold text-status md:text-[17px]', className)}>{children}</p>
+  return <p className={cn('text-callout font-semibold text-status md:text-body', className)}>{children}</p>
 }
 
-export function SectionTitle({ id, children, className }: { id?: string; children: ReactNode; className?: string }) {
+const SECTION_TITLE_SIZES = {
+  /** Título de una banda de página. */
+  lg: 'text-title-2 sm:text-title-1 md:text-display',
+  /** Título dentro de una columna (configurador, formulario). */
+  md: 'text-title-3 md:text-title-1',
+  /** Título de un bloque destacado a todo el ancho (asesoría). */
+  wide: 'text-title-2 md:text-display-sm',
+} as const
+
+/** Título de sección; el tamaño se elige con {@code size} en vez de pisar clases. */
+export function SectionTitle({
+  id,
+  children,
+  className,
+  size = 'lg',
+}: {
+  id?: string
+  children: ReactNode
+  className?: string
+  size?: keyof typeof SECTION_TITLE_SIZES
+}) {
   return (
     <h2
       id={id}
       className={cn(
-        'mt-2 font-display text-[28px] leading-[1.1] font-semibold tracking-[-0.02em] text-balance sm:text-[32px] md:text-[48px]',
+        'mt-2 font-display leading-[1.1] font-semibold tracking-[-0.02em] text-balance',
+        SECTION_TITLE_SIZES[size],
         className,
       )}
     >
@@ -48,7 +69,7 @@ export function PageHeader({ kicker, title, lead }: { kicker: string; title: str
     <>
       <Kicker>{kicker}</Kicker>
       <PageTitle className="max-w-3xl">{title}</PageTitle>
-      <p className="mt-4 max-w-2xl text-[17px] text-muted-foreground md:mt-5 md:text-[19px]">{lead}</p>
+      <Lead className="mt-4 max-w-2xl md:mt-5">{lead}</Lead>
     </>
   )
 }
@@ -58,11 +79,16 @@ export function PageTitle({ children, className }: { children: ReactNode; classN
   return (
     <h1
       className={cn(
-        'mt-2 font-display text-[34px] leading-[1.08] font-semibold tracking-[-0.02em] text-balance sm:text-[40px] md:text-[64px]',
+        'mt-2 font-display text-display-xs leading-[1.08] font-semibold tracking-[-0.02em] text-balance sm:text-display-sm md:text-display-lg',
         className,
       )}
     >
       {children}
     </h1>
   )
+}
+
+/** Bajada de un título: texto secundario un poco más grande que el cuerpo en pantallas anchas. */
+export function Lead({ children, className }: { children: ReactNode; className?: string }) {
+  return <p className={cn('text-body text-muted-foreground md:text-intro', className)}>{children}</p>
 }

@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react'
+import { type ReactNode, useEffect, useState } from 'react'
 
 import { cn } from '@/lib/utils'
 
@@ -48,5 +48,26 @@ export function InlineError({ message, className }: { message: string | null | u
     <p role="alert" className={cn('text-sm text-destructive', className)}>
       {message}
     </p>
+  )
+}
+
+/** Tras unos segundos de espera, la carga explica que el servidor puede estar despertando. */
+const WAKING_AFTER_MS = 5000
+
+export function WakingLoadingState({ label, className }: { label: string; className?: string }) {
+  const [waking, setWaking] = useState(false)
+  useEffect(() => {
+    const timer = window.setTimeout(() => setWaking(true), WAKING_AFTER_MS)
+    return () => window.clearTimeout(timer)
+  }, [])
+  return (
+    <div className={cn('flex flex-col items-center gap-2 py-16 text-center', className)}>
+      <LoadingState label={waking ? 'Despertando el servidor…' : label} className="py-0" />
+      {waking && (
+        <p className="max-w-sm text-sm text-muted-foreground">
+          La primera visita después de un rato sin uso puede tardar hasta un minuto.
+        </p>
+      )}
+    </div>
   )
 }

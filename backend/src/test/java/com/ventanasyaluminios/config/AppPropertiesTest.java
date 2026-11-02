@@ -12,7 +12,7 @@ import org.springframework.util.unit.DataSize;
 class AppPropertiesTest {
 
     private static final AppProperties.RateLimit RATE_LIMIT = new AppProperties.RateLimit(
-            new AppProperties.Rule(10, Duration.ofHours(1)), new AppProperties.Rule(5, Duration.ofMinutes(1)));
+            new AppProperties.Rule(10, Duration.ofHours(1)), new AppProperties.Rule(5, Duration.ofMinutes(1)), null);
     private static final AppProperties.Auth AUTH = new AppProperties.Auth("x".repeat(32), Duration.ofHours(8), true,
             null, null);
 
@@ -49,5 +49,33 @@ class AppPropertiesTest {
                 "admin@empresa.com", "Temporal-propia-2026");
 
         assertThat(validator.validate(auth)).isEmpty();
+    }
+
+    @Test
+    void elCorreoInicialSinContrasenaEsValidoPeroLaContrasenaSinCorreoNo() {
+        var soloCorreo = new AppProperties.Auth("x".repeat(32), Duration.ofHours(8), true, "admin@empresa.com", null);
+        var soloClave = new AppProperties.Auth("x".repeat(32), Duration.ofHours(8), true, null, "Temporal-propia-2026");
+
+        assertThat(validator.validate(soloCorreo)).isEmpty();
+        assertThat(validator.validate(soloClave)).extracting(v -> v.getMessage())
+                .containsExactly("ADMIN_INITIAL_PASSWORD necesita ADMIN_EMAIL y al menos 12 caracteres.");
+    }
+
+    @Test
+    void losValoresDeEjemploCoincidenConEnvExample() throws Exception {
+        // Si .env.example cambia sus claves de ejemplo, el arranque debe seguir rechazándolas.
+        var example = java.nio.file.Files.readAllLines(java.nio.file.Path.of("..", ".env.example"));
+        for (String key : List.of("JWT_SECRET=", "ADMIN_INITIAL_PASSWORD=")) {
+            String value = example.stream().filter(l -> l.startsWith(key)).findFirst().orElseThrow()
+                    .substring(key.length()).trim();
+            assertThat(AppProperties.Auth.EXAMPLE_VALUES).contains(value);
+        }
+    }
+
+    @Test
+    void laClaveDelProxyDebeSerLargaSiSeDefine() {
+        var corta = new AppProperties.RateLimit(new AppProperties.Rule(10, Duration.ofHours(1)),
+                new AppProperties.Rule(5, Duration.ofMinutes(1)), "corta");
+        assertThat(validator.validate(corta)).isNotEmpty();
     }
 }

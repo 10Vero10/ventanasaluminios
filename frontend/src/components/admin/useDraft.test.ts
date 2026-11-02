@@ -18,13 +18,13 @@ describe('useDraft', () => {
     expect(result.current.draft).toEqual({ title: 'A editado', active: false })
   })
 
-  it('empieza en null mientras carga y toma el objeto cuando llega', () => {
-    const { result, rerender } = renderHook(({ source }) => useDraft<{ a: string }>(source), {
-      initialProps: { source: null as { a: string } | null },
-    })
-    expect(result.current.draft).toBeNull()
-    rerender({ source: { a: 'x' } })
-    expect(result.current.draft).toEqual({ a: 'x' })
-    expect(result.current.bind('a').value).toBe('x')
+  it('commit toma lo guardado salvo lo que se siguió escribiendo mientras se guardaba', () => {
+    const source = { title: '', category: 'A' }
+    const { result } = renderHook(() => useDraft(source))
+    act(() => result.current.set('title', ''))
+    const sent = result.current.draft
+    act(() => result.current.set('category', 'B'))
+    act(() => result.current.commit(sent, { title: 'Imagen', category: 'A' }))
+    expect(result.current.draft).toEqual({ title: 'Imagen', category: 'B' })
   })
 })

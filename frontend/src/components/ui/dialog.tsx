@@ -44,7 +44,7 @@ export function Dialog({ open, onOpenChange, title, description, children, class
                 exit={reduceMotion ? { opacity: 0 } : { opacity: 0, y: 40 }}
                 transition={reduceMotion ? { duration: 0.15 } : SPRING}
               >
-                <DialogPrimitive.Title className="pr-12 font-display text-[28px] leading-tight font-semibold tracking-[-0.015em]">
+                <DialogPrimitive.Title className="pr-12 font-display text-title-2 leading-tight font-semibold tracking-[-0.015em]">
                   {title}
                 </DialogPrimitive.Title>
                 {description ? (
@@ -65,5 +65,22 @@ export function Dialog({ open, onOpenChange, title, description, children, class
         )}
       </AnimatePresence>
     </DialogPrimitive.Root>
+  )
+}
+
+/**
+ * Pie fijo al fondo del diálogo mientras se desplaza su contenido. Sus márgenes negativos compensan el relleno del
+ * diálogo (p-6 / sm:p-10), por eso vive aquí junto a él.
+ */
+export function DialogFooter({ children, className }: { children: ReactNode; className?: string }) {
+  return (
+    <div
+      className={cn(
+        'sticky -bottom-6 -mx-6 -mb-6 border-t border-border bg-background px-6 py-4 sm:-bottom-10 sm:-mx-10 sm:-mb-10 sm:px-10',
+        className,
+      )}
+    >
+      {children}
+    </div>
   )
 }

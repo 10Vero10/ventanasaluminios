@@ -1,7 +1,8 @@
+import { useState } from 'react'
+
 import { BackupPanel } from '@/components/admin/BackupPanel'
 import { ImagePicker } from '@/components/admin/ImagePicker'
 import { SettingsForm } from '@/components/admin/SettingsForm'
-import { useSettingsDraft } from '@/components/admin/useSettingsDraft'
 import { Button } from '@/components/ui/button'
 import { TextField } from '@/components/ui/field'
 import { Switch } from '@/components/ui/switch'
@@ -10,12 +11,13 @@ const DEFAULT_FAVICON = '/favicon.svg'
 
 /** Pestaña Configuración (briefing §5.7.7): cotización, contacto, favicon y respaldo. */
 export default function SettingsTab() {
-  const settings = useSettingsDraft()
+  // Importar un respaldo cambia la configuración: el formulario se vuelve a leer.
+  const [reloadKey, setReloadKey] = useState(0)
   return (
     <div className="flex flex-col gap-6">
       <SettingsForm
-        settings={settings}
-        title="Configuración general"
+        reloadKey={reloadKey}
+          title="Configuración general"
         description="Controla lo que se muestra a las personas en el sitio."
         className="flex flex-col gap-8"
       >
@@ -86,7 +88,7 @@ export default function SettingsTab() {
           </>
         )}
       </SettingsForm>
-      <BackupPanel onImported={settings.reload} />
+      <BackupPanel onImported={() => setReloadKey((n) => n + 1)} />
     </div>
   )
 }

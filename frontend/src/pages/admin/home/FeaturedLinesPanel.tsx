@@ -4,7 +4,7 @@ import { CategorySelect } from '@/components/admin/CategorySelect'
 import { ImagePicker } from '@/components/admin/ImagePicker'
 import { MoveButtons } from '@/components/admin/MoveButtons'
 import { Panel } from '@/components/admin/Panel'
-import { SaveRow } from '@/components/admin/SaveButton'
+import { SaveRow } from '@/components/admin/SaveRow'
 import { useDraft } from '@/components/admin/useDraft'
 import { useOrderedList } from '@/components/admin/useOrderedList'
 import { useSaveState } from '@/components/admin/useSaveState'
@@ -35,7 +35,7 @@ export function FeaturedLinesPanel() {
                     <p className="text-xs text-muted-foreground">
                       {line.number} · {categoryLabel(line.targetCategory)}
                     </p>
-                    <p className="text-[17px] font-semibold">{line.title}</p>
+                    <p className="text-body font-semibold">{line.title}</p>
                   </div>
                   <div className="flex flex-wrap gap-2">
                     <Button
@@ -46,7 +46,7 @@ export function FeaturedLinesPanel() {
                     >
                       {editing === line.id ? 'Cerrar' : 'Editar'}
                     </Button>
-                    <MoveButtons label={line.title} index={index} count={lines.length} onMove={list.move} disabled={list.busy} />
+                    <MoveButtons label={line.title} index={index} count={lines.length} onMove={list.move} disabled={list.locked} />
                   </div>
                 </div>
                 {editing === line.id && (

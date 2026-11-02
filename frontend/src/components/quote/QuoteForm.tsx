@@ -30,7 +30,8 @@ export function QuoteForm({
   onProductType: (productType: string) => void
   onDimensions: (text: string) => void
   onMessage: (message: string) => void
-  onSent: () => void
+  /** Recibe el mensaje que se envió. */
+  onSent: (sentMessage: string) => void
 }) {
   const site = useSite()
   const [name, setName] = useState('')
@@ -45,10 +46,12 @@ export function QuoteForm({
     setMissingContact(false)
     setSubmit({ status: 'sending' })
     try {
+      const sent = { name, phone, message: draft.message }
       await createQuote(toQuoteRequest(draft, { name, phone, website }))
-      setName('')
-      setPhone('')
-      onSent()
+      // Solo se vacía lo que no se cambió mientras se enviaba.
+      setName((current) => (current === sent.name ? '' : current))
+      setPhone((current) => (current === sent.phone ? '' : current))
+      onSent(sent.message)
       setSubmit({ status: 'sent' })
     } catch (error) {
       setSubmit({ status: 'error', message: getErrorMessage(error) })
@@ -58,8 +61,8 @@ export function QuoteForm({
   if (submit.status === 'sent') {
     return (
       <div role="status" className="mt-8 rounded-[28px] bg-secondary p-8">
-        <p className="font-display text-[28px] font-semibold">¡Cotización enviada!</p>
-        <p className="mt-2 text-[17px] text-muted-foreground">
+        <p className="font-display text-title-2 font-semibold">¡Cotización enviada!</p>
+        <p className="mt-2 text-body text-muted-foreground">
           Recibimos tu solicitud. Nos pondremos en contacto contigo a la brevedad al número que indicaste.
         </p>
         <Button variant="secondary" className="mt-6" onClick={() => setSubmit({ status: 'idle' })}>

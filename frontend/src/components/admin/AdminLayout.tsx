@@ -5,6 +5,7 @@ import { useAuth } from '@/auth/authContext'
 import { BrandMark } from '@/components/layout/BrandMark'
 import { Button } from '@/components/ui/button'
 import { isTrue, routerStateValue } from '@/lib/routerState'
+import { ROUTES } from '@/lib/routes'
 import { useLoad } from '@/lib/useLoad'
 import { cn } from '@/lib/utils'
 import { getDashboard } from '@/services/api/adminSiteService'
@@ -37,27 +38,26 @@ export function AdminLayout() {
           <div className="flex items-center gap-3">
             <BrandMark className="size-9 shrink-0" />
             <div className="leading-tight">
-              <p className="text-[15px] font-semibold whitespace-nowrap">Ventanas y Aluminios</p>
+              <p className="text-callout font-semibold whitespace-nowrap">Ventanas y Aluminios</p>
               <p className="text-xs whitespace-nowrap text-muted-foreground">Panel de control</p>
             </div>
           </div>
           <div className="flex items-center gap-1 sm:gap-2">
             <span className="hidden text-sm text-muted-foreground md:inline">{user?.email}</span>
             <Button asChild size="sm" variant="ghost">
-              <Link to="/admin/cambiar-clave" aria-label="Cambiar contraseña">
+              <Link to="/admin/cambiar-clave">
                 <span className="sm:hidden">Contraseña</span>
                 <span className="hidden sm:inline">Cambiar contraseña</span>
               </Link>
             </Button>
             <Button asChild size="sm" variant="secondary">
-              <a href="/" target="_blank" rel="noopener noreferrer">
+              <a href={ROUTES.home} target="_blank" rel="noopener noreferrer">
                 Ver sitio
               </a>
             </Button>
             <Button
               size="sm"
               variant="secondary"
-              aria-label="Cerrar sesión"
               onClick={() => {
                 setSignOutError(null)
                 signOut().catch((error: unknown) =>
@@ -78,7 +78,7 @@ export function AdminLayout() {
               { label: 'Cotizaciones nuevas', value: counts?.newQuotes },
             ].map((item) => (
               <div key={item.label} className="rounded-[14px] bg-secondary px-3 py-2 sm:rounded-[16px] sm:px-4 sm:py-3">
-                <dt className="text-[11px] leading-tight text-muted-foreground sm:text-xs">{item.label}</dt>
+                <dt className="text-caption leading-tight text-muted-foreground sm:text-xs">{item.label}</dt>
                 <dd className="font-display text-xl font-semibold tabular-nums sm:text-2xl">{item.value ?? '·'}</dd>
               </div>
             ))}

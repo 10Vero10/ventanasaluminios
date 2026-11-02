@@ -24,12 +24,15 @@ public class RateLimitFilter extends OncePerRequestFilter {
     private final RateLimiter limiter;
     private final ObjectMapper objectMapper;
     private final String message;
+    private final String trustedProxySecret;
 
-    public RateLimitFilter(String method, RateLimiter limiter, ObjectMapper objectMapper, String message) {
+    public RateLimitFilter(String method, RateLimiter limiter, ObjectMapper objectMapper, String message,
+                           String trustedProxySecret) {
         this.method = method;
         this.limiter = limiter;
         this.objectMapper = objectMapper;
         this.message = message;
+        this.trustedProxySecret = trustedProxySecret;
     }
 
     /** La ruta la decide el registro del filtro; aquí solo se filtra por método. */
@@ -41,7 +44,7 @@ public class RateLimitFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain)
             throws ServletException, IOException {
-        Duration retryAfter = limiter.acquire(ClientKey.of(request.getRemoteAddr()));
+        Duration retryAfter = limiter.acquire(ClientKey.of(ClientAddress.of(request, trustedProxySecret)));
         if (retryAfter.isZero()) {
             chain.doFilter(request, response);
             return;

@@ -21,8 +21,8 @@ const buttonVariants = cva(
       },
       size: {
         sm: 'min-h-9 px-4 text-sm',
-        md: 'min-h-11 px-5 text-[17px] tracking-[-0.022em]',
-        lg: 'min-h-12 px-7 text-[17px] tracking-[-0.022em]',
+        md: 'min-h-11 px-5 text-body tracking-[-0.022em]',
+        lg: 'min-h-12 px-7 text-body tracking-[-0.022em]',
         icon: 'size-11',
       },
     },

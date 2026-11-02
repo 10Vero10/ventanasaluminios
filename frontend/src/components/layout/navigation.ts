@@ -4,11 +4,13 @@ import { ROUTES } from '@/lib/routes'
 export interface NavItem {
   to: string
   label: string
+  /** Solo se marca activo en esa ruta exacta (Inicio), no en las que empiezan igual. */
+  end?: boolean
   quoting?: boolean
 }
 
 export const NAV_ITEMS: NavItem[] = [
-  { to: '/', label: 'Inicio' },
+  { to: ROUTES.home, label: 'Inicio', end: true },
   { to: ROUTES.catalog, label: 'Catálogo' },
   { to: ROUTES.gallery, label: 'Trabajos' },
   { to: ROUTES.about, label: 'Nosotros' },
@@ -18,3 +20,6 @@ export const NAV_ITEMS: NavItem[] = [
 export function visibleNav(quotingEnabled: boolean): NavItem[] {
   return NAV_ITEMS.filter((item) => !item.quoting || quotingEnabled)
 }
+
+/** Id del contenedor de la página (todo menos la cabecera): se vuelve inerte mientras el menú del celular está abierto. */
+export const PAGE_CONTENT_ID = 'pagina'

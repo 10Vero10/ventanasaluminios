@@ -1,10 +1,7 @@
-import type { FieldControlProps } from './field'
-import { Select } from './field'
+import { type FieldControlProps, Select, type SelectProps } from './field'
 
-interface BaseProps<T extends string> extends Partial<FieldControlProps> {
+interface BaseProps<T extends string> extends Partial<FieldControlProps>, Pick<SelectProps, 'className' | 'disabled' | 'compact'> {
   options: readonly { value: T; label: string }[]
-  className?: string
-  disabled?: boolean
 }
 
 /** Con {@code noneLabel} hay una opción "ninguno" y el valor puede ser null; sin ella siempre hay un valor. */
@@ -18,24 +15,19 @@ type OptionSelectProps<T extends string> = BaseProps<T> &
  * Lista desplegable sobre un conjunto cerrado de valores. Devuelve el valor ya tipado: busca la opción elegida en vez de
  * convertir el texto.
  */
-export function OptionSelect<T extends string>(props: OptionSelectProps<T>) {
-  const { options, className, disabled, id } = props
+export function OptionSelect<T extends string>({ options, noneLabel, value, onChange, ...control }: OptionSelectProps<T>) {
+  // null solo llega cuando hay opción "ninguno": sin ella todas las opciones tienen valor.
+  const pick = onChange as (value: T | null) => void
   return (
     <Select
-      id={id}
-      aria-describedby={props['aria-describedby']}
-      aria-invalid={props['aria-invalid']}
-      aria-required={props['aria-required']}
-      className={className}
-      disabled={disabled}
-      value={props.value ?? ''}
+      {...control}
+      value={value ?? ''}
       onChange={(e) => {
-        const chosen = options.find((o) => o.value === e.target.value)?.value
-        if (props.noneLabel !== undefined) props.onChange(chosen ?? null)
-        else if (chosen !== undefined) props.onChange(chosen)
+        const chosen = options.find((o) => o.value === e.target.value)?.value ?? null
+        if (chosen !== null || noneLabel !== undefined) pick(chosen)
       }}
     >
-      {props.noneLabel !== undefined && <option value="">{props.noneLabel}</option>}
+      {noneLabel !== undefined && <option value="">{noneLabel}</option>}
       {options.map((option) => (
         <option key={option.value} value={option.value}>
           {option.label}

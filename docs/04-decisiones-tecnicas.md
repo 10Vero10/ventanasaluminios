@@ -128,7 +128,7 @@ Formato: contexto → decisión → consecuencias.
 - **Cotizar:** el armado de la solicitud y la sincronización con el configurador son funciones puras (`quoteDraft.ts`) y la página las aplica con actualizaciones funcionales, para que el fin de un envío no pise lo escrito mientras tanto.
 - **Respaldo:** las conversiones respuesta → solicitud viven en los mappers. Un respaldo que no trae un campo agregado después (como `aboutImageUrl`) conserva el valor actual en vez de borrarlo; una prueba verifica que la exportación incluya todos los campos de la configuración.
 
-## ADR-019 — Publicación en Render y Vercel
+## ADR-019 — Publicación en Render y Vercel (reemplazada por ADR-020)
 
 - **Reparto:** backend (Docker) y PostgreSQL en Render con `render.yaml`; frontend estático en Vercel con `frontend/vercel.json`. Vercel reescribe `/api/*` y `/media/*` hacia el backend y todo lo demás a `index.html`, así el navegador ve un solo dominio: la cookie de sesión (`SameSite=Lax`, `Path=/api`) y el CSRF funcionan sin CORS.
 - **Base de datos:** Render entrega host, puerto, base, usuario y clave por separado; `application.yml` arma la URL JDBC con `DB_HOST` cuando no hay `DB_URL`. `JWT_SECRET` lo genera Render; el administrador inicial se pide al crear el Blueprint.
@@ -137,3 +137,12 @@ Formato: contexto → decisión → consecuencias.
   - Imágenes subidas: el disco del contenedor se borra en cada despliegue. Para conservarlas hace falta un disco persistente de Render (de pago) montado en `/app/uploads`, o usar URLs de imágenes alojadas.
   - Vercel limita el cuerpo de las solicitudes reenviadas (unos 4,5 MB): una imagen cercana a 5 MB puede fallar al subirse por esta vía.
   - Límite por IP: detrás de Vercel y del proxy de Render, Tomcat solo confía en proxies internos, así que la IP que ve es la del borde de Vercel y varios visitantes pueden compartir un mismo contador. Es lo seguro (no se puede falsear la IP llamando directo a Render), a cambio de un límite más grueso.
+
+## ADR-020 — Todo en Render, con nginx delante
+
+- **Motivo:** detrás de Vercel el backend veía la IP de Vercel y no la del visitante, así que los límites por IP (5 intentos de inicio de sesión por minuto, 10 cotizaciones por hora) eran compartidos y cualquiera podía bloquear el panel o el formulario para todos. Además, sin nginx nada limitaba el tamaño de las solicitudes y el plan Hobby de Vercel es para uso personal no comercial.
+- **Topología:** `render.yaml` crea el sitio (imagen `web` con nginx, la misma de Docker Compose), el backend y PostgreSQL. La plantilla `frontend/nginx/default.conf.template` toma `BACKEND_ORIGIN` y `PROXY_SECRET` al arrancar.
+- **IP real:** nginx confía en `X-Forwarded-For` solo desde rangos privados (el proxy de Render) y, como el plan gratis no recibe tráfico por la red privada, llama al backend por su dirección pública con `X-Client-Ip` y `X-Proxy-Secret`. El backend (`ClientAddress`) usa esa IP solo si la clave coincide; si alguien llama directo al backend sin la clave, cuenta la IP de la conexión.
+- **Tamaño de las solicitudes:** el backend limita el cuerpo por su cuenta (`RequestSizeLimitFilter`: 64 KB para cotización e inicio de sesión, 6 MB para el resto), porque en Render se puede llamar sin pasar por nginx.
+- **Servicios dormidos:** la primera visita tras 15 minutos puede tardar hasta un minuto; nginx espera hasta 120 s al backend y el sitio espera más la configuración inicial, mostrando "Despertando el servidor…".
+- **Límites que siguen:** la base gratis vence según las condiciones de Render y las imágenes subidas se pierden en cada despliegue sin un disco persistente (de pago).

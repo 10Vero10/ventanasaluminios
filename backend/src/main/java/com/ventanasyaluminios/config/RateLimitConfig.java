@@ -2,6 +2,7 @@ package com.ventanasyaluminios.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.ventanasyaluminios.security.RateLimitFilter;
+import com.ventanasyaluminios.security.RequestSizeLimitFilter;
 import com.ventanasyaluminios.security.RateLimiter;
 import java.time.Clock;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
@@ -24,7 +25,8 @@ public class RateLimitConfig {
                                                                         ObjectMapper objectMapper) {
         AppProperties.Rule rule = properties.rateLimit().quotes();
         RateLimitFilter filter = new RateLimitFilter("POST", new RateLimiter(rule.maxRequests(), rule.window(), clock),
-                objectMapper, "Has enviado muchas solicitudes. Intenta más tarde.");
+                objectMapper, "Has enviado muchas solicitudes. Intenta más tarde.",
+                properties.rateLimit().trustedProxySecret());
         FilterRegistrationBean<RateLimitFilter> registration = new FilterRegistrationBean<>(filter);
         registration.addUrlPatterns("/api/v1/quotes");
         registration.setOrder(ORDER);
@@ -37,11 +39,23 @@ public class RateLimitConfig {
                                                                         ObjectMapper objectMapper) {
         AppProperties.Rule rule = properties.rateLimit().login();
         RateLimitFilter filter = new RateLimitFilter("POST", new RateLimiter(rule.maxRequests(), rule.window(), clock),
-                objectMapper, "Demasiados intentos. Espera un minuto.");
+                objectMapper, "Demasiados intentos. Espera un minuto.",
+                properties.rateLimit().trustedProxySecret());
         FilterRegistrationBean<RateLimitFilter> registration = new FilterRegistrationBean<>(filter);
         registration.addUrlPatterns("/api/v1/auth/login");
         registration.setOrder(ORDER);
         registration.setName("loginRateLimitFilter");
+        return registration;
+    }
+
+    /** El tope de tamaño va antes que todo lo demás, para no leer cuerpos enormes. */
+    @Bean
+    public FilterRegistrationBean<RequestSizeLimitFilter> requestSizeLimitFilter(ObjectMapper objectMapper) {
+        FilterRegistrationBean<RequestSizeLimitFilter> registration =
+                new FilterRegistrationBean<>(new RequestSizeLimitFilter(objectMapper));
+        registration.addUrlPatterns("/api/*");
+        registration.setOrder(ORDER - 5);
+        registration.setName("requestSizeLimitFilter");
         return registration;
     }
 }

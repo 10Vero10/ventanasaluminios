@@ -50,8 +50,10 @@ export function writeDimensions(draft: QuoteDraft, text: string): QuoteDraft {
   return { ...draft, dimensionsText: text, applied: null }
 }
 
-/** Tras enviar: el mensaje queda vacío, así que no hay sugerencia anterior que reemplazar. */
-export function afterSent(draft: QuoteDraft): QuoteDraft {
+/** Tras enviar: el mensaje enviado se vacía, así que no hay sugerencia anterior que reemplazar. */
+export function afterSent(draft: QuoteDraft, sentMessage: string): QuoteDraft {
+  // Si el visitante siguió escribiendo mientras se enviaba, el mensaje nuevo se conserva.
+  if (draft.message !== sentMessage) return draft
   return { ...draft, message: '', lastAutoMessage: null }
 }
 

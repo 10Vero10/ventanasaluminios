@@ -1,14 +1,11 @@
 import { ImagePicker } from '@/components/admin/ImagePicker'
 import { SettingsForm } from '@/components/admin/SettingsForm'
-import { useSettingsDraft } from '@/components/admin/useSettingsDraft'
 import { TextAreaField, TextField } from '@/components/ui/field'
 
 /** Portada: título, subtítulo, etiqueta e imagen principal. */
 export function HeroPanel() {
-  const settings = useSettingsDraft()
   return (
     <SettingsForm
-      settings={settings}
       title="Portada"
       description="Textos e imagen que ven las personas al entrar al sitio."
       className="grid gap-6 lg:grid-cols-2"

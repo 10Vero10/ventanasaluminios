@@ -33,17 +33,17 @@ export default function CatalogPage() {
         <dl className="mt-8 grid max-w-3xl grid-cols-3 gap-3 sm:gap-6 md:mt-10">
           <div>
             <dt className="text-xs text-muted-foreground sm:text-sm">Precisión</dt>
-            <dd className="font-display text-[19px] leading-tight font-semibold sm:text-[28px]">± 1.0 mm</dd>
+            <dd className="font-display text-intro leading-tight font-semibold sm:text-title-2">± 1.0 mm</dd>
             <dd className="text-xs text-muted-foreground sm:text-sm">Ajuste perimetral</dd>
           </div>
           <div>
             <dt className="text-xs text-muted-foreground sm:text-sm">Acabados</dt>
-            <dd className="font-display text-[19px] leading-tight font-semibold sm:text-[28px]">Anodizado</dd>
+            <dd className="font-display text-intro leading-tight font-semibold sm:text-title-2">Anodizado</dd>
             <dd className="text-xs text-muted-foreground sm:text-sm">Y pintura electrostática</dd>
           </div>
           <div>
             <dt className="text-xs text-muted-foreground sm:text-sm">Garantía</dt>
-            <dd className="font-display text-[19px] leading-tight font-semibold sm:text-[28px]">+{site.experienceYears} años</dd>
+            <dd className="font-display text-intro leading-tight font-semibold sm:text-title-2">+{site.experienceYears} años</dd>
             <dd className="text-xs text-muted-foreground sm:text-sm">De experiencia real</dd>
           </div>
         </dl>
@@ -52,7 +52,7 @@ export default function CatalogPage() {
         </div>
       </Section>
 
-      <section aria-label="Productos" className="mx-auto max-w-[1080px] px-5 pb-12 sm:px-6 md:pb-24">
+      <section aria-label="Productos" className="page-container pb-12 md:pb-24">
         <Loadable
           state={products}
           loadingLabel="Cargando productos…"
@@ -123,8 +123,8 @@ function ProductCard({ product, onDetails }: { product: Product; onDetails: () =
           </span>
           {product.badge && <span className="text-status">{product.badge}</span>}
         </p>
-        <h2 className="mt-2 font-display text-[24px] leading-tight font-semibold tracking-[-0.015em] md:text-[28px]">{product.title}</h2>
-        <p className="text-[17px] text-muted-foreground">{product.subtitle}</p>
+        <h2 className="mt-2 font-display text-title-3 leading-tight font-semibold tracking-[-0.015em] md:text-title-2">{product.title}</h2>
+        <p className="text-body text-muted-foreground">{product.subtitle}</p>
         <p className="mt-3">{product.description}</p>
         {product.specs.length > 0 && (
           <dl className="mt-5 flex flex-col gap-1.5 text-sm">
@@ -160,7 +160,7 @@ function ProductDetail({ product }: { product: Product }) {
   const site = useSite()
   return (
     <div className="flex flex-col gap-6">
-      <p className="text-[17px]">{product.description}</p>
+      <p className="text-body">{product.description}</p>
       {product.imageUrl && (
         <img
           src={product.imageUrl}
