@@ -30,29 +30,29 @@ export default function CatalogPage() {
           title="Cuatro líneas de trabajo con medida exacta"
           lead="Cada producto se fabrica para la medida de tu obra. Explora nuestros sistemas, tipos y acabados diseñados para durabilidad estructural y elegancia."
         />
-        <dl className="mt-10 grid max-w-3xl grid-cols-1 gap-6 sm:grid-cols-3">
+        <dl className="mt-8 grid max-w-3xl grid-cols-3 gap-3 sm:gap-6 md:mt-10">
           <div>
-            <dt className="text-sm text-muted-foreground">Precisión</dt>
-            <dd className="font-display text-[28px] font-semibold">± 1.0 mm</dd>
-            <dd className="text-sm text-muted-foreground">Ajuste perimetral</dd>
+            <dt className="text-xs text-muted-foreground sm:text-sm">Precisión</dt>
+            <dd className="font-display text-[19px] leading-tight font-semibold sm:text-[28px]">± 1.0 mm</dd>
+            <dd className="text-xs text-muted-foreground sm:text-sm">Ajuste perimetral</dd>
           </div>
           <div>
-            <dt className="text-sm text-muted-foreground">Acabados</dt>
-            <dd className="font-display text-[28px] font-semibold">Anodizado</dd>
-            <dd className="text-sm text-muted-foreground">Y pintura electrostática</dd>
+            <dt className="text-xs text-muted-foreground sm:text-sm">Acabados</dt>
+            <dd className="font-display text-[19px] leading-tight font-semibold sm:text-[28px]">Anodizado</dd>
+            <dd className="text-xs text-muted-foreground sm:text-sm">Y pintura electrostática</dd>
           </div>
           <div>
-            <dt className="text-sm text-muted-foreground">Garantía</dt>
-            <dd className="font-display text-[28px] font-semibold">+{site.experienceYears} años</dd>
-            <dd className="text-sm text-muted-foreground">De experiencia real</dd>
+            <dt className="text-xs text-muted-foreground sm:text-sm">Garantía</dt>
+            <dd className="font-display text-[19px] leading-tight font-semibold sm:text-[28px]">+{site.experienceYears} años</dd>
+            <dd className="text-xs text-muted-foreground sm:text-sm">De experiencia real</dd>
           </div>
         </dl>
-        <div className="mt-12">
+        <div className="mt-8 md:mt-12">
           <CategoryFilter value={category} onChange={selectCategory} allLabel="Todos los sistemas" label="Filtrar por línea" />
         </div>
       </Section>
 
-      <section aria-label="Productos" className="mx-auto max-w-[1080px] px-6 pb-16 md:pb-24">
+      <section aria-label="Productos" className="mx-auto max-w-[1080px] px-5 pb-12 sm:px-6 md:pb-24">
         <Loadable
           state={products}
           loadingLabel="Cargando productos…"
@@ -72,7 +72,7 @@ export default function CatalogPage() {
           }
         >
           {(data) => (
-            <ul className="grid gap-6 md:grid-cols-2">
+            <ul className="grid gap-4 md:grid-cols-2 md:gap-6">
               {data.map((product) => (
                 <li key={product.id}>
                   <ProductCard product={product} onDetails={() => setSelected(product)} />
@@ -115,7 +115,7 @@ function ProductCard({ product, onDetails }: { product: Product; onDetails: () =
           className="aspect-[16/10] w-full object-cover"
         />
       )}
-      <div className="flex flex-1 flex-col p-7">
+      <div className="flex flex-1 flex-col p-5 md:p-7">
         <p className="flex flex-wrap items-center gap-x-3 text-xs font-semibold text-muted-foreground">
           <span>
             {product.categoryNumber ? `${product.categoryNumber} · ` : ''}
@@ -123,7 +123,7 @@ function ProductCard({ product, onDetails }: { product: Product; onDetails: () =
           </span>
           {product.badge && <span className="text-status">{product.badge}</span>}
         </p>
-        <h2 className="mt-2 font-display text-[28px] leading-tight font-semibold tracking-[-0.015em]">{product.title}</h2>
+        <h2 className="mt-2 font-display text-[24px] leading-tight font-semibold tracking-[-0.015em] md:text-[28px]">{product.title}</h2>
         <p className="text-[17px] text-muted-foreground">{product.subtitle}</p>
         <p className="mt-3">{product.description}</p>
         {product.specs.length > 0 && (

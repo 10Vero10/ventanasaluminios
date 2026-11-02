@@ -53,7 +53,7 @@ export function SiteFooter() {
         </div>
       </div>
       <div className="border-t border-border">
-        <p className="mx-auto max-w-[1080px] px-6 py-5 text-xs text-muted-foreground">
+        <p className="mx-auto max-w-[1080px] px-5 py-5 text-xs sm:px-6 text-muted-foreground">
           © {new Date().getFullYear()} Ventanas y Aluminios. Fabricación e instalación a medida. Todos los derechos
           reservados.
         </p>

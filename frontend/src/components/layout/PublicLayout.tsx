@@ -22,10 +22,13 @@ export function PublicLayout() {
         Saltar al contenido
       </a>
       <SiteHeader />
-      <main id="contenido">
-        <Outlet />
-      </main>
-      <SiteFooter />
+      {/* En el celular la barra inferior es fija: este margen evita que tape el final de la página. */}
+      <div className="pb-[calc(3.5rem+env(safe-area-inset-bottom))] md:pb-0">
+        <main id="contenido">
+          <Outlet />
+        </main>
+        <SiteFooter />
+      </div>
       <MobileTabBar />
     </>
   )

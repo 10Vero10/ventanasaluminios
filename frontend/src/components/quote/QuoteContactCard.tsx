@@ -6,11 +6,11 @@ import { useSite } from '@/site/siteContext'
 export function QuoteContactCard() {
   const site = useSite()
   return (
-    <section aria-labelledby="contacto" className="mx-auto max-w-[1080px] px-6">
-      <div className="grid gap-8 rounded-[28px] bg-secondary p-7 md:grid-cols-[1.3fr_1fr] md:p-10">
+    <section aria-labelledby="contacto" className="mx-auto max-w-[1080px] px-5 sm:px-6">
+      <div className="grid gap-6 rounded-[24px] bg-secondary p-5 md:grid-cols-[1.3fr_1fr] md:gap-8 md:rounded-[28px] md:p-10">
         <div>
           <p className="text-sm font-semibold text-status">Contáctanos</p>
-          <h2 id="contacto" className="mt-1 font-display text-[28px] leading-tight font-semibold tracking-[-0.015em]">
+          <h2 id="contacto" className="mt-1 font-display text-[24px] leading-tight md:text-[28px] font-semibold tracking-[-0.015em]">
             Cotiza sin costo y sin compromiso
           </h2>
           <p className="mt-3 text-[17px] text-muted-foreground">

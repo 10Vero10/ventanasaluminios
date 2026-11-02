@@ -18,14 +18,14 @@ export function Section({
 }) {
   return (
     <section id={id} aria-labelledby={labelledBy} className={cn(tone === 'mist' ? 'bg-secondary' : 'bg-background')}>
-      <div className={cn('mx-auto max-w-[1080px] px-6 py-16 md:py-24', className)}>{children}</div>
+      <div className={cn('mx-auto max-w-[1080px] px-5 py-12 sm:px-6 md:py-24', className)}>{children}</div>
     </section>
   )
 }
 
 /** Antetítulo corto sobre un título de sección. */
 export function Kicker({ children, className }: { children: ReactNode; className?: string }) {
-  return <p className={cn('text-[17px] font-semibold text-status', className)}>{children}</p>
+  return <p className={cn('text-[15px] font-semibold text-status md:text-[17px]', className)}>{children}</p>
 }
 
 export function SectionTitle({ id, children, className }: { id?: string; children: ReactNode; className?: string }) {
@@ -33,7 +33,7 @@ export function SectionTitle({ id, children, className }: { id?: string; childre
     <h2
       id={id}
       className={cn(
-        'mt-2 font-display text-[32px] leading-[1.1] font-semibold tracking-[-0.02em] text-balance md:text-[48px]',
+        'mt-2 font-display text-[28px] leading-[1.1] font-semibold tracking-[-0.02em] text-balance sm:text-[32px] md:text-[48px]',
         className,
       )}
     >
@@ -48,7 +48,7 @@ export function PageHeader({ kicker, title, lead }: { kicker: string; title: str
     <>
       <Kicker>{kicker}</Kicker>
       <PageTitle className="max-w-3xl">{title}</PageTitle>
-      <p className="mt-5 max-w-2xl text-[19px] text-muted-foreground">{lead}</p>
+      <p className="mt-4 max-w-2xl text-[17px] text-muted-foreground md:mt-5 md:text-[19px]">{lead}</p>
     </>
   )
 }
@@ -58,7 +58,7 @@ export function PageTitle({ children, className }: { children: ReactNode; classN
   return (
     <h1
       className={cn(
-        'mt-2 font-display text-[40px] leading-[1.05] font-semibold tracking-[-0.02em] text-balance md:text-[64px]',
+        'mt-2 font-display text-[34px] leading-[1.08] font-semibold tracking-[-0.02em] text-balance sm:text-[40px] md:text-[64px]',
         className,
       )}
     >
