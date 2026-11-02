@@ -3,6 +3,7 @@ import { Route, Routes } from 'react-router'
 
 import { PublicLayout } from '@/components/layout/PublicLayout'
 import { LoadingState } from '@/components/ui/states'
+import { ROUTES } from '@/lib/routes'
 import AboutPage from '@/pages/AboutPage'
 import CatalogPage from '@/pages/CatalogPage'
 import GalleryPage from '@/pages/GalleryPage'
@@ -33,10 +34,10 @@ export default function AppRouter() {
         }
       >
         <Route index element={<HomePage />} />
-        <Route path="catalogo" element={<CatalogPage />} />
-        <Route path="trabajos" element={<GalleryPage />} />
-        <Route path="nosotros" element={<AboutPage />} />
-        <Route path="cotizar" element={<QuotePage />} />
+        <Route path={ROUTES.catalog} element={<CatalogPage />} />
+        <Route path={ROUTES.gallery} element={<GalleryPage />} />
+        <Route path={ROUTES.about} element={<AboutPage />} />
+        <Route path={ROUTES.quote} element={<QuotePage />} />
         <Route path="*" element={<NotFoundPage />} />
       </Route>
     </Routes>

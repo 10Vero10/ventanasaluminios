@@ -123,7 +123,7 @@ describe('Panel de administración', () => {
     vi.mocked(logout).mockRejectedValue(new Error('sin red'))
     renderAdmin('/admin')
 
-    await user.click(await screen.findByRole('button', { name: 'Cerrar sesión' }))
+    await user.click(await screen.findByRole('button', { name: /Cerrar sesión/ }))
     expect(await screen.findByText(/No se pudo cerrar la sesión/)).toBeInTheDocument()
     expect(screen.getByRole('heading', { name: 'Cotizaciones' })).toBeInTheDocument()
   })

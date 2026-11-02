@@ -2,6 +2,7 @@ import { type FormEvent, type ReactNode, useState } from 'react'
 
 import { Button } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
+import { DialogFooter } from '@/components/ui/dialog'
 import { Field, TextAreaField, TextField } from '@/components/ui/field'
 import { createProduct, updateProduct } from '@/services/api/adminCatalogService'
 import { toProductRequest } from '@/types/admin'
@@ -9,8 +10,7 @@ import { CATEGORIES, type Product, type ProductCategory, type ProductRequest } f
 
 import { CategorySelect } from './CategorySelect'
 import { ImagePicker } from './ImagePicker'
-import { SaveButton } from './SaveButton'
-import { SaveFeedback } from './SaveFeedback'
+import { SaveRow } from './SaveRow'
 import { useDraft } from './useDraft'
 import { useSaveState } from './useSaveState'
 
@@ -109,13 +109,13 @@ export function ProductEditor({
         )}
       />
 
-      <div className="sticky -bottom-6 -mx-6 -mb-6 flex flex-wrap items-center gap-2 sm:gap-3 border-t border-border bg-background px-6 py-4 sm:-bottom-10 sm:-mx-10 sm:-mb-10 sm:px-10">
-        <SaveButton save={save} label="Guardar producto" />
-        <Button variant="secondary" onClick={onCancel} disabled={save.saving}>
-          Descartar cambios
-        </Button>
-        <SaveFeedback state={save.state} />
-      </div>
+      <DialogFooter>
+        <SaveRow save={save} label="Guardar producto" className="gap-2 sm:gap-3">
+          <Button variant="secondary" onClick={onCancel} disabled={save.saving}>
+            Descartar cambios
+          </Button>
+        </SaveRow>
+      </DialogFooter>
     </form>
   )
 }

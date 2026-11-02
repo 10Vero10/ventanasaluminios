@@ -67,3 +67,20 @@ export function Dialog({ open, onOpenChange, title, description, children, class
     </DialogPrimitive.Root>
   )
 }
+
+/**
+ * Pie fijo al fondo del diálogo mientras se desplaza su contenido. Sus márgenes negativos compensan el relleno del
+ * diálogo (p-6 / sm:p-10), por eso vive aquí junto a él.
+ */
+export function DialogFooter({ children, className }: { children: ReactNode; className?: string }) {
+  return (
+    <div
+      className={cn(
+        'sticky -bottom-6 -mx-6 -mb-6 border-t border-border bg-background px-6 py-4 sm:-bottom-10 sm:-mx-10 sm:-mb-10 sm:px-10',
+        className,
+      )}
+    >
+      {children}
+    </div>
+  )
+}

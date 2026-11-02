@@ -61,8 +61,13 @@ export function Textarea({ className, ...props }: ComponentProps<'textarea'>) {
   return <textarea className={cn(controlClass, 'min-h-32 resize-y', className)} {...props} />
 }
 
-export function Select({ className, ...props }: ComponentProps<'select'>) {
-  return <select className={cn(controlClass, 'appearance-auto pr-10', className)} {...props} />
+export type SelectProps = ComponentProps<'select'> & {
+  /** Más baja, para filtros y listas dentro de una fila. */
+  compact?: boolean
+}
+
+export function Select({ className, compact = false, ...props }: SelectProps) {
+  return <select className={cn(controlClass, 'appearance-auto pr-10', compact && 'py-2 text-base sm:text-sm', className)} {...props} />
 }
 
 type TextFieldProps = FieldLabelProps & {

@@ -40,7 +40,7 @@ export default function CatalogTab() {
     setActionError(null)
     try {
       await duplicateProduct(product.id)
-      list.reload()
+      list.loaded.reload()
       refreshDashboard()
     } catch (error) {
       setActionError(getErrorMessage(error))
@@ -87,7 +87,7 @@ export default function CatalogTab() {
                         <p className="text-sm text-muted-foreground">{product.subtitle}</p>
                       </div>
                       <div className="col-span-2 flex flex-wrap gap-2 sm:col-span-1">
-                        <MoveButtons label={product.title} index={index} count={visible.length} onMove={moveVisible} disabled={list.busy} />
+                        <MoveButtons label={product.title} index={index} count={visible.length} onMove={moveVisible} disabled={list.locked} />
                         <Button size="sm" variant="secondary" onClick={() => setEditing({ product })}>
                           Editar
                         </Button>
@@ -120,7 +120,7 @@ export default function CatalogTab() {
             onCancel={() => setEditing(null)}
             onSaved={() => {
               setEditing(null)
-              list.reload()
+              list.loaded.reload()
               refreshDashboard()
             }}
           />
@@ -136,7 +136,7 @@ export default function CatalogTab() {
         onConfirm={async () => {
           if (!toDelete) return
           await deleteProduct(toDelete.id)
-          list.reload()
+          list.loaded.reload()
           refreshDashboard()
         }}
       />

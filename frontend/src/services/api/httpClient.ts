@@ -20,7 +20,7 @@ export const httpClient = axios.create({
 })
 
 /** Mensaje cuando lo que responde no es la API (por ejemplo, el hosting devuelve la página en vez del backend). */
-export const API_UNAVAILABLE_MESSAGE = 'El servidor del sitio no está disponible en este momento. Intenta de nuevo más tarde.'
+const API_UNAVAILABLE_MESSAGE = 'El servidor del sitio no está disponible en este momento. Intenta de nuevo más tarde.'
 
 /** El servidor respondió, pero no con JSON de la API. */
 export class ApiUnavailableError extends Error {

@@ -7,7 +7,7 @@ import { toSettingsRequest } from '@/types/admin'
 import type { SiteSettings } from '@/types/site'
 
 import { Panel } from './Panel'
-import { SaveRow } from './SaveButton'
+import { SaveRow } from './SaveRow'
 import { type DraftState, useDraft } from './useDraft'
 import { useSaveState } from './useSaveState'
 

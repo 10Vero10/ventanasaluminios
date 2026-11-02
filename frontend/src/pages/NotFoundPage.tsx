@@ -16,7 +16,7 @@ export default function NotFoundPage() {
       </p>
       <div className="mt-8 flex flex-wrap justify-center gap-3">
         <Button asChild>
-          <Link to="/">Ir al inicio</Link>
+          <Link to={ROUTES.home}>Ir al inicio</Link>
         </Button>
         <Button asChild variant="secondary">
           <Link to={ROUTES.catalog}>Ver catálogo</Link>

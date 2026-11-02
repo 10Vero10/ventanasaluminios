@@ -30,7 +30,8 @@ export function QuoteForm({
   onProductType: (productType: string) => void
   onDimensions: (text: string) => void
   onMessage: (message: string) => void
-  onSent: () => void
+  /** Recibe el mensaje que se envió. */
+  onSent: (sentMessage: string) => void
 }) {
   const site = useSite()
   const [name, setName] = useState('')
@@ -45,10 +46,12 @@ export function QuoteForm({
     setMissingContact(false)
     setSubmit({ status: 'sending' })
     try {
+      const sent = { name, phone, message: draft.message }
       await createQuote(toQuoteRequest(draft, { name, phone, website }))
-      setName('')
-      setPhone('')
-      onSent()
+      // Solo se vacía lo que no se cambió mientras se enviaba.
+      setName((current) => (current === sent.name ? '' : current))
+      setPhone((current) => (current === sent.phone ? '' : current))
+      onSent(sent.message)
       setSubmit({ status: 'sent' })
     } catch (error) {
       setSubmit({ status: 'error', message: getErrorMessage(error) })

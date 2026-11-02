@@ -3,8 +3,8 @@ import { Link } from 'react-router'
 import { Kicker, Section, SectionTitle } from '@/components/site/Section'
 import { QuoteCallout } from '@/components/site/QuoteCallout'
 import { Button } from '@/components/ui/button'
-import { useSite } from '@/site/siteContext'
 import { catalogHref, ROUTES } from '@/lib/routes'
+import { useSite } from '@/site/siteContext'
 
 /** Inicio (briefing §5.3): portada editable, trayectoria, líneas destacadas y llamado a cotizar. */
 export default function HomePage() {

@@ -2,8 +2,7 @@ import { type FormEvent, type ReactNode, useState } from 'react'
 
 import { MoveButtons } from '@/components/admin/MoveButtons'
 import { Panel } from '@/components/admin/Panel'
-import { SaveButton, SaveRow } from '@/components/admin/SaveButton'
-import { SaveFeedback } from '@/components/admin/SaveFeedback'
+import { SaveRow } from '@/components/admin/SaveRow'
 import { type DraftState, useDraft } from '@/components/admin/useDraft'
 import { useReorder } from '@/components/admin/useReorder'
 import { useSaveState } from '@/components/admin/useSaveState'
@@ -17,7 +16,7 @@ import { getAdminGlassOptions, reorderGlass, saveGlassOption } from '@/services/
 import type { GlassKind, GlassKinds } from '@/types/admin'
 import type { GlassColor, GlassOptions, GlassThickness, GlassType } from '@/types/catalog'
 
-type Item<K extends GlassKind> = GlassKinds[K]['item']
+type Item<K extends GlassKind> = GlassOptions[K][number]
 type Request<K extends GlassKind> = GlassKinds[K]['request']
 type Draft<K extends GlassKind> = DraftState<Item<K>>
 
@@ -128,10 +127,10 @@ function GlassList<K extends GlassKind>({
   options: Loaded<GlassOptions>
 }) {
   const setItems = (update: (current: Item<K>[]) => Item<K>[]) =>
-    options.setData((data) => ({ ...data, [config.kind]: update(data[config.kind] as Item<K>[]) }))
-  const reorder = useReorder(items, setItems, (ids) => reorderGlass(config.kind, ids))
+    options.setData((data) => ({ ...data, [config.kind]: update(data[config.kind]) }))
   // Mientras se recarga no se ordena sobre datos viejos.
-  const locked = reorder.busy || (options.status === 'ready' && options.refreshing)
+  const refreshing = options.status === 'ready' && options.refreshing
+  const reorder = useReorder(items, setItems, (ids) => reorderGlass(config.kind, ids), refreshing)
 
   return (
     <Panel title={config.title} description="Desactiva una opción para ocultarla del configurador sin perder las cotizaciones que la usan.">
@@ -141,7 +140,7 @@ function GlassList<K extends GlassKind>({
           <li key={item.id} className="flex flex-wrap items-end gap-3 rounded-[20px] border border-border p-4">
             <GlassRow config={config} item={item} onSaved={options.reload} />
             <div className="flex gap-1">
-              <MoveButtons label={config.rowLabel(item)} index={index} count={items.length} onMove={reorder.move} disabled={locked} />
+              <MoveButtons label={config.rowLabel(item)} index={index} count={items.length} onMove={reorder.move} disabled={reorder.locked} />
             </div>
           </li>
         ))}
@@ -176,10 +175,7 @@ function GlassRow<K extends GlassKind>({ config, item, onSaved }: { config: Kind
           Por defecto
         </Checkbox>
       </div>
-      <div className="flex flex-wrap items-center gap-4">
-        <SaveButton save={save} label="Guardar" size="sm" disabled={!changed} />
-        <SaveFeedback state={save.state} />
-      </div>
+      <SaveRow save={save} label="Guardar" size="sm" disabled={!changed} />
     </form>
   )
 }

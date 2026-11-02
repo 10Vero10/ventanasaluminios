@@ -1,7 +1,7 @@
 import { AxiosError, AxiosHeaders } from 'axios'
 import { describe, expect, it } from 'vitest'
 
-import { API_UNAVAILABLE_MESSAGE, ApiUnavailableError, getErrorMessage, isApiResponse } from './httpClient'
+import { ApiUnavailableError, getErrorMessage, isApiResponse } from './httpClient'
 
 function apiError(status: number, data: unknown): AxiosError {
   const config = { headers: new AxiosHeaders() }
@@ -40,6 +40,7 @@ describe('respuestas que no son de la API', () => {
 
   it('rechaza una página HTML en lugar de la API, con un mensaje claro', () => {
     expect(isApiResponse('text/html; charset=utf-8', '<!doctype html>')).toBe(false)
-    expect(getErrorMessage(new ApiUnavailableError())).toBe(API_UNAVAILABLE_MESSAGE)
+    const error = new ApiUnavailableError()
+    expect(getErrorMessage(error)).toBe(error.message)
   })
 })
