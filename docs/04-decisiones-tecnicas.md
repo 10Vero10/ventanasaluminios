@@ -138,7 +138,7 @@ Formato: contexto → decisión → consecuencias.
   - Vercel limita el cuerpo de las solicitudes reenviadas (unos 4,5 MB): una imagen cercana a 5 MB puede fallar al subirse por esta vía.
   - Límite por IP: detrás de Vercel y del proxy de Render, Tomcat solo confía en proxies internos, así que la IP que ve es la del borde de Vercel y varios visitantes pueden compartir un mismo contador. Es lo seguro (no se puede falsear la IP llamando directo a Render), a cambio de un límite más grueso.
 
-## ADR-020 — Todo en Render, con nginx delante (la base pasa a Neon en ADR-021)
+## ADR-020 — Todo en Render, con nginx delante (la base pasa a Neon en ADR-021; nginx sale de Render en ADR-022)
 
 - **Motivo:** detrás de Vercel el backend veía la IP de Vercel y no la del visitante, así que los límites por IP (5 intentos de inicio de sesión por minuto, 10 cotizaciones por hora) eran compartidos y cualquiera podía bloquear el panel o el formulario para todos. Además, sin nginx nada limitaba el tamaño de las solicitudes y el plan Hobby de Vercel es para uso personal no comercial.
 - **Topología:** `render.yaml` crea el sitio (imagen `web` con nginx, la misma de Docker Compose), el backend y PostgreSQL. La plantilla `frontend/nginx/default.conf.template` toma `BACKEND_ORIGIN` y `PROXY_SECRET` al arrancar.
@@ -154,4 +154,13 @@ Formato: contexto → decisión → consecuencias.
 - **Región:** la misma que el backend en Render (Oregon → AWS US West 2), porque cada página hace varias consultas.
 - **Entornos:** el proyecto de Neon está enlazado con `neon init` (`neon.ts`, rama `production`). La conexión de producción no va en el `.env` de la raíz: ese archivo lo leen el backend y Docker Compose en el computador, que siguen usando el PostgreSQL local.
 - **Migrar datos:** el contenido se trae con el respaldo del panel; las cotizaciones, si hiciera falta, con `pg_dump`/`pg_restore` entre las dos bases.
+
+## ADR-022 — Un solo servicio en Render
+
+- **Motivo:** el plan gratis de Render da unas 750 horas al mes por cuenta y duerme los servicios tras 15 minutos sin visitas. Con dos servicios (nginx y backend) despiertos todo el mes se gastan ~1.490 horas; con uno, ~744. La usuaria quiere que el sitio no se duerma, sin pagar.
+- **Cómo:** el `Dockerfile` de la raíz compila el frontend y el backend en una sola imagen y define `SITE_DIR`. Con `SITE_DIR`, `SiteConfig` sirve el sitio con las reglas que tenía nginx: `/assets/` con caché de un año y 404 si falta el archivo; cualquier otra ruta que no sea un archivo devuelve `index.html` sin caché; `/api` y `/media` nunca caen en `index.html`. Spring Security agrega `Referrer-Policy` (nosniff y X-Frame-Options ya venían) y Tomcat comprime HTML, CSS, JS, JSON y SVG. Sin `SITE_DIR` (Docker Compose, pruebas) el backend solo atiende la API.
+- **Despertador:** un trabajo externo gratis (cron-job.org) llama a `/api/v1/health` cada 10 minutos. Esa ruta no toca la base.
+- **Neon descansa:** HikariCP sin conexiones mínimas (`minimum-idle: 0`, `idle-timeout` de 2 minutos): sin visitas reales se cierran las conexiones y Neon suspende la base a los 5 minutos; la primera consulta después tarda unos cientos de milisegundos.
+- **IP real:** sin nginx, la conexión llega desde el proxy de Render (red privada) con `X-Forwarded-For`; Tomcat (`forward-headers-strategy: native`) confía solo en proxies internos y toma la IP del visitante. Si Render conectara desde una IP no privada, el límite por IP contaría la del proxy (compartido, pero no falsificable). `PROXY_SECRET` y `ClientAddress` quedan para un despliegue con nginx delante.
+- **Docker Compose no cambia:** sigue con `backend/Dockerfile`, `frontend/Dockerfile` y nginx, que también envía `Referrer-Policy` (oculta la del backend para no duplicarla).
 
