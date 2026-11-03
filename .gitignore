@@ -44,4 +44,6 @@ frontend/dist/
 
 # Imágenes subidas si el backend se ejecuta desde la raíz del repo
 /uploads/
+
+# Enlace local de la CLI de Neon (neon link / neon init); ver ADR-021
 .neon
