@@ -44,11 +44,11 @@ Detener todo (los datos se conservan en los volúmenes `pgdata` y `uploads`):
 docker compose down
 ```
 
-## Publicar en internet (Render)
+## Publicar en internet (Render + Neon)
 
-El sitio (`ventanasyaluminios`, nginx con el frontend, igual que en Docker Compose) y el backend (`ventanasyaluminios-api`) van en Render con `render.yaml`; la base PostgreSQL está en Neon (proyecto enlazado en `neon.ts`, ver ADR-021). nginx reenvía `/api` y `/media` al backend, así el sitio está en un solo dominio.
+Un solo servicio en Render (`ventanasyaluminios`, con el `Dockerfile` de la raíz) sirve el sitio, el panel y la API: el backend incluye el frontend compilado. La base PostgreSQL está en Neon (proyecto enlazado en `neon.ts`). Ver ADR-021 y ADR-022. Docker Compose en tu computador no cambia: sigue con nginx y la base local.
 
-**Base en Neon.** En la consola de Neon → Connect, elige la conexión **directa** (sin `-pooler` en el host; Flyway la necesita para las migraciones) y copia sus partes a `ventanasyaluminios-api` → Environment en Render:
+**Base en Neon.** En la consola de Neon → Connect, elige la conexión **directa** (sin `-pooler` en el host; Flyway la necesita para las migraciones) y copia sus partes a `ventanasyaluminios` → Environment en Render:
 
 | Variable | Valor |
 |---|---|
@@ -58,11 +58,12 @@ El sitio (`ventanasyaluminios`, nginx con el frontend, igual que en Docker Compo
 
 Al arrancar, el backend crea las tablas y los datos iniciales. Para traer el contenido de una base anterior, usa el respaldo del panel (Configuración → Respaldo). No ejecutes `neon env pull` ni `neon deploy` en la raíz: escriben la conexión de producción en `.env`, que también leen el backend y Docker Compose en tu computador.
 
-1. **Render** → New → Blueprint → elige este repositorio (rama `main`). Pide `ADMIN_EMAIL` y `ADMIN_INITIAL_PASSWORD` (mínimo 12 caracteres) y los tres datos de la base en Neon; `JWT_SECRET` y `PROXY_SECRET` los genera Render.
-2. Cuando los dos servicios estén en verde, abre `https://ventanasyaluminios-api.onrender.com/api/v1/health` (debe responder `{"status":"ok"}`). Si Render le dio otra dirección al backend, cámbiala en `BACKEND_ORIGIN` del servicio `ventanasyaluminios` (Environment) o en `render.yaml`.
-3. Abre `https://ventanasyaluminios.onrender.com` (o la dirección que Render le dé al sitio) y entra a `/admin` con el correo y la contraseña temporal para crear la tuya.
+1. **Render** → New → Blueprint → elige este repositorio (rama `main`). Pide `ADMIN_EMAIL`, `ADMIN_INITIAL_PASSWORD` (mínimo 12 caracteres) y los tres datos de Neon; `JWT_SECRET` lo genera Render.
+2. Cuando esté en verde, abre `https://ventanasyaluminios.onrender.com/api/v1/health` (debe responder `{"status":"ok"}`) y luego el sitio.
+3. Entra a `/admin` con el correo y la contraseña temporal para crear la tuya.
+4. **Despertador** (para que no se duerma): en [cron-job.org](https://cron-job.org) crea un trabajo gratis que visite `https://ventanasyaluminios.onrender.com/api/v1/health` cada 10 minutos, todo el día. Esa ruta no toca la base, así que Neon sigue descansando cuando no hay visitas reales.
 
-Límites de los planes gratis (detalle en ADR-020): los servicios se duermen tras 15 minutos sin visitas y la primera visita tarda hasta un minuto (el sitio muestra "Despertando el servidor…"); la base gratis de Neon no vence, pero se suspende sin uso y despierta en menos de un segundo; las imágenes subidas desde el panel se pierden en cada despliegue sin un disco persistente (de pago).
+Límites de los planes gratis: Render da unas 750 horas al mes por cuenta y un servicio despierto todo el mes usa ~744 (por eso es uno solo); Neon se suspende sin uso y despierta en menos de un segundo; las imágenes subidas desde el panel se pierden en cada despliegue sin un disco persistente (de pago).
 
 ## Desarrollo local
 

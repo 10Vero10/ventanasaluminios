@@ -1,32 +1,13 @@
-# Blueprint de Render: el sitio (nginx con el frontend) y el backend (Docker). PostgreSQL está en Neon (ADR-021).
-# En Render: New → Blueprint → este repositorio. Ver README ("Publicar en internet") y ADR-020.
+# Blueprint de Render: un solo servicio con el sitio, el panel y la API (ADR-022). PostgreSQL está en Neon (ADR-021).
+# En Render: New → Blueprint → este repositorio. Ver README ("Publicar en internet").
 services:
-  # Sitio público y panel: nginx sirve el frontend y reenvía /api y /media al backend, como en Docker Compose.
+  # Un solo servicio: el backend sirve el sitio, el panel y la API (ADR-022). Con el plan gratis, un servicio despierto
+  # todo el mes cabe en las horas gratis de Render; un despertador externo visita /api/v1/health para que no se duerma.
   - type: web
     name: ventanasyaluminios
     runtime: docker
-    dockerfilePath: ./frontend/Dockerfile
-    dockerContext: ./frontend
-    # free se duerme tras 15 minutos sin visitas; starter no se duerme.
-    plan: free
-    branch: main
-    healthCheckPath: /
-    envVars:
-      - key: PORT
-        value: "80"
-      # El plan gratis no recibe tráfico por la red privada: nginx llama al backend por su dirección pública.
-      # Si Render le da otra dirección al backend, cámbiala aquí.
-      - key: BACKEND_ORIGIN
-        value: https://ventanasyaluminios-api.onrender.com
-      # Clave con la que nginx le dice al backend la IP real del visitante (límites por IP).
-      - key: PROXY_SECRET
-        generateValue: true
-
-  - type: web
-    name: ventanasyaluminios-api
-    runtime: docker
-    dockerfilePath: ./backend/Dockerfile
-    dockerContext: ./backend
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
     plan: free
     branch: main
     healthCheckPath: /api/v1/health
@@ -36,11 +17,6 @@ services:
       # Deja memoria para el resto del contenedor en planes de 512 MB.
       - key: JAVA_TOOL_OPTIONS
         value: -XX:MaxRAMPercentage=70
-      - key: PROXY_SECRET
-        fromService:
-          type: web
-          name: ventanasyaluminios
-          envVarKey: PROXY_SECRET
       # Base PostgreSQL en Neon (ADR-021). Se pegan a mano en Environment: la URL JDBC de la conexión directa
       # (sin "-pooler"), p. ej. jdbc:postgresql://ep-xxxx.us-west-2.aws.neon.tech/neondb?sslmode=require
       - key: DB_URL
