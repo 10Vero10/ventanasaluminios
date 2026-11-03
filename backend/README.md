@@ -32,7 +32,7 @@ Las migraciones están en `src/main/resources/db/migration/` (`V1__descripcion.s
 | `DB_PASSWORD` | `ventanas` | Clave de la base |
 | `SERVER_PORT` | `8080` | Puerto HTTP |
 | `MEDIA_UPLOAD_DIR` | `uploads` | Carpeta de imágenes subidas (en Docker, `/app/uploads` en el volumen `uploads`) |
-| `CORS_ALLOWED_ORIGINS` | vacío | Orígenes CORS exactos separados por coma (no admite `*`). Vacío detrás de nginx, porque todo está en un solo dominio |
+| `CORS_ALLOWED_ORIGINS` | vacío | Orígenes CORS exactos separados por coma (no admite `*`). Vacío en Docker y en Render, porque el backend sirve el sitio en el mismo dominio |
 | `JWT_SECRET` | **obligatoria** | Clave para firmar las sesiones del panel (mínimo 32 caracteres). Sin ella el backend no arranca |
 | `AUTH_SESSION_DURATION` | `8h` | Duración de una sesión del panel |
 | `AUTH_COOKIE_SECURE` | `true` | Cookie de sesión solo por HTTPS (`localhost` cuenta como seguro) |

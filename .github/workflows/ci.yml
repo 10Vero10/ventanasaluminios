@@ -45,6 +45,5 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - run: cp .env.example .env
+      # La imagen única, la misma de Render.
       - run: docker compose build
-      # Imagen única de Render (ADR-022).
-      - run: docker build -t ventanasyaluminios .

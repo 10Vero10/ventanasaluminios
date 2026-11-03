@@ -15,8 +15,9 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 /**
  * Aplica un {@link RateLimiter} por IP a un método y una ruta. Al pasar el límite responde 429 con el formato de
- * error de la API y {@code Retry-After}, sin llegar al controller. La IP sale de {@code getRemoteAddr}: detrás de nginx
- * es la del cliente, porque nginx reemplaza X-Forwarded-For y Tomcat solo lo acepta de proxies internos.
+ * error de la API y {@code Retry-After}, sin llegar al controller. La IP sale de {@code getRemoteAddr}: Tomcat
+ * ({@code forward-headers-strategy: native}) ya puso ahí la del visitante tomándola de X-Forwarded-For, y solo acepta
+ * ese encabezado de proxies de red privada (el de Render o el puerto publicado de Docker), así que no se puede falsear.
  */
 public class RateLimitFilter extends OncePerRequestFilter {
 
@@ -24,15 +25,12 @@ public class RateLimitFilter extends OncePerRequestFilter {
     private final RateLimiter limiter;
     private final ObjectMapper objectMapper;
     private final String message;
-    private final String trustedProxySecret;
 
-    public RateLimitFilter(String method, RateLimiter limiter, ObjectMapper objectMapper, String message,
-                           String trustedProxySecret) {
+    public RateLimitFilter(String method, RateLimiter limiter, ObjectMapper objectMapper, String message) {
         this.method = method;
         this.limiter = limiter;
         this.objectMapper = objectMapper;
         this.message = message;
-        this.trustedProxySecret = trustedProxySecret;
     }
 
     /** La ruta la decide el registro del filtro; aquí solo se filtra por método. */
@@ -44,7 +42,7 @@ public class RateLimitFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain)
             throws ServletException, IOException {
-        Duration retryAfter = limiter.acquire(ClientKey.of(ClientAddress.of(request, trustedProxySecret)));
+        Duration retryAfter = limiter.acquire(ClientKey.of(request.getRemoteAddr()));
         if (retryAfter.isZero()) {
             chain.doFilter(request, response);
             return;

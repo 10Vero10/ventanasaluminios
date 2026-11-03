@@ -7,8 +7,8 @@ spring:
       - optional:file:../.env[.properties]
       - optional:file:.env[.properties]
   datasource:
-    # En Render se usa DB_URL (Neon, ADR-021); en Docker y en local, las partes con DB_HOST y POSTGRES_*.
-    url: ${DB_URL:jdbc:postgresql://${DB_HOST:localhost}:${POSTGRES_PORT:5432}/${POSTGRES_DB:ventanas}}
+    # Render (Neon, ADR-021) y Docker Compose definen DB_URL; al correr el backend suelto se usa el Postgres local.
+    url: ${DB_URL:jdbc:postgresql://localhost:${POSTGRES_PORT:5432}/${POSTGRES_DB:ventanas}}
     username: ${DB_USER:${POSTGRES_USER:ventanas}}
     password: ${DB_PASSWORD:${POSTGRES_PASSWORD:ventanas}}
     hikari:
@@ -38,16 +38,23 @@ spring:
 server:
   # Render indica el puerto en PORT; en local y en Docker se usa SERVER_PORT o 8080.
   port: ${SERVER_PORT:${PORT:8080}}
-  # Tomcat solo acepta X-Forwarded-For de proxies internos (nginx en la red de Docker) e ignora "Forwarded".
-  # Con "framework", Spring tomaba la IP del encabezado "Forwarded" que manda el cliente y anulaba el límite por IP.
+  # Tomcat solo acepta X-Forwarded-For de proxies de red privada (el de Render, el puerto publicado de Docker) e
+  # ignora "Forwarded". Con "framework", Spring tomaba la IP del encabezado "Forwarded" que manda el cliente y anulaba
+  # el límite por IP.
   forward-headers-strategy: native
-  # El sitio y las respuestas JSON viajan comprimidos (en Render no hay nginx delante).
+  tomcat:
+    remoteip:
+      # Host y puerto no se toman de encabezados que el cliente puede inventar: no hacen falta y así no se cuelan en
+      # ninguna URL que arme el servidor.
+      host-header: ""
+      port-header: ""
+  # No hay proxy delante que comprima: los tipos por defecto de Spring Boot más SVG.
   compression:
     enabled: true
-    mime-types: text/html,text/css,text/javascript,application/javascript,application/json,image/svg+xml
+    mime-types: text/html,text/xml,text/plain,text/css,text/javascript,application/javascript,application/json,application/xml,image/svg+xml
 
 app:
-  # Carpeta del frontend compilado: solo en la imagen de Render (Dockerfile de la raíz). Vacía, solo API.
+  # Carpeta del frontend compilado: la define el Dockerfile. Vacía (pruebas, IDE con Vite aparte), solo API.
   site:
     dir: ${SITE_DIR:}
   cors:
@@ -62,8 +69,6 @@ app:
     login:
       max-requests: 5
       window: 1m
-    # Clave compartida con nginx en Render para recibir la IP real del visitante (ver ClientAddress). Vacía en Docker.
-    trusted-proxy-secret: ${PROXY_SECRET:}
   auth:
     jwt-secret: ${JWT_SECRET:}
     session-duration: ${AUTH_SESSION_DURATION:8h}

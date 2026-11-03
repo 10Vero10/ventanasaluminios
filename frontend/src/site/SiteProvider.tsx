@@ -1,7 +1,7 @@
 import { useEffect, type ReactNode } from 'react'
 
 import { Button } from '@/components/ui/button'
-import { MessageState, WakingLoadingState } from '@/components/ui/states'
+import { LoadingState, MessageState } from '@/components/ui/states'
 import { getSite } from '@/services/api/siteService'
 import { useLoad } from '@/lib/useLoad'
 
@@ -29,7 +29,7 @@ export function SiteProvider({ children }: { children: ReactNode }) {
   }, [data])
 
   if (site.status === 'loading') {
-    return <WakingLoadingState label="Cargando el sitio…" />
+    return <LoadingState label="Cargando el sitio…" className="justify-center" />
   }
   if (site.status === 'error') {
     return (

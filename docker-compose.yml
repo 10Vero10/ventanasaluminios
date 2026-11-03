@@ -19,8 +19,9 @@ services:
       timeout: 5s
       retries: 10
 
-  backend:
-    build: ./backend
+  # La misma imagen que en Render (Dockerfile de la raíz): el backend sirve el sitio, el panel y la API (ADR-023).
+  app:
+    build: .
     restart: unless-stopped
     environment:
       DB_URL: jdbc:postgresql://db:5432/${POSTGRES_DB}
@@ -32,19 +33,13 @@ services:
       AUTH_COOKIE_SECURE: ${AUTH_COOKIE_SECURE:-true}
       ADMIN_EMAIL: ${ADMIN_EMAIL:-}
       ADMIN_INITIAL_PASSWORD: ${ADMIN_INITIAL_PASSWORD:-}
+    ports:
+      - "${WEB_PORT:-8080}:8080"
     volumes:
       - uploads:/app/uploads
     depends_on:
       db:
         condition: service_healthy
-
-  web:
-    build: ./frontend
-    restart: unless-stopped
-    ports:
-      - "${WEB_PORT:-8080}:80"
-    depends_on:
-      - backend
 
   pgadmin:
     image: dpage/pgadmin4:9
