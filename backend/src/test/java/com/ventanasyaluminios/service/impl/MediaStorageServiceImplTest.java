@@ -21,9 +21,10 @@ import org.springframework.util.unit.DataSize;
 class MediaStorageServiceImplTest {
 
     private static final AppProperties.RateLimit RATE_LIMIT = new AppProperties.RateLimit(
-            new AppProperties.Rule(10, Duration.ofHours(1)), new AppProperties.Rule(5, Duration.ofMinutes(1)), null);
+            new AppProperties.Rule(10, Duration.ofHours(1)), new AppProperties.Rule(5, Duration.ofMinutes(1)));
     private static final AppProperties.Auth AUTH = new AppProperties.Auth("x".repeat(32), Duration.ofHours(8), true,
             null, null);
+    private static final AppProperties.Site NO_SITE = new AppProperties.Site("");
 
     @TempDir
     Path tempDir;
@@ -35,7 +36,7 @@ class MediaStorageServiceImplTest {
     void setUp() {
         uploadDir = tempDir.resolve("uploads");
         var properties = new AppProperties(new AppProperties.Cors(List.of()),
-                new AppProperties.Media(uploadDir.toString(), DataSize.ofKilobytes(1)), RATE_LIMIT, AUTH);
+                new AppProperties.Media(uploadDir.toString(), DataSize.ofKilobytes(1)), RATE_LIMIT, AUTH, NO_SITE);
         service = new MediaStorageServiceImpl(properties);
     }
 

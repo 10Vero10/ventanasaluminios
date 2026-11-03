@@ -17,8 +17,7 @@ import org.springframework.web.filter.OncePerRequestFilter;
 /**
  * Tope de tamaño del cuerpo de las solicitudes, antes de que Jackson lo lea entero en memoria.
  *
- * <p>En Docker lo pone nginx; en Render el backend también se puede llamar directo, así que el límite vive aquí:
- * 64 KB para lo público (cotización e inicio de sesión) y 6 MB para el resto (el respaldo). La subida de imágenes es
+ * <p>Es el único tope de tamaño (no hay proxy delante que lo ponga): 64 KB para lo público (cotización e inicio de sesión) y 6 MB para el resto (el respaldo). La subida de imágenes es
  * multipart y la limita {@code spring.servlet.multipart}.
  */
 public class RequestSizeLimitFilter extends OncePerRequestFilter {

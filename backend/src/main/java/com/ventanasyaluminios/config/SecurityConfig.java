@@ -28,10 +28,10 @@ import org.springframework.security.oauth2.jwt.JwtValidators;
 import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
 import org.springframework.security.oauth2.jwt.NimbusJwtEncoder;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.web.header.writers.ReferrerPolicyHeaderWriter.ReferrerPolicy;
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 import org.springframework.security.web.csrf.CsrfFilter;
 import org.springframework.security.web.csrf.CsrfTokenRequestAttributeHandler;
+import org.springframework.security.web.header.writers.ReferrerPolicyHeaderWriter.ReferrerPolicy;
 
 /**
  * Seguridad del API (ADR-015): sesión sin estado con JWT HS256 en cookie httpOnly, rol ADMIN para el panel, CSRF con
@@ -47,9 +47,9 @@ public class SecurityConfig {
         var entryPoint = SecurityErrorResponses.entryPoint(objectMapper);
         var accessDenied = SecurityErrorResponses.accessDeniedHandler(objectMapper);
 
-        // El token CSRF se compara tal cual (sin la máscara XOR), como lo envía axios desde la cookie.
+        // El token CSRF se compara tal cual (sin la máscara XOR), como lo envía axios desde la cookie. Se carga diferido:
+        // solo CsrfCookieFilter lo pide, en /api, así que los archivos del sitio no llevan la cookie.
         CsrfTokenRequestAttributeHandler csrfHandler = new CsrfTokenRequestAttributeHandler();
-        csrfHandler.setCsrfRequestAttributeName(null);
 
         http
                 .cors(Customizer.withDefaults())
@@ -73,7 +73,7 @@ public class SecurityConfig {
                 .exceptionHandling(exceptions -> exceptions
                         .authenticationEntryPoint(entryPoint)
                         .accessDeniedHandler(accessDenied))
-                // nosniff y X-Frame-Options DENY ya vienen por defecto; esta completa lo que enviaba nginx.
+                // nosniff y X-Frame-Options DENY ya vienen por defecto; Referrer-Policy completa las del sitio.
                 .headers(headers -> headers
                         .referrerPolicy(referrer -> referrer.policy(ReferrerPolicy.STRICT_ORIGIN_WHEN_CROSS_ORIGIN)));
         return http.build();

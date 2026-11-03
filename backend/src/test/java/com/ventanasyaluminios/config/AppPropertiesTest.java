@@ -4,24 +4,28 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import jakarta.validation.Validation;
 import jakarta.validation.Validator;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.time.Duration;
 import java.util.List;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 import org.springframework.util.unit.DataSize;
 
 class AppPropertiesTest {
 
     private static final AppProperties.RateLimit RATE_LIMIT = new AppProperties.RateLimit(
-            new AppProperties.Rule(10, Duration.ofHours(1)), new AppProperties.Rule(5, Duration.ofMinutes(1)), null);
+            new AppProperties.Rule(10, Duration.ofHours(1)), new AppProperties.Rule(5, Duration.ofMinutes(1)));
     private static final AppProperties.Auth AUTH = new AppProperties.Auth("x".repeat(32), Duration.ofHours(8), true,
             null, null);
+    private static final AppProperties.Site NO_SITE = new AppProperties.Site("");
 
     private final Validator validator = Validation.buildDefaultValidatorFactory().getValidator();
 
     @Test
     void corsConComodinSeRechazaAlArrancar() {
         var properties = new AppProperties(new AppProperties.Cors(List.of("*")),
-                new AppProperties.Media("uploads", DataSize.ofMegabytes(5)), RATE_LIMIT, AUTH);
+                new AppProperties.Media("uploads", DataSize.ofMegabytes(5)), RATE_LIMIT, AUTH, NO_SITE);
 
         assertThat(validator.validate(properties)).extracting(v -> v.getMessage())
                 .containsExactly("app.cors.allowed-origins no puede contener '*': lista los orígenes exactos.");
@@ -73,9 +77,12 @@ class AppPropertiesTest {
     }
 
     @Test
-    void laClaveDelProxyDebeSerLargaSiSeDefine() {
-        var corta = new AppProperties.RateLimit(new AppProperties.Rule(10, Duration.ofHours(1)),
-                new AppProperties.Rule(5, Duration.ofMinutes(1)), "corta");
-        assertThat(validator.validate(corta)).isNotEmpty();
+    void elSitioDebeTenerIndexSiSeDefine(@TempDir Path dir) throws Exception {
+        assertThat(validator.validate(NO_SITE)).isEmpty();
+        assertThat(validator.validate(new AppProperties.Site(dir.toString()))).extracting(v -> v.getMessage())
+                .containsExactly("SITE_DIR no contiene index.html: debe apuntar al frontend compilado o quedar vacía.");
+
+        Files.writeString(dir.resolve("index.html"), "<!doctype html>");
+        assertThat(validator.validate(new AppProperties.Site(dir.toString()))).isEmpty();
     }
 }

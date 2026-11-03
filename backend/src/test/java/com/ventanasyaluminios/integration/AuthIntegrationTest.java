@@ -4,6 +4,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.cookie;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -63,6 +65,19 @@ class AuthIntegrationTest {
     @BeforeEach
     void createAdmin() {
         admin = adminRepository.save(new AdminUser(EMAIL, passwordEncoder.encode(TEMPORARY), true, Instant.now()));
+    }
+
+    /** Cabeceras de seguridad en toda respuesta y cookie CSRF solo en la API, no en las rutas del sitio (ADR-022). */
+    @Test
+    void lasRespuestasLlevanCabecerasDeSeguridadYLaCookieCsrfSoloEnLaApi() throws Exception {
+        mockMvc.perform(get("/api/v1/site"))
+                .andExpect(header().string("X-Content-Type-Options", "nosniff"))
+                .andExpect(header().string("X-Frame-Options", "DENY"))
+                .andExpect(header().string("Referrer-Policy", "strict-origin-when-cross-origin"))
+                .andExpect(cookie().exists("XSRF-TOKEN"));
+        mockMvc.perform(get("/catalogo"))
+                .andExpect(header().string("Referrer-Policy", "strict-origin-when-cross-origin"))
+                .andExpect(cookie().doesNotExist("XSRF-TOKEN"));
     }
 
     @Test

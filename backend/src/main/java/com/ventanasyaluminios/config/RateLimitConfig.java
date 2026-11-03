@@ -11,8 +11,8 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.core.Ordered;
 
 /**
- * Registra los límites por IP. Va después del filtro que aplica X-Forwarded-For, para contar por la IP real del
- * cliente y no por la de nginx.
+ * Registra los límites por IP y el tope de tamaño de las solicitudes. La IP es la del visitante: Tomcat ya la tomó
+ * de X-Forwarded-For del proxy de Render (o del puerto publicado de Docker) antes de cualquier filtro.
  */
 @Configuration
 public class RateLimitConfig {
@@ -25,8 +25,7 @@ public class RateLimitConfig {
                                                                         ObjectMapper objectMapper) {
         AppProperties.Rule rule = properties.rateLimit().quotes();
         RateLimitFilter filter = new RateLimitFilter("POST", new RateLimiter(rule.maxRequests(), rule.window(), clock),
-                objectMapper, "Has enviado muchas solicitudes. Intenta más tarde.",
-                properties.rateLimit().trustedProxySecret());
+                objectMapper, "Has enviado muchas solicitudes. Intenta más tarde.");
         FilterRegistrationBean<RateLimitFilter> registration = new FilterRegistrationBean<>(filter);
         registration.addUrlPatterns("/api/v1/quotes");
         registration.setOrder(ORDER);
@@ -39,8 +38,7 @@ public class RateLimitConfig {
                                                                         ObjectMapper objectMapper) {
         AppProperties.Rule rule = properties.rateLimit().login();
         RateLimitFilter filter = new RateLimitFilter("POST", new RateLimiter(rule.maxRequests(), rule.window(), clock),
-                objectMapper, "Demasiados intentos. Espera un minuto.",
-                properties.rateLimit().trustedProxySecret());
+                objectMapper, "Demasiados intentos. Espera un minuto.");
         FilterRegistrationBean<RateLimitFilter> registration = new FilterRegistrationBean<>(filter);
         registration.addUrlPatterns("/api/v1/auth/login");
         registration.setOrder(ORDER);
