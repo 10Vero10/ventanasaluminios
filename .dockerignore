@@ -1,0 +1,8 @@
+# Contexto de la imagen única (Dockerfile de la raíz): solo lo que se compila.
+*
+!backend/pom.xml
+!backend/src/
+!frontend/
+frontend/node_modules/
+frontend/dist/
+frontend/.env*

@@ -7,10 +7,15 @@ spring:
       - optional:file:../.env[.properties]
       - optional:file:.env[.properties]
   datasource:
-    # DB_HOST permite armar la URL por partes (Render entrega host, puerto, base, usuario y clave por separado).
+    # En Render se usa DB_URL (Neon, ADR-021); en Docker y en local, las partes con DB_HOST y POSTGRES_*.
     url: ${DB_URL:jdbc:postgresql://${DB_HOST:localhost}:${POSTGRES_PORT:5432}/${POSTGRES_DB:ventanas}}
     username: ${DB_USER:${POSTGRES_USER:ventanas}}
     password: ${DB_PASSWORD:${POSTGRES_PASSWORD:ventanas}}
+    hikari:
+      # Sin conexiones fijas: las que quedan 2 minutos sin uso se cierran, así la base de Neon se suspende cuando no hay
+      # visitas reales (el despertador solo llama a /api/v1/health, que no toca la base). ADR-022.
+      minimum-idle: 0
+      idle-timeout: 120000
   jpa:
     open-in-view: false
     hibernate:
@@ -36,8 +41,15 @@ server:
   # Tomcat solo acepta X-Forwarded-For de proxies internos (nginx en la red de Docker) e ignora "Forwarded".
   # Con "framework", Spring tomaba la IP del encabezado "Forwarded" que manda el cliente y anulaba el límite por IP.
   forward-headers-strategy: native
+  # El sitio y las respuestas JSON viajan comprimidos (en Render no hay nginx delante).
+  compression:
+    enabled: true
+    mime-types: text/html,text/css,text/javascript,application/javascript,application/json,image/svg+xml
 
 app:
+  # Carpeta del frontend compilado: solo en la imagen de Render (Dockerfile de la raíz). Vacía, solo API.
+  site:
+    dir: ${SITE_DIR:}
   cors:
     allowed-origins: ${CORS_ALLOWED_ORIGINS:}
   media:
