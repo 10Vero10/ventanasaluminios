@@ -150,17 +150,26 @@ Formato: contexto → decisión → consecuencias.
 ## ADR-021 — PostgreSQL en Neon
 
 - **Motivo:** la base gratis de Render vence a los 30 días y se borra si no se pasa a un plan pago. El plan gratis de Neon no vence: la base se suspende tras unos minutos sin uso y despierta sola en menos de un segundo. El sitio y el backend siguen en Render (ADR-020).
-- **Conexión:** el backend usa la conexión **directa** de Neon (sin `-pooler`) con el driver JDBC de siempre y HikariCP: es un servidor de larga vida, no un entorno serverless, y Flyway necesita una sesión de verdad para las migraciones. `render.yaml` deja `DB_URL`, `DB_USER` y `DB_PASSWORD` para llenarlos en Render; `application.yml` ya los leía. Sin código nuevo ni librerías.
+- **Conexión:** el backend usa la conexión **directa** de Neon (sin `-pooler`) con el driver JDBC de siempre y HikariCP: es un servidor de larga vida, no un entorno serverless, y Flyway necesita una sesión de verdad para las migraciones. `render.yaml` deja `DB_URL`, `DB_USER` y `DB_PASSWORD` para llenarlos en Render; `application.yml` ya los leía. Sin código nuevo ni librerías. La URL lleva `sslmode=require&channelBinding=require`: cifra la conexión y comprueba que el servidor es Neon.
 - **Región:** la misma que el backend en Render (Oregon → AWS US West 2), porque cada página hace varias consultas.
-- **Entornos:** el proyecto de Neon está enlazado con `neon init` (`neon.ts`, rama `production`). La conexión de producción no va en el `.env` de la raíz: ese archivo lo leen el backend y Docker Compose en el computador, que siguen usando el PostgreSQL local.
+- **Entornos:** la CLI de Neon guarda el enlace al proyecto en `.neon` (ignorado por git); el repositorio no lleva configuración de Neon. La conexión de producción no va en el `.env` de la raíz: ese archivo lo leen el backend y Docker Compose en el computador, que siguen usando el PostgreSQL local.
 - **Migrar datos:** el contenido se trae con el respaldo del panel; las cotizaciones, si hiciera falta, con `pg_dump`/`pg_restore` entre las dos bases.
 
-## ADR-022 — Un solo servicio en Render
+## ADR-022 — Un solo servicio en Render (Docker Compose se alinea en ADR-023)
 
 - **Motivo:** el plan gratis de Render da unas 750 horas al mes por cuenta y duerme los servicios tras 15 minutos sin visitas. Con dos servicios (nginx y backend) despiertos todo el mes se gastan ~1.490 horas; con uno, ~744. La usuaria quiere que el sitio no se duerma, sin pagar.
-- **Cómo:** el `Dockerfile` de la raíz compila el frontend y el backend en una sola imagen y define `SITE_DIR`. Con `SITE_DIR`, `SiteConfig` sirve el sitio con las reglas que tenía nginx: `/assets/` con caché de un año y 404 si falta el archivo; cualquier otra ruta que no sea un archivo devuelve `index.html` sin caché; `/api` y `/media` nunca caen en `index.html`. Spring Security agrega `Referrer-Policy` (nosniff y X-Frame-Options ya venían) y Tomcat comprime HTML, CSS, JS, JSON y SVG. Sin `SITE_DIR` (Docker Compose, pruebas) el backend solo atiende la API.
+- **Cómo:** el `Dockerfile` de la raíz compila el frontend y el backend en una sola imagen y define `SITE_DIR`. Con `SITE_DIR`, el backend sirve el sitio (`WebConfig`) con las reglas que tenía nginx: `/assets/` con caché de un año y 404 si falta el archivo; cualquier otra ruta que no sea un archivo devuelve `index.html` sin caché; `/api` y `/media` nunca caen en `index.html`. Spring Security agrega `Referrer-Policy` (nosniff y X-Frame-Options ya venían) y Tomcat comprime HTML, CSS, JS, JSON y SVG. Sin `SITE_DIR` (pruebas, IDE) el backend solo atiende la API; con un `SITE_DIR` sin `index.html` no arranca.
 - **Despertador:** un trabajo externo gratis (cron-job.org) llama a `/api/v1/health` cada 10 minutos. Esa ruta no toca la base.
 - **Neon descansa:** HikariCP sin conexiones mínimas (`minimum-idle: 0`, `idle-timeout` de 2 minutos): sin visitas reales se cierran las conexiones y Neon suspende la base a los 5 minutos; la primera consulta después tarda unos cientos de milisegundos.
-- **IP real:** sin nginx, la conexión llega desde el proxy de Render (red privada) con `X-Forwarded-For`; Tomcat (`forward-headers-strategy: native`) confía solo en proxies internos y toma la IP del visitante. Si Render conectara desde una IP no privada, el límite por IP contaría la del proxy (compartido, pero no falsificable). `PROXY_SECRET` y `ClientAddress` quedan para un despliegue con nginx delante.
-- **Docker Compose no cambia:** sigue con `backend/Dockerfile`, `frontend/Dockerfile` y nginx, que también envía `Referrer-Policy` (oculta la del backend para no duplicarla).
+- **IP real:** sin nginx, la conexión llega desde el proxy de Render (red privada) con `X-Forwarded-For`; Tomcat (`forward-headers-strategy: native`) confía solo en proxies internos y toma la IP del visitante. Si Render conectara desde una IP no privada, el límite por IP contaría la del proxy (compartido, pero no falsificable).
+
+## ADR-023 — Docker Compose usa la misma imagen que Render; sin nginx
+
+- **Motivo:** después de ADR-022 las reglas del sitio (rutas de React, caché, cabeceras) estaban escritas dos veces, en nginx para Docker Compose y en el backend para Render, con tres Dockerfiles. La cuarta revisión lo marcó como la fuente principal de duplicación.
+- **Cambio:** Docker Compose construye el `Dockerfile` de la raíz en un servicio `app` publicado en `WEB_PORT` (8080 por defecto). Se borran `frontend/Dockerfile`, `frontend/nginx/` y `backend/Dockerfile`. Los comandos no cambian (`docker compose up -d --build`, sitio en http://localhost:8080) y en local se prueba exactamente lo que se publica.
+- **IP real:** Tomcat confía en `X-Forwarded-For` solo desde redes privadas (el proxy de Render, el puerto publicado de Docker), igual que nginx antes. `X-Forwarded-Host` y `X-Forwarded-Port` se ignoran. Se borran `PROXY_SECRET`, `X-Client-Ip` y `ClientAddress`, que solo servían con nginx llamando al backend por internet (ADR-020).
+- **CSRF:** el token se carga diferido y `CsrfCookieFilter` solo lo pide en `/api`; los archivos del sitio (algunos con caché pública de un año) no llevan la cookie `XSRF-TOKEN`.
+- **Configuración:** `SITE_DIR` pasa a `AppProperties.Site` y se valida al arrancar.
+- **Frontend:** se quita el aviso "Despertando el servidor…": la página y la API son el mismo servicio, así que cuando el sitio carga el servidor ya está despierto.
+- **Neon:** se quitan `neon.ts` y las librerías de Neon del `package.json` de la raíz; no las usaba ningún código.
 
