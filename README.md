@@ -5,10 +5,11 @@ Sitio web y panel de administración de Ventanas y Aluminios SAS: catálogo de p
 | Carpeta | Contenido |
 |---|---|
 | `backend/` | API REST en Java 21 + Spring Boot 3.5, organizada por capas (controller, service, repository, entity, dto, mapper…), PostgreSQL y Flyway. Ver [backend/README.md](backend/README.md). |
-| `frontend/` | React + Vite + TypeScript, Tailwind CSS, React Router y shadcn/ui. Se sirve con nginx. Ver [frontend/README.md](frontend/README.md). |
+| `frontend/` | React + Vite + TypeScript, Tailwind CSS, React Router y shadcn/ui. Se compila dentro de la imagen y lo sirve el backend. Ver [frontend/README.md](frontend/README.md). |
 | `.github/` | CI en GitHub Actions: pruebas del backend, lint y build del frontend, y construcción de las imágenes Docker. |
 | `docs/` | [01 Briefing](docs/01-briefing.md), [02 Modelo de datos](docs/02-modelo-datos.md), [03 Contrato de la API](docs/03-contrato-api.md), [04 Decisiones (ADR)](docs/04-decisiones-tecnicas.md), [05 Plan de trabajo y ramas](docs/05-plan-de-trabajo.md) y `diagramas/`. |
-| `docker-compose.yml` | PostgreSQL 16, backend, nginx y pgAdmin (opcional). |
+| `Dockerfile` | Imagen única: compila el frontend y el backend, que sirve el sitio, el panel y la API. La usan Docker Compose y Render. |
+| `docker-compose.yml` | PostgreSQL 16, la aplicación (`app`) y pgAdmin (opcional). |
 
 ## Levantar todo con Docker
 
@@ -24,7 +25,7 @@ Edita `.env` y cambia las claves. `JWT_SECRET` es obligatoria (mínimo 32 caract
 docker compose up -d --build
 ```
 
-El sitio queda en http://localhost:8080 (o el puerto de `WEB_PORT`). nginx sirve el frontend y reenvía `/api` y `/media` al backend, así todo queda en un solo dominio.
+El sitio queda en http://localhost:8080 (o el puerto de `WEB_PORT`). La misma imagen que se publica en Render sirve el sitio, el panel y la API en un solo dominio.
 
 Comprobar que la API responde:
 
@@ -46,13 +47,13 @@ docker compose down
 
 ## Publicar en internet (Render + Neon)
 
-Un solo servicio en Render (`ventanasyaluminios`, con el `Dockerfile` de la raíz) sirve el sitio, el panel y la API: el backend incluye el frontend compilado. La base PostgreSQL está en Neon (proyecto enlazado en `neon.ts`). Ver ADR-021 y ADR-022. Docker Compose en tu computador no cambia: sigue con nginx y la base local.
+Un solo servicio en Render (`ventanasyaluminios`, con el `Dockerfile` de la raíz) sirve el sitio, el panel y la API: el backend incluye el frontend compilado. La base PostgreSQL está en Neon. Ver ADR-021 y ADR-022. Docker Compose usa la misma imagen con la base local.
 
 **Base en Neon.** En la consola de Neon → Connect, elige la conexión **directa** (sin `-pooler` en el host; Flyway la necesita para las migraciones) y copia sus partes a `ventanasyaluminios` → Environment en Render:
 
 | Variable | Valor |
 |---|---|
-| `DB_URL` | `jdbc:postgresql://<host>/<base>?sslmode=require` (p. ej. `jdbc:postgresql://ep-xxxx.us-west-2.aws.neon.tech/neondb?sslmode=require`) |
+| `DB_URL` | `jdbc:postgresql://<host>/<base>?sslmode=require&channelBinding=require` (p. ej. `jdbc:postgresql://ep-xxxx.us-west-2.aws.neon.tech/neondb?sslmode=require&channelBinding=require`). `channelBinding` comprueba que del otro lado está Neon y no un intermediario |
 | `DB_USER` | el usuario (p. ej. `neondb_owner`) |
 | `DB_PASSWORD` | la contraseña |
 

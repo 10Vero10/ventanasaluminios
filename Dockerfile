@@ -1,5 +1,4 @@
-# Imagen única para Render (ADR-022): el backend sirve también el frontend compilado. Docker Compose no la usa; ahí
-# siguen backend/Dockerfile y frontend/Dockerfile con nginx.
+# Imagen única (ADR-022 y ADR-023): el backend sirve también el frontend compilado. La usan Render y Docker Compose.
 
 # Etapa 1: frontend
 FROM node:22-alpine AS frontend

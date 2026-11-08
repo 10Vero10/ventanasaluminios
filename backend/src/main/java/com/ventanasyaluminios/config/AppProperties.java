@@ -6,6 +6,7 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 import jakarta.validation.constraints.Size;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Duration;
 import java.util.List;
@@ -22,15 +23,16 @@ import org.springframework.validation.annotation.Validated;
  * @param media     almacenamiento de imágenes subidas
  * @param rateLimit límites de solicitudes por IP
  * @param auth      sesión del panel y administrador inicial
+ * @param site      frontend compilado que sirve el backend
  */
 @Validated
 @ConfigurationProperties(prefix = "app")
 public record AppProperties(@Valid @NotNull Cors cors, @Valid @NotNull Media media, @Valid @NotNull RateLimit rateLimit,
-                            @Valid @NotNull Auth auth) {
+                            @Valid @NotNull Auth auth, @Valid @NotNull Site site) {
 
     /**
-     * @param allowedOrigins orígenes con acceso CORS. Vacío en producción, porque frontend y API
-     *                       comparten dominio detrás de nginx.
+     * @param allowedOrigins orígenes con acceso CORS. Vacío en producción, porque el backend sirve el frontend y
+     *                       comparten dominio.
      */
     public record Cors(@NotNull List<String> allowedOrigins) {
 
@@ -63,16 +65,30 @@ public record AppProperties(@Valid @NotNull Cors cors, @Valid @NotNull Media med
     }
 
     /**
-     * @param quotes             envíos del formulario de cotización (briefing §3.6: 10 por hora)
-     * @param login              intentos de inicio de sesión (5 por minuto)
-     * @param trustedProxySecret clave que comparte el proxy del sitio (nginx en Render) para decir cuál es la IP real
-     *                           del visitante con {@code X-Client-Ip}; vacía, solo cuenta la IP de la conexión
+     * @param quotes envíos del formulario de cotización (briefing §3.6: 10 por hora)
+     * @param login  intentos de inicio de sesión (5 por minuto)
      */
-    public record RateLimit(@Valid @NotNull Rule quotes, @Valid @NotNull Rule login, String trustedProxySecret) {
+    public record RateLimit(@Valid @NotNull Rule quotes, @Valid @NotNull Rule login) {
+    }
 
-        @AssertTrue(message = "PROXY_SECRET debe tener al menos 32 caracteres o quedar vacía.")
-        public boolean isTrustedProxySecretStrong() {
-            return trustedProxySecret == null || trustedProxySecret.isBlank() || trustedProxySecret.length() >= 32;
+    /**
+     * @param dir carpeta del frontend compilado (variable SITE_DIR, la define el Dockerfile). Vacía, el backend solo
+     *            atiende la API (pruebas, o al correrlo desde el IDE con Vite aparte).
+     */
+    public record Site(String dir) {
+
+        public boolean enabled() {
+            return dir != null && !dir.isBlank();
+        }
+
+        public Path path() {
+            return Path.of(dir).toAbsolutePath().normalize();
+        }
+
+        /** Una carpeta equivocada arrancaría "sana" pero sin sitio: mejor no arrancar. */
+        @AssertTrue(message = "SITE_DIR no contiene index.html: debe apuntar al frontend compilado o quedar vacía.")
+        public boolean isBuilt() {
+            return !enabled() || Files.isRegularFile(path().resolve("index.html"));
         }
     }
 

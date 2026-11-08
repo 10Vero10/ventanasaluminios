@@ -15,7 +15,8 @@ Sitio web y panel de administración de Ventanas y Aluminios SAS (Colombia). Los
 
 - `backend/`: Java 21, Spring Boot 3.5, Spring Web, Spring Data JPA, Spring Security + JWT (paso 4), Bean Validation, Flyway, PostgreSQL 16, Maven (`./mvnw`). Pruebas: JUnit 5, Mockito para services, Testcontainers para repositories e integración.
 - `frontend/`: React 19, Vite, TypeScript strict (fijado en 6.0 hasta que typescript-eslint soporte la 7), Tailwind CSS v4, React Router, shadcn/ui (base Radix), ESLint.
-- `docker-compose.yml`: `db` (Postgres), `backend`, `web` (nginx sirve el frontend y reenvía `/api` y `/media`), `pgadmin` opcional (perfil `tools`).
+- `Dockerfile` (raíz): imagen única que compila frontend y backend; el backend sirve el sitio, el panel y la API (ADR-022, ADR-023). La usan Docker Compose y Render; la base de producción está en Neon (ADR-021).
+- `docker-compose.yml`: `db` (Postgres), `app` (la imagen única), `pgadmin` opcional (perfil `tools`).
 
 ## Convenciones del backend
 

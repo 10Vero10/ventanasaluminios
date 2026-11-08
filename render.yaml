@@ -18,7 +18,7 @@ services:
       - key: JAVA_TOOL_OPTIONS
         value: -XX:MaxRAMPercentage=70
       # Base PostgreSQL en Neon (ADR-021). Se pegan a mano en Environment: la URL JDBC de la conexión directa
-      # (sin "-pooler"), p. ej. jdbc:postgresql://ep-xxxx.us-west-2.aws.neon.tech/neondb?sslmode=require
+      # (sin "-pooler"), p. ej. jdbc:postgresql://ep-xxxx.us-west-2.aws.neon.tech/neondb?sslmode=require&channelBinding=require
       - key: DB_URL
         sync: false
       - key: DB_USER

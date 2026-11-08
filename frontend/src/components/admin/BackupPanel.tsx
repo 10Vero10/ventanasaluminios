@@ -11,7 +11,7 @@ import { ConfirmDialog } from './ConfirmDialog'
 import { Panel } from './Panel'
 import { useSaveState } from './useSaveState'
 
-/** Por debajo del límite de nginx (6 MB) para que el error sea este y no uno genérico. */
+/** Por debajo del límite del servidor (6 MB, RequestSizeLimitFilter) para que el error sea este y no uno genérico. */
 const MAX_BACKUP_BYTES = 5 * 1024 * 1024
 
 /** Exportar e importar el respaldo del contenido (briefing §3.10). */
