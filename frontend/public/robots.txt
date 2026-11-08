@@ -1,0 +1,7 @@
+# Buscadores: todo el sitio público; el panel y la API no se indexan.
+User-agent: *
+Allow: /
+Disallow: /admin
+Disallow: /api/
+
+Sitemap: https://ventanasyaluminios.onrender.com/sitemap.xml
